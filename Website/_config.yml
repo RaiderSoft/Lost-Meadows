@@ -1,0 +1,38 @@
+title: "Lost Meadows Research Project"
+description: "Advancing scientific understanding through innovative research"
+baseurl: ""
+url: "https://[your-username].github.io/Lost-Meadows"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+permalink: pretty
+
+# Exclude files from processing
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+
+# GitHub Pages specific settings
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+# Site author
+author: "Lost Meadows Research Team"
+email: "contact@lostmeadows-research.org"
+
+# Social media and contact
+github_repo: "Lost-Meadows"
+
+# SEO settings
+lang: "en"
+twitter:
+  card: summary_large_image
+
+# Collections (if needed for future blog posts or publications)
+collections:
+  publications:
+    output: true
+    permalink: /:collection/:name/
