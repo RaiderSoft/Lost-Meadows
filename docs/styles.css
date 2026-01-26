@@ -366,7 +366,11 @@ h3 {
 }
 
 .client-header {
-  background: linear-gradient(135deg, var(--secondary-green), var(--light-green));
+  background: linear-gradient(
+    135deg,
+    var(--secondary-green),
+    var(--light-green)
+  );
   padding: 2rem;
   text-align: center;
   color: var(--white);
@@ -520,6 +524,8 @@ h3 {
   width: 100%;
   height: 100%;
   backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   border-radius: 20px;
   box-shadow: 0 8px 30px rgba(45, 80, 22, 0.15);
   overflow: hidden;
@@ -533,17 +539,75 @@ h3 {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 2.5rem; /* Increased from 2rem */
+  padding: 2.5rem;
+  z-index: 2;
 }
 
+/* Add opacity control to front card content */
+.team-card-front h3,
+.team-card-front .team-role,
+.team-card-front .team-image-placeholder {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+  transition-delay: 0.3s; /* Delay front content when card flips back */
+}
+
+/* When hovering (showing back), hide front content immediately */
+.team-card-container:hover .team-card-front h3,
+.team-card-container:hover .team-card-front .team-role,
+.team-card-container:hover .team-card-front .team-image-placeholder {
+  opacity: 0;
+  transition-delay: 0s;
+}
+
+/* Back card content - hidden by default */
+.team-card-back h3,
+.team-card-back .team-role,
+.team-card-back .team-bio,
+.team-card-back .team-contact {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  transition-delay: 0s;
+}
+
+/* Remove the duplicate rules and keep only this clean version */
 .team-card-back {
   background: linear-gradient(135deg, var(--white) 0%, var(--cream) 100%);
   border: 2px solid var(--secondary-green);
   transform: rotateY(180deg);
   display: flex;
   flex-direction: column;
-  padding: 3rem; /* Increased from 2.5rem */
+  padding: 3rem;
   text-align: left;
+  z-index: 1;
+}
+
+/* Back card content - hidden by default */
+.team-card-back h3,
+.team-card-back .team-role,
+.team-card-back .team-bio,
+.team-card-back .team-contact {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  transition-delay: 0s; /* No delay when hiding */
+}
+
+/* Z-index changes on hover */
+.team-card-container:hover .team-card-front {
+  z-index: 1;
+}
+
+.team-card-container:hover .team-card-back {
+  z-index: 2;
+}
+
+/* Back card content - visible on hover with delay */
+.team-card-container:hover .team-card-back h3,
+.team-card-container:hover .team-card-back .team-role,
+.team-card-container:hover .team-card-back .team-bio,
+.team-card-container:hover .team-card-back .team-contact {
+  opacity: 1;
+  transition-delay: 0.3s; /* Increase delay - wait for flip to complete */
 }
 
 .team-image-placeholder {
