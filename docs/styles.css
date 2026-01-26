@@ -347,18 +347,89 @@ h3 {
 }
 
 /* Client page styles */
-.client-info,
-.client-description {
+.client-card {
   background: var(--white);
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(45, 80, 22, 0.12);
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid var(--accent-green);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.client-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 40px rgba(45, 80, 22, 0.2);
+  border-color: var(--secondary-green);
+}
+
+.client-header {
+  background: linear-gradient(135deg, var(--secondary-green), var(--light-green));
   padding: 2rem;
+  text-align: center;
+  color: var(--white);
+}
+
+.client-header h3 {
+  color: var(--white);
+  font-size: 1.6rem;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.client-type {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.client-body {
+  padding: 2rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.client-info {
+  background: var(--cream);
+  padding: 1.5rem;
   border-radius: 10px;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 10px rgba(45, 80, 22, 0.1);
+  border-left: 4px solid var(--light-green);
 }
 
 .client-info p {
-  margin-bottom: 1rem;
-  font-size: 1.05rem;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  color: var(--text-dark);
+}
+
+.client-info p:last-child {
+  margin-bottom: 0;
+}
+
+.client-description,
+.client-mission {
+  margin-top: 0;
+}
+
+.client-description h4,
+.client-mission h4 {
+  color: var(--secondary-green);
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.client-description p,
+.client-mission p {
+  color: var(--text-dark);
+  line-height: 1.7;
+  font-size: 1rem;
 }
 
 .problem-statement,
