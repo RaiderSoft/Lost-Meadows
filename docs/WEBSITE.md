@@ -1,4 +1,4 @@
-# Lost Meadows Research Project Website
+# Lost Meadows Research Project Website 
 
 This directory contains the GitHub Pages website for the Lost Meadows science research project.
 
