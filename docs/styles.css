@@ -70,11 +70,25 @@ header.scrolled {
   height: 70px;
 }
 
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  opacity: 0;
+}
+
 .logo {
   font-size: 1.8rem;
   font-weight: 700;
   color: var(--primary-green);
   text-shadow: 1px 1px 2px rgba(45, 80, 22, 0.1);
+  margin: 0;
 }
 
 .nav-menu {
