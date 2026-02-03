@@ -87,6 +87,8 @@ Update `_config.yml` to customize:
 
 ```
 Website/
+images/
+WEBSITE.md
 ├── index.html          # Main website content
 ├── styles.css          # Stylesheet
 ├── _config.yml         # Jekyll configuration
