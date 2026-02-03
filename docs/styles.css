@@ -152,7 +152,7 @@ main {
     var(--light-green) 100%
   );
   color: var(--white);
-  padding: 8rem 0;
+  padding: 4rem 0;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -1083,7 +1083,7 @@ footer p {
   }
 
   .hero {
-    padding: 4rem 0;
+    padding: 3rem 0;
   }
 
   .hero h1 {
@@ -1131,7 +1131,7 @@ footer p {
   }
 
   .hero {
-    padding: 5rem 0;
+    padding: 3rem 0;
   }
 
   .hero h1 {
