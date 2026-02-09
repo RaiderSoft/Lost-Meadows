@@ -1,0 +1,54 @@
+# Large installer files
+*.sh
+Miniconda3-*.sh
+
+# GeoTIFF data files (too large for git)
+*.tif
+*.tiff
+GEE/TIF_Input/*.tif
+GEE/TIF_Output/**/*.tif
+
+# Temporary files
+*_temp.tif
+dem_*_temp.tif
+sca_*_temp.tif
+slope_*_temp.tif
+twi_*_temp.tif
+
+# Machine learning models (can be large)
+*.pkl
+*.joblib
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+env/
+venv/
+ENV/
+meadow/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# Compressed files
+*.zip
+*.tar.gz
+*.rar
