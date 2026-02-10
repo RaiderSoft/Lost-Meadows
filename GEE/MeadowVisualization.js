@@ -1,15 +1,15 @@
 // =====================================================
-// MEADOW PROBABILITY VISUALIZATION
+// MEADOW PROBABILITY VISUALIZATION - REAL WETLAND DATA
 // =====================================================
 
-// Load the meadow probability raster
-var meadowProb = ee.Image('projects/lost-meadows/assets/meadow_probability');
+// Load the meadow probability raster (trained on REAL wetlands)
+var meadowProb = ee.Image('projects/lost-meadows/assets/meadow_probability_real');
 
 // Load the original study area for context
-var studyArea = ee.Geometry.Rectangle([-124.62, 41.78, -121.78, 43.36]);
+var studyArea = ee.Geometry.Rectangle([-122.0, 41.46, -121.73, 41.85]);
 
 // Center the map on the study area
-Map.centerObject(studyArea, 10);
+Map.centerObject(studyArea, 11);
 
 // Add base imagery
 Map.addLayer(
@@ -33,28 +33,40 @@ var probVis = {
 Map.addLayer(
   meadowProb,
   probVis,
-  'Meadow Probability (0-1)'
+  'Wetland Probability (0-1)'
 );
 
-// Visualize high-confidence meadows (>0.5 threshold from paper)
+// Visualize high-confidence wetlands (>0.5 threshold from paper)
 var highConfidence = meadowProb.gt(0.5);
 Map.addLayer(
   highConfidence.selfMask(),
   {palette: ['green']},
-  'High Confidence Meadows (>0.5)'
+  'High Confidence Wetlands (>0.5)',
+  true
 );
 
-// Add watershed outline
-var watersheds = ee.FeatureCollection('USGS/WBD/2017/HUC10')
-  .filterBounds(studyArea);
-  
-Map.addLayer(
-  watersheds.style({color: 'red', fillColor: '00000000', width: 2}),
-  {},
-  'Study Watersheds'
-);
+// Add title panel
+var title = ui.Panel({
+  style: {
+    position: 'top-center',
+    padding: '8px 15px',
+    backgroundColor: 'white'
+  }
+});
 
-// Create a legend
+title.add(ui.Label({
+  value: 'Wetland Detection - Real Training Data',
+  style: {fontSize: '20px', fontWeight: 'bold'}
+}));
+
+title.add(ui.Label({
+  value: 'Random Forest Model (AUC: 0.845) | 729 hectares predicted',
+  style: {fontSize: '14px', color: 'gray'}
+}));
+
+Map.add(title);
+
+// Add legend
 var legend = ui.Panel({
   style: {
     position: 'bottom-left',
@@ -63,7 +75,7 @@ var legend = ui.Panel({
 });
 
 var legendTitle = ui.Label({
-  value: 'Meadow Probability',
+  value: 'Wetland Probability',
   style: {fontWeight: 'bold', fontSize: '16px', margin: '0 0 4px 0'}
 });
 legend.add(legendTitle);
@@ -95,27 +107,7 @@ colors.forEach(function(color, i) {
 
 Map.add(legend);
 
-// Add title panel
-var title = ui.Panel({
-  style: {
-    position: 'top-center',
-    padding: '8px 15px',
-    backgroundColor: 'white'
-  }
-});
-
-title.add(ui.Label({
-  value: 'Lost Meadow Detection - Test Watershed',
-  style: {fontSize: '20px', fontWeight: 'bold'}
-}));
-
-title.add(ui.Label({
-  value: 'Random Forest Model (Synthetic Training Data)',
-  style: {fontSize: '14px', color: 'gray'}
-}));
-
-Map.add(title);
-
-print('Meadow Probability Statistics:');
+print('Wetland Probability Statistics:');
 print('Study Area:', studyArea);
-print('Total predicted meadow area (>0.5): ~5072 hectares');
+print('Model Performance: AUC 0.845');
+print('Predicted high-confidence wetlands: ~729 hectares (1.42% of watershed)');

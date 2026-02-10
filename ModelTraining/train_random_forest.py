@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Train Random Forest model for meadow detection
-For testing: uses random sampling without real meadow polygons
+Uses real wetland labels from CSV if available, otherwise falls back to synthetic labels
 """
 
 import rasterio
@@ -14,36 +14,60 @@ import joblib
 import sys
 from pathlib import Path
 
-def extract_samples_from_raster(raster_path, n_samples=10000):
+def load_training_data(run_num):
     """
-    Extract random samples from stacked feature raster
-    For testing purposes - creates synthetic labels based on TWI
+    Load training data from CSV (real wetland labels)
+    Falls back to synthetic labels if CSV doesn't exist
     """
-    print(f"Reading features from: {raster_path}")
+    base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output" / str(run_num)
+    training_csv = base_dir / "training_data_real.csv"
+    
+    if training_csv.exists():
+        print(f"Loading real training data from: {training_csv}")
+        df = pd.read_csv(training_csv)
+        
+        feature_names = [
+            'slope', 'elev_5x5_rel', 'elev_5x5_std_dev', 'slope_5x5_std_dev',
+            'twi_10m', 'twi_100m', 'dd_s', 'dd_h', 'dd_v'
+        ]
+        
+        features = df[feature_names].values
+        labels = df['label'].values
+        
+        print(f"\nReal wetland training data:")
+        print(f"  Total samples: {len(df):,}")
+        print(f"  Wetland samples (1): {np.sum(labels == 1):,}")
+        print(f"  Non-wetland samples (0): {np.sum(labels == 0):,}")
+        print(f"  Ratio: 1:{np.sum(labels == 0) / np.sum(labels == 1):.1f}")
+        
+        print(f"\nFeature value ranges:")
+        for i, name in enumerate(feature_names):
+            print(f"  {name:20s} [{features[:, i].min():.2f}, {features[:, i].max():.2f}]")
+        
+        return features, labels
+    
+    else:
+        print(f"WARNING: Real training CSV not found at {training_csv}")
+        print("Falling back to synthetic labels (TWI-based)")
+        return extract_samples_from_raster_synthetic(base_dir / "features_stacked.tif")
+
+def extract_samples_from_raster_synthetic(raster_path, n_samples=10000):
+    """
+    Extract random samples with synthetic labels (fallback method)
+    """
+    print(f"\nReading features from: {raster_path}")
     
     with rasterio.open(raster_path) as src:
-        # Read all bands
-        data = src.read()  # Shape: (bands, height, width)
+        data = src.read()
         n_bands, height, width = data.shape
         
         print(f"Raster shape: {n_bands} bands, {height}x{width} pixels")
         
-        # Flatten spatial dimensions
-        data_flat = data.reshape(n_bands, -1).T  # Shape: (pixels, bands)
+        data_flat = data.reshape(n_bands, -1).T
         
-        # TauDEM uses -3.4028235e+38 as NoData
-        taudem_nodata = -3.4028235e+38
-        
-        # Create mask for valid pixels
         valid_mask = np.ones(data_flat.shape[0], dtype=bool)
-        
-        # Remove NaN values
         valid_mask &= ~np.any(np.isnan(data_flat), axis=1)
-        
-        # Remove infinite values
         valid_mask &= ~np.any(np.isinf(data_flat), axis=1)
-        
-        # Remove TauDEM NoData values (check if close to NoData value)
         valid_mask &= ~np.any(data_flat < -1e30, axis=1)
         
         data_clean = data_flat[valid_mask]
@@ -54,7 +78,6 @@ def extract_samples_from_raster(raster_path, n_samples=10000):
             print("\nERROR: No valid pixels found!")
             sys.exit(1)
         
-        # Sample random pixels
         if data_clean.shape[0] > n_samples:
             indices = np.random.choice(data_clean.shape[0], n_samples, replace=False)
             sampled_data = data_clean[indices]
@@ -63,23 +86,12 @@ def extract_samples_from_raster(raster_path, n_samples=10000):
             print(f"Note: Using all {data_clean.shape[0]} valid pixels")
         
         print(f"\nSample data shape: {sampled_data.shape}")
-        print(f"Feature value ranges:")
-        feature_names = [
-            "slope", "elev_5x5_rel", "elev_5x5_std_dev", "slope_5x5_std_dev",
-            "twi_10m", "twi_100m", "dd_s", "dd_h", "dd_v"
-        ]
-        for i, name in enumerate(feature_names):
-            print(f"  {name:20s} [{sampled_data[:, i].min():.2f}, {sampled_data[:, i].max():.2f}]")
         
-        # Create synthetic labels based on TWI (band 4: twi_10m)
-        # High TWI values are more likely to be meadows
-        twi_values = sampled_data[:, 4]  # twi_10m is band 5 (index 4)
-        
-        # Simple threshold: top 10% of TWI values = meadow
+        twi_values = sampled_data[:, 4]  # twi_10m
         twi_threshold = np.percentile(twi_values, 90)
         labels = (twi_values > twi_threshold).astype(int)
         
-        print(f"\nSynthetic labels created (TWI threshold = {twi_threshold:.2f}):")
+        print(f"\nSynthetic labels (TWI threshold = {twi_threshold:.2f}):")
         print(f"  Meadow samples (1): {np.sum(labels == 1)}")
         print(f"  Non-meadow samples (0): {np.sum(labels == 0)}")
         
@@ -128,14 +140,14 @@ def train_model(features, labels, run_num):
     
     # Metrics
     print("Classification Report:")
-    print(classification_report(y_test, y_pred, target_names=['Non-Meadow', 'Meadow']))
+    print(classification_report(y_test, y_pred, target_names=['Non-Wetland', 'Wetland']))
     
     print("\nConfusion Matrix:")
     cm = confusion_matrix(y_test, y_pred)
     print(f"                 Predicted")
-    print(f"               Non-M  Meadow")
-    print(f"Actual Non-M   {cm[0,0]:5d}  {cm[0,1]:5d}")
-    print(f"       Meadow  {cm[1,0]:5d}  {cm[1,1]:5d}")
+    print(f"               Non-W  Wetland")
+    print(f"Actual Non-W   {cm[0,0]:5d}  {cm[0,1]:5d}")
+    print(f"       Wetland {cm[1,0]:5d}  {cm[1,1]:5d}")
     
     auc = roc_auc_score(y_test, y_pred_proba)
     print(f"\nAUC Score: {auc:.3f}")
@@ -171,17 +183,8 @@ def train_model(features, labels, run_num):
 def main(run_num):
     """Main training pipeline"""
     
-    # Input files
-    base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output" / str(run_num)
-    raster_path = base_dir / "features_stacked.tif"
-    
-    if not raster_path.exists():
-        print(f"ERROR: {raster_path} not found!")
-        print("Run stack_features.py first!")
-        sys.exit(1)
-    
-    # Extract samples
-    features, labels = extract_samples_from_raster(str(raster_path), n_samples=10000)
+    # Load training data (real or synthetic)
+    features, labels = load_training_data(run_num)
     
     # Train model
     model = train_model(features, labels, run_num)
@@ -189,7 +192,8 @@ def main(run_num):
     print(f"\n{'='*60}")
     print("Training Complete!")
     print(f"{'='*60}")
-    print("\nNext step: Use the model to predict meadow probabilities across the entire raster")
+    print("\nNext step: Use the model to predict wetland probabilities")
+    print(f"  python predict_meadows.py {run_num}")
 
 if __name__ == "__main__":
     run_num = sys.argv[1] if len(sys.argv) > 1 else "1"
