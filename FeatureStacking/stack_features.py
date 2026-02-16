@@ -105,3 +105,10 @@ def stack_features(run_num):
 if __name__ == "__main__":
     run_num = sys.argv[1] if len(sys.argv) > 1 else "1"
     stack_features(run_num)
+
+    # Optional cleanup
+    print("\nIndividual feature files can now be deleted (optional).")
+    print("They are all combined in features_stacked.tif")
+    print("\nTo keep them for inspection: do nothing")
+    print("To delete them: remove slope.tif, twi_10m.tif, etc. manually")
+    print("  (Keeping for now as they're useful for debugging)")

@@ -11,42 +11,108 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import sys
+from shapely.geometry import box
 
-def load_wetlands(nwi_geojson):
+def load_wetlands(study_bounds):
     """
-    Load only northern California wetlands using spatial filter
+    Load wetlands from Oregon and/or California based on study area location
+    Automatically detects which dataset(s) to use
     """
-    print(f"Loading wetlands data from: {nwi_geojson}")
     
-    # Define bounding box in lat/lon for northern CA
-    min_lon, min_lat = -124.5, 41.0
-    max_lon, max_lat = -121.0, 43.0
+    min_lon, min_lat = study_bounds[0], study_bounds[1]
+    max_lon, max_lat = study_bounds[2], study_bounds[3]
     
-    print(f"Filtering to northern CA only:")
-    print(f"  Longitude: {min_lon} to {max_lon}")
-    print(f"  Latitude: {min_lat} to {max_lat}")
+    print(f"Study area bounds:")
+    print(f"  Longitude: {min_lon:.2f} to {max_lon:.2f}")
+    print(f"  Latitude: {min_lat:.2f} to {max_lat:.2f}")
     
-    from shapely.geometry import box
-    import geopandas as gpd
+    # Determine which state(s) to load based on latitude
+    # Oregon/CA border is at 42°N
+    use_oregon = max_lat >= 42.0
+    use_california = min_lat < 42.5  # Small overlap for border watersheds
     
-    # Create filter box in lat/lon
-    filter_box = box(min_lon, min_lat, max_lon, max_lat)
-    filter_gdf = gpd.GeoDataFrame([1], geometry=[filter_box], crs='EPSG:4326')
+    print(f"\nDatasets to load:")
+    print(f"  Oregon: {'Yes' if use_oregon else 'No'}")
+    print(f"  California: {'Yes' if use_california else 'No'}")
     
-    # Reproject filter to match geodatabase CRS (NAD_1983_Albers)
-    gdb_crs = gpd.read_file(nwi_geojson, layer='CA_Wetlands', rows=1).crs
-    filter_gdf = filter_gdf.to_crs(gdb_crs)
+    wetlands_list = []
     
-    print(f"Filter box reprojected to: {gdb_crs}")
+    # Load Oregon if needed (with spatial filter to avoid memory issues)
+    if use_oregon:
+        print("\nLoading Oregon wetlands...")
+        try:
+            or_gdb = 'OR_geodatabase_wetlands.gdb'
+            
+            # Oregon extent with GENEROUS padding for watersheds
+            # Your full Oregon study area + 0.5 degree buffer
+            or_filter_bounds = box(
+                -125.15,  # min_lon with padding
+                41.3,     # min_lat with padding
+                -121.25,  # max_lon with padding
+                43.85     # max_lat with padding
+            )
+            or_filter_gdf = gpd.GeoDataFrame([1], geometry=[or_filter_bounds], crs='EPSG:4326')
+            
+            print(f"  Oregon filter area (with padding):")
+            print(f"    Longitude: -125.15 to -121.25")
+            print(f"    Latitude: 41.3 to 43.85")
+            
+            # Get CRS and reproject filter
+            or_crs = gpd.read_file(or_gdb, rows=1).crs
+            print(f"  Oregon CRS: {or_crs}")
+            or_filter = or_filter_gdf.to_crs(or_crs).geometry.iloc[0]
+            
+            or_wetlands = gpd.read_file(or_gdb, layer='OR_Wetlands', mask=or_filter)
+            print(f"  ✓ Loaded {len(or_wetlands):,} Oregon wetland polygons")
+            wetlands_list.append(or_wetlands)
+        except Exception as e:
+            print(f"  ⚠ Warning: Could not load Oregon wetlands: {e}")
     
-    # Read with mask in correct projection
-    gdf = gpd.read_file(
-        nwi_geojson, 
-        layer='CA_Wetlands',
-        mask=filter_gdf.geometry.iloc[0]
-    )
+    # Load California if needed (with spatial filter)
+    if use_california:
+        print("\nLoading California wetlands...")
+        try:
+            ca_gdb = 'CA_geodatabase_wetlands.gdb'
+            
+            # California extent - northern CA with padding
+            ca_filter_bounds = box(
+                -125.0,   # min_lon with padding
+                41.0,     # min_lat with padding
+                -121.0,   # max_lon with padding
+                43.0      # max_lat with padding
+            )
+            ca_filter_gdf = gpd.GeoDataFrame([1], geometry=[ca_filter_bounds], crs='EPSG:4326')
+            
+            print(f"  California filter area (northern CA with padding):")
+            print(f"    Longitude: -125.0 to -121.0")
+            print(f"    Latitude: 41.0 to 43.0")
+            
+            # Get CRS and reproject filter
+            ca_crs = gpd.read_file(ca_gdb, layer='CA_Wetlands', rows=1).crs
+            print(f"  California CRS: {ca_crs}")
+            ca_filter = ca_filter_gdf.to_crs(ca_crs).geometry.iloc[0]
+            
+            ca_wetlands = gpd.read_file(
+                ca_gdb,
+                layer='CA_Wetlands',
+                mask=ca_filter
+            )
+            print(f"  ✓ Loaded {len(ca_wetlands):,} California wetland polygons")
+            wetlands_list.append(ca_wetlands)
+        except Exception as e:
+            print(f"  ⚠ Warning: Could not load California wetlands: {e}")
     
-    print(f"Wetland polygons in northern CA: {len(gdf):,}")
+    # Combine datasets
+    if len(wetlands_list) == 0:
+        print("\nERROR: No wetlands loaded!")
+        return None
+    elif len(wetlands_list) == 1:
+        gdf = wetlands_list[0]
+        print(f"\n✓ Total wetlands: {len(gdf):,}")
+    else:
+        print("\nMerging Oregon and California wetlands...")
+        gdf = gpd.pd.concat(wetlands_list, ignore_index=True)
+        print(f"✓ Combined total: {len(gdf):,} wetland polygons")
     
     return gdf
 
@@ -178,12 +244,11 @@ def main(run_num):
     """Main pipeline for preparing training data"""
     
     print(f"\n{'='*60}")
-    print("Preparing Real Training Data from NWI Wetlands")
+    print("Preparing Real Training Data from Wetlands")
     print(f"{'='*60}\n")
     
     # Paths
     base_dir = Path.home() / "Capstone" / "Lost-Meadows"
-    nwi_file = base_dir / "Wetlands" / "CA_geodatabase_wetlands" / "CA_geodatabase_wetlands.gdb"
     output_dir = base_dir / "GEE" / "TIF_Output" / str(run_num)
     
     reference_raster = output_dir / "features_stacked.tif"
@@ -191,17 +256,21 @@ def main(run_num):
     training_csv = output_dir / "training_data_real.csv"
     
     # Check inputs
-    if not nwi_file.exists():
-        print(f"ERROR: {nwi_file} not found!")
-        sys.exit(1)
-    
     if not reference_raster.exists():
         print(f"ERROR: {reference_raster} not found!")
         print("Run feature stacking first!")
         sys.exit(1)
     
-    # Step 1: Load wetlands
-    wetlands = load_wetlands(str(nwi_file))
+    # Get study area bounds from reference raster
+    with rasterio.open(reference_raster) as src:
+        bounds = src.bounds
+        study_bounds = [bounds.left, bounds.bottom, bounds.right, bounds.top]
+    
+    # Step 1: Load wetlands (auto-detects OR/CA)
+    wetlands = load_wetlands(study_bounds)
+    
+    if wetlands is None:
+        sys.exit(1)
     
     # Step 2: Rasterize wetlands
     wetland_raster = rasterize_wetlands(wetlands, str(reference_raster), str(wetland_raster_path))
@@ -243,7 +312,16 @@ def main(run_num):
     print(f"  - Training CSV: {training_csv}")
     print(f"\nNext: Retrain model with real wetland data")
     print(f"  cd ~/Capstone/Lost-Meadows/ModelTraining")
-    print(f"  python train_random_forest.py {run_num} --real-data")
+    print(f"  python train_random_forest.py {run_num}")
+
+    # Clean up wetland mask
+    print("\nCleaning up intermediate files...")
+    if wetland_raster_path.exists():
+        wetland_raster_path.unlink()
+        print(f"  ✓ Deleted wetland_mask.tif (data now in CSV)")
+    
+    print(f"\nOutputs:")
+    print(f"  - Training CSV: {training_csv}")
 
 if __name__ == "__main__":
     # Check for geopandas

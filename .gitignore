@@ -8,6 +8,17 @@ Miniconda3-*.sh
 GEE/TIF_Input/*.tif
 GEE/TIF_Output/**/*.tif
 
+# Geodatabase files (very large - 2.4 GB)
+*.gdb/
+Wetlands/*.gdb/
+Wetlands/CA_geodatabase_wetlands.gdb/
+Wetlands/OR_geodatabase_wetlands.gdb/
+
+# Output directories with generated data
+GEE/TIF_Output/*/
+GEE/TIF_Output/1/
+GEE/TIF_Output/2/
+
 # Temporary files
 *_temp.tif
 dem_*_temp.tif
@@ -18,6 +29,11 @@ twi_*_temp.tif
 # Machine learning models (can be large)
 *.pkl
 *.joblib
+
+# Training data CSVs (can be large)
+*training_data*.csv
+Wetlands/training_data_*.csv
+ModelTraining/training_data_*.csv
 
 # Python cache
 __pycache__/

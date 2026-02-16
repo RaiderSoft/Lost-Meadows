@@ -112,11 +112,26 @@ def resample_back_to_10m(input_100m, reference_10m, output_file):
     print(f"✓ TWI 100m resampled to {ref_width}x{ref_height} (10m resolution)")
 
 if __name__ == "__main__":
+    import sys
+    import glob
+    
     run_num = sys.argv[1] if len(sys.argv) > 1 else "1"
     output_dir = f"../../GEE/TIF_Output/{run_num}"
     
-    dem_filled = f"{output_dir}/3DEP_10m_TEST_watershed_filled.tif"
-    sca_10m = f"{output_dir}/3DEP_10m_TEST_watershed_sca.tif"
+    # Auto-detect filled DEM and SCA files
+    dem_files = glob.glob(f"{output_dir}/*_filled.tif")
+    sca_files = glob.glob(f"{output_dir}/*_sca.tif")
+    
+    if not dem_files:
+        print(f"ERROR: No filled DEM (*_filled.tif) found in {output_dir}")
+        sys.exit(1)
+    
+    if not sca_files:
+        print(f"ERROR: No SCA file (*_sca.tif) found in {output_dir}")
+        sys.exit(1)
+    
+    dem_filled = dem_files[0]
+    sca_10m = sca_files[0]
     twi_10m = f"{output_dir}/twi_10m.tif"
     
     dem_100m = f"{output_dir}/dem_100m_temp.tif"
@@ -124,6 +139,9 @@ if __name__ == "__main__":
     slope_100m = f"{output_dir}/slope_100m_temp.tif"
     twi_100m_temp = f"{output_dir}/twi_100m_temp.tif"
     twi_100m_final = f"{output_dir}/twi_100m.tif"
+    
+    print(f"Input DEM: {dem_filled}")
+    print(f"Input SCA: {sca_10m}\n")
     
     # Process at 100m
     resample_to_100m(dem_filled, dem_100m)
@@ -135,3 +153,12 @@ if __name__ == "__main__":
     resample_back_to_10m(twi_100m_temp, twi_10m, twi_100m_final)
     
     print("\n✓ TWI 100m calculation complete and resampled to 10m!")
+    
+    # Clean up temp files
+    print("\nCleaning up temporary files...")
+    import os
+    temp_files = [dem_100m, sca_100m, slope_100m, twi_100m_temp]
+    for temp_file in temp_files:
+        if os.path.exists(temp_file):
+            os.remove(temp_file)
+            print(f"  ✓ Deleted {os.path.basename(temp_file)}")
