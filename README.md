@@ -217,7 +217,7 @@ This tool helps identify:
 
 ---
 
-## 📖 Documentation
+## Documentation
 
 - **[SETUP.md](SETUP.md)** - Installation guide (Linux/macOS/Windows)
 - **[docs/](docs/)** - Project website (GitHub Pages)
@@ -238,7 +238,6 @@ This tool helps identify:
 
 <div align="center">
 
-**Made with 🌿 for meadow conservation**
 
 [Website](https://your-username.github.io/Lost-Meadows/) • [Issues](https://github.com/your-username/Lost-Meadows/issues) • [Discussions](https://github.com/your-username/Lost-Meadows/discussions)
 
