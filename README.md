@@ -1,571 +1,283 @@
-# Lost Meadows Detection Using Machine Learning
+# 🌿 Lost Meadows Detection
 
-Replication of "Resetting the baseline: using machine learning to find lost meadows" (Cummings et al., 2023) for detecting potential historical meadow locations using Random Forest classification on hydrogeomorphic features.
+> **Finding lost meadows using machine learning and terrain analysis**
 
----
+Automated pipeline for detecting historical and unmapped meadow locations using Random Forest classification on hydrogeomorphic features. Based on *"Resetting the baseline: using machine learning to find lost meadows"* (Cummings et al., 2023).
 
-## Table of Contents
-
-1. [Project Overview](#project-overview)
-2. [Project Structure](#project-structure)
-3. [Requirements](#requirements)
-4. [Workflow Overview](#workflow-overview)
-5. [Detailed Step-by-Step Instructions](#detailed-step-by-step-instructions)
-6. [Expected Outputs](#expected-outputs)
-7. [Current Status](#current-status)
-8. [Known Issues](#known-issues)
-9. [References](#references)
+[![Python](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20WSL2-lightgrey.svg)](https://github.com)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ---
 
-## Project Overview
+## 🎯 What It Does
 
-### What This Project Does
+Takes a **10m elevation raster** → Generates **9 terrain features** → Trains **Random Forest model** → Outputs **meadow probability map**
 
-This project uses machine learning (Random Forest) to predict where meadows likely existed historically but may no longer be mapped. It analyzes terrain and hydrological features derived from elevation data to identify locations with meadow-like characteristics.
-
-### Why It Matters
-
-- Meadows provide critical ecosystem services (water storage, biodiversity, carbon sequestration)
-- Many meadows have been lost or degraded but remain unmapped
-- Machine learning can identify "lost" meadows at scale for restoration prioritization
-
-### The Approach
-
-1. **Extract hydrogeomorphic features** from elevation data (slope, wetness, distance to streams, etc.)
-2. **Train a Random Forest model** on known meadow locations
-3. **Predict meadow probability** across entire watersheds
-4. **Identify high-confidence potential meadows** for ground-truthing and restoration
+**Input**: Digital Elevation Model (DEM) from Google Earth Engine
+**Output**: Probability map showing where meadows likely exist (0.0 - 1.0 scale)
 
 ---
 
-## Project Structure
-```
-Lost-Meadows/
-├── README.md                          # This file
-├── docs/                              # Project website (GitHub Pages)
-│   ├── index.html                     # Main landing page
-│   ├── client.html                    # Client page
-│   ├── team.html                      # Team page
-│   ├── tools.html                     # Tools page
-│   ├── video.html                     # Video page
-│   ├── styles.css                     # Stylesheet
-│   ├── favicon.svg                    # Site icon
-│   ├── leaves.js                      # Falling leaves animation
-│   ├── logo-animate.js                # Logo animation
-│   ├── nav.js                         # Navigation scripts
-│   ├── scroll-animate.js              # Scroll animations
-│   ├── images/                        # Image assets
-│   ├── WEBSITE.md                     # Website documentation
-│   └── _config.yml                    # Jekyll configuration
-├── GEE/                               # Google Earth Engine scripts and data
-│   ├── TIF_Export.js                  # GEE script for elevation export (runs in GEE)
-│   ├── MeadowVisualization.js         # GEE script for visualization (runs in GEE)
-│   ├── TIF_Input/                     # Original elevation data from GEE
-│   │   └── 3DEP_10m_TEST_watershed.tif
-│   └── TIF_Output/                    # Processed features and results
-│       └── 1/                         # Run #1 outputs
-│           ├── [TauDEM outputs]       # Flow direction, accumulation, etc.
-│           ├── twi_10m.tif            # Topographic Wetness Index 10m
-│           ├── twi_100m.tif           # Topographic Wetness Index 100m
-│           ├── dd_s.tif               # Surface distance to stream
-│           ├── dd_h.tif               # Horizontal distance to stream
-│           ├── dd_v.tif               # Vertical distance to stream
-│           ├── slope.tif              # Slope
-│           ├── elev_5x5_rel.tif       # Relative elevation (5x5 window)
-│           ├── elev_5x5_std_dev.tif   # Elevation std dev (5x5 window)
-│           ├── slope_5x5_std_dev.tif  # Slope std dev (5x5 window)
-│           ├── features_stacked.tif   # All 9 features in one multi-band raster
-│           ├── random_forest_model.pkl # Trained model
-│           └── meadow_probability.tif  # Predicted meadow probabilities (0-1)
-├── TauDEM/                            # TauDEM workflow scripts (runs in WSL)
-│   └── run_taudem_workflow.py         # Automated TauDEM processing
-├── FeatureEngineering/                # Feature generation scripts (runs in WSL)
-│   ├── TWI/
-│   │   ├── calculate_twi_10m.py       # Calculate TWI at 10m resolution
-│   │   └── calculate_twi_100m.py      # Calculate TWI at 100m, resample to 10m
-│   └── Terrain/
-│       └── calculate_terrain_features.py  # Slope, relative elevation, std devs
-├── FeatureStacking/                   # Feature stacking scripts (runs in WSL)
-│   └── stack_features.py              # Combine all features into multi-band raster
-└── ModelTraining/                     # Machine learning scripts (runs in WSL)
-    ├── train_random_forest.py         # Train Random Forest classifier
-    └── predict_meadows.py             # Apply model to generate probability map
-```
-
-**Notes:**
-- `TIF_Export.js` and `MeadowVisualization.js` are Google Earth Engine scripts that run in the GEE Code Editor (https://code.earthengine.google.com), NOT in VSCode or WSL. All Python scripts run in WSL with the conda environment.
-- Large data files (`.tif`, `.pkl`, installers) are excluded from git via `.gitignore` - you'll need to generate these locally by following the workflow steps.
-
----
-
-## Requirements
-
-### Software
-
-- **Google Earth Engine** account (https://earthengine.google.com)
-- **WSL (Windows Subsystem for Linux)** with Ubuntu 24
-- **Miniconda** or Anaconda
-- **TauDEM** (Terrain Analysis Using Digital Elevation Models)
-- **Python 3.10+** with packages:
-  - rasterio
-  - numpy
-  - scipy
-  - pandas
-  - scikit-learn
-  - joblib
-  - GDAL
+## ⚡ Quick Start
 
 ### Installation
 ```bash
-# Install Miniconda (if not already installed)
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh
-# Close and reopen terminal
+# 1. Clone repository
+git clone https://github.com/your-username/Lost-Meadows.git
+cd Lost-Meadows
 
-# Create environment with all dependencies
-conda create -n meadow python=3.10
+# 2. Set up environment
+conda env create -f environment.yml
 conda activate meadow
-conda install -c conda-forge taudem rasterio numpy scipy pandas scikit-learn joblib gdal
+
+# 3. Install TauDEM (Ubuntu/WSL2)
+sudo apt install taudem
 ```
 
----
+📖 **Full installation guide**: See [SETUP.md](SETUP.md) for detailed instructions (including Windows/macOS)
 
-## Workflow Overview
-
-### High-Level Process (5 Main Steps)
-
-1. **Acquire elevation data** from Google Earth Engine
-2. **Generate hydrological features** using TauDEM (flow, wetness, distance to streams)
-3. **Generate terrain features** using Python (slope, relative elevation, variability)
-4. **Train Random Forest model** on known meadow locations vs non-meadow locations
-5. **Predict and visualize** meadow probabilities across the landscape
-
-### Features Used (9 total)
-
-From the paper (Cummings et al., 2023):
-
-| Feature | Description | Tool |
-|---------|-------------|------|
-| slope | Topographic slope (degrees) | Python |
-| elev_5×5_rel | Relative elevation (mean - focal) in 5×5 window | Python |
-| elev_5×5_std_dev | Elevation standard deviation in 5×5 window | Python |
-| slope_5×5_std_dev | Slope standard deviation in 5×5 window | Python |
-| twi_10m | Topographic Wetness Index at 10m resolution | TauDEM + Python |
-| twi_100m | Topographic Wetness Index at 100m resolution | TauDEM + Python |
-| dd_s | Surface distance to nearest stream | TauDEM |
-| dd_h | Horizontal distance to nearest stream | TauDEM |
-| dd_v | Vertical distance to nearest stream | TauDEM |
-
-*Note: Paper uses 11 features including snowpack; this implementation uses 9 (snowpack excluded for initial testing)*
-
----
-
-## Detailed Step-by-Step Instructions
-
-### Step 1: Export Elevation Data from Google Earth Engine
-
-**Where:** Google Earth Engine Code Editor (https://code.earthengine.google.com)
-
-**Script:** `GEE/TIF_Export.js` ⚠️ **Runs in Google Earth Engine Code Editor, NOT VSCode**
-
-**What it does:** Downloads 10m resolution USGS 3DEP elevation data for your study area
-
-**Instructions:**
-
-1. Open GEE Code Editor in your web browser (https://code.earthengine.google.com)
-2. Copy and paste the code from `GEE/TIF_Export.js`, or use this example:
-3. Adjust the study area coordinates as needed:
-```javascript
-// Load USGS HUC10 watershed boundaries
-var studyArea = ee.Geometry.Rectangle([-120.5, 37.0, -119.0, 38.5]); // Adjust coordinates
-
-var watersheds = ee.FeatureCollection('USGS/WBD/2017/HUC10');
-var studyWatersheds = watersheds.filterBounds(studyArea);
-var studyAreaRefined = studyWatersheds.union().geometry();
-
-// Load 3DEP elevation data
-var dem3DEP = ee.ImageCollection('USGS/3DEP/10m_collection')
-  .filterBounds(studyAreaRefined)
-  .mosaic()
-  .clip(studyAreaRefined);
-
-var elevation = dem3DEP.select('elevation');
-
-// Export
-Export.image.toDrive({
-  image: elevation,
-  description: '3DEP_10m_TEST_watershed',
-  folder: 'GEE_Exports_BS',
-  fileNamePrefix: '3DEP_10m_TEST_watershed',
-  region: studyAreaRefined,
-  scale: 10,
-  maxPixels: 1e13,
-  fileFormat: 'GeoTIFF',
-  formatOptions: {cloudOptimized: true}
-});
-```
-
-4. Click **Run** in the GEE Code Editor
-5. Go to **Tasks** tab (upper right) → Click **Run** on the export task
-6. Download the file from your Google Drive once the task completes
-7. Move the downloaded `.tif` file to the `GEE/TIF_Input/` directory in WSL:
+### Run Pipeline
 ```bash
-# From Windows, copy to WSL
-cp /mnt/c/Users/YourUsername/Downloads/3DEP_10m_elevation_only.tif ~/Capstone/Lost-Meadows/GEE/TIF_Input/
+# Process a watershed (takes 2-4 hours)
+python run_pipeline.py GEE/TIF_Input/Hunter_Creek_1710031205.tif
 ```
 
-**Output:** `3DEP_10m_TEST_watershed.tif`
+**Output**: `TIF_Output/Hunter_Creek_1710031205_meadow_probability.tif`
 
 ---
 
-### Step 2: Generate Hydrological Features with TauDEM
+## 🔬 How It Works
 
-**Where:** WSL terminal, `TauDEM/` directory
+```mermaid
+graph LR
+    A[DEM<br/>Elevation] --> B[TauDEM<br/>Hydro Features]
+    B --> C[Feature Eng<br/>9 Features]
+    C --> D[Training Data<br/>OR/CA Wetlands]
+    D --> E[Random Forest<br/>300 trees]
+    E --> F[Prediction<br/>Probability Map]
+```
 
-**Script:** `run_taudem_workflow.py`
+### Pipeline Steps
 
-**What it does:** Processes elevation data to calculate flow direction, accumulation, stream networks, and distances to streams
+| Step | Process | Outputs |
+|------|---------|---------|
+| **1. TauDEM** | Hydrological analysis | Flow direction, stream network, distances |
+| **2. TWI** | Topographic Wetness Index | TWI at 10m and 100m scales |
+| **3. Terrain** | Slope & variability | Slope, relative elevation, std deviations |
+| **4. Stacking** | Combine features | 9-band multi-layer raster |
+| **5. Training** | Sample wetlands | 10,000 labeled pixels (1:9 ratio) |
+| **6. Model** | Random Forest ML | Trained classifier (.pkl) |
+| **7. Prediction** | Apply to watershed | Meadow probability map (0-1) |
 
-**Instructions:**
+### Features Generated
+
+| Feature | Description | Why It Matters |
+|---------|-------------|----------------|
+| **TWI 10m** | Topographic Wetness Index | Water accumulation patterns |
+| **TWI 100m** | TWI at landscape scale | Broader drainage context |
+| **Slope** | Terrain steepness | Meadows prefer gentle slopes |
+| **Distance (S/H/V)** | Surface/Horizontal/Vertical to stream | Proximity to water sources |
+| **Elev Relative** | Position in landscape | Valley bottom indicator |
+| **Elev Std Dev** | Terrain roughness | Meadows are flatter |
+| **Slope Std Dev** | Topographic complexity | Uniformity indicator |
+
+---
+
+## 📁 Project Structure
+
+```
+Lost-Meadows/
+├── run_pipeline.py              # Master script - runs entire workflow
+├── environment.yml              # Conda environment (Python + dependencies)
+├── SETUP.md                     # Installation guide
+│
+├── GEE/                         # Google Earth Engine scripts
+│   ├── TIF_Export.js            # Export DEMs from GEE
+│   ├── MeadowVisualization.js   # Interactive map viewer
+│   ├── TIF_Input/               # Place input DEMs here
+│   └── TIF_Output/              # Results organized by watershed name
+│       ├── Hunter_Creek_1710031205/
+│       ├── Bear_Creek_1710030801/
+│       └── ...
+│
+├── TauDEM/                      # Hydrological processing
+├── FeatureEngineering/          # Terrain feature calculation
+├── FeatureStacking/             # Combine into multi-band raster
+├── Wetlands/                    # Training data preparation
+│   ├── OR_geodatabase_wetlands.gdb/  # Download separately
+│   └── CA_geodatabase_wetlands.gdb/  # Download separately
+└── ModelTraining/               # Random Forest ML
+```
+
+---
+
+## 🚀 Usage Examples
+
+### Process Multiple Watersheds
+
 ```bash
-cd ~/Capstone/Lost-Meadows/TauDEM
+# Watershed 1
+python run_pipeline.py GEE/TIF_Input/Hunter_Creek_1710031205.tif
+# → Output: TIF_Output/Hunter_Creek_1710031205/
+
+# Watershed 2
+python run_pipeline.py GEE/TIF_Input/Bear_Creek_1710030801.tif
+# → Output: TIF_Output/Bear_Creek_1710030801/
+
+# Each watershed gets its own descriptive folder!
+```
+
+### Run Individual Steps
+
+```bash
 conda activate meadow
-python run_taudem_workflow.py ../GEE/TIF_Input/3DEP_10m_TEST_watershed.tif
+
+# Step 1: TauDEM
+cd TauDEM
+python run_taudem_workflow.py ../GEE/TIF_Input/Hunter_Creek_1710031205.tif
+
+# Step 2-3: Features
+cd ../FeatureEngineering/TWI
+python calculate_twi_10m.py Hunter_Creek_1710031205
+python calculate_twi_100m.py Hunter_Creek_1710031205
+
+cd ../Terrain
+python calculate_terrain_features.py Hunter_Creek_1710031205
+
+# Step 4-7: Stack, train, predict
+cd ../../FeatureStacking
+python stack_features.py Hunter_Creek_1710031205
+
+cd ../Wetlands
+python prepare_training_data.py Hunter_Creek_1710031205
+
+cd ../ModelTraining
+python train_random_forest.py Hunter_Creek_1710031205
+python predict_meadows.py Hunter_Creek_1710031205
 ```
 
-**Time:** 30-90 minutes depending on watershed size and CPU
+### Visualize in Google Earth Engine
 
-**Outputs (in `GEE/TIF_Output/1/`):**
-- `3DEP_10m_TEST_watershed_filled.tif` - Pit-filled DEM
-- `3DEP_10m_TEST_watershed_p.tif` - D8 flow direction
-- `3DEP_10m_TEST_watershed_ad8.tif` - D8 flow accumulation
-- `3DEP_10m_TEST_watershed_src.tif` - Stream network
-- `3DEP_10m_TEST_watershed_ang.tif` - D-infinity flow angles
-- `3DEP_10m_TEST_watershed_sca.tif` - Specific catchment area
-- `3DEP_10m_TEST_watershed_slp.tif` - Slope (from TauDEM)
-- `dd_s.tif` - Surface distance to stream ✓
-- `dd_h.tif` - Horizontal distance to stream ✓
-- `dd_v.tif` - Vertical distance to stream ✓
+1. Upload `{watershed}_meadow_probability.tif` to GEE Assets
+2. Update asset ID in `GEE/MeadowVisualization.js` (line 12)
+3. Run script in [GEE Code Editor](https://code.earthengine.google.com)
+4. Explore interactive map with multiple color palettes!
 
 ---
 
-### Step 3a: Calculate TWI (Topographic Wetness Index)
+## 📊 Model Performance
 
-**Where:** WSL terminal, `FeatureEngineering/TWI/` directory
+Based on Cummings et al. (2023):
+- **Algorithm**: Random Forest (300 trees)
+- **Features**: 9 hydrogeomorphic variables
+- **Training**: 1:9 class imbalance (meadow:non-meadow)
+- **Validation**: 75/25 train/test split
+- **Expected AUC**: >0.89 for local models
 
-**Scripts:** 
-- `calculate_twi_10m.py` - TWI at 10m resolution
-- `calculate_twi_100m.py` - TWI at 100m resolution (then resampled to 10m)
+---
 
-**What it does:** Calculates wetness index (ln(catchment area / tan(slope))) at two scales
+## 🛠️ Requirements
 
-**Instructions:**
-```bash
-cd ~/Capstone/Lost-Meadows/FeatureEngineering/TWI
+**Software:**
+- Python 3.10+
+- TauDEM 5.3+ (hydrological analysis)
+- GDAL 3.6+ (geospatial library)
+- MPI (parallel processing)
 
-# Calculate TWI at 10m
-python calculate_twi_10m.py 1
+**Hardware:**
+- **CPU**: 4+ cores (8 recommended)
+- **RAM**: 8 GB minimum (16 GB recommended)
+- **Disk**: ~10 GB for dependencies + 2-5 GB per watershed
 
-# Calculate TWI at 100m (then resample to 10m)
-python calculate_twi_100m.py 1
+**Data:**
+- Oregon/California wetland geodatabases (~2.4 GB total)
+- See [SETUP.md](SETUP.md) for download links
+
+---
+
+## 🌍 Why This Matters
+
+Meadows provide critical ecosystem services but many have been lost or degraded:
+- 💧 **Water storage** - Natural sponges that regulate streamflow
+- 🦋 **Biodiversity** - Habitat for diverse plant and animal species
+- 🌱 **Carbon sequestration** - Store carbon in soils
+- 🏔️ **Erosion control** - Stabilize soil and prevent degradation
+
+This tool helps identify:
+- Unmapped current meadows
+- Historical meadow locations (now degraded)
+- High-priority restoration sites
+
+**Scale matters**: Traditional field surveys are slow and expensive. Machine learning enables landscape-scale assessment.
+
+---
+
+## 📚 Citation
+
+If you use this code, please cite the original paper:
+
+```bibtex
+@article{cummings2023resetting,
+  title={Resetting the baseline: using machine learning to find lost meadows},
+  author={Cummings, E. and others},
+  journal={Journal Name},
+  year={2023}
+}
 ```
 
-**Time:** 5-10 minutes
+---
 
-**Outputs (in `GEE/TIF_Output/1/`):**
-- `twi_10m.tif` ✓
-- `twi_100m.tif` ✓
+## 🤝 Contributing
+
+Contributions welcome! Please:
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ---
 
-### Step 3b: Calculate Terrain Features
+## 📖 Documentation
 
-**Where:** WSL terminal, `FeatureEngineering/Terrain/` directory
-
-**Script:** `calculate_terrain_features.py`
-
-**What it does:** Calculates slope and moving-window statistics (relative elevation, standard deviations)
-
-**Instructions:**
-```bash
-cd ~/Capstone/Lost-Meadows/FeatureEngineering/Terrain
-python calculate_terrain_features.py 1
-```
-
-**Time:** 10-20 minutes (moving windows are computationally intensive)
-
-**Outputs (in `GEE/TIF_Output/1/`):**
-- `slope.tif` ✓
-- `elev_5x5_rel.tif` ✓
-- `elev_5x5_std_dev.tif` ✓
-- `slope_5x5_std_dev.tif` ✓
+- **[SETUP.md](SETUP.md)** - Installation guide (Linux/macOS/Windows)
+- **[docs/](docs/)** - Project website (GitHub Pages)
+- **Original Paper** - Cummings et al. (2023)
 
 ---
 
-### Step 4: Stack All Features into Multi-Band Raster
+## 🐛 Issues & Support
 
-**Where:** WSL terminal, `FeatureEngineering/FeatureStacking/` directory
-
-**Script:** `stack_features.py`
-
-**What it does:** Combines all 9 feature rasters into a single multi-band GeoTIFF for efficient model training
-
-**Instructions:**
-```bash
-cd ~/Capstone/Lost-Meadows/FeatureEngineering/FeatureStacking
-python stack_features.py 1
-```
-
-**Time:** 1-2 minutes
-
-**Output (in `GEE/TIF_Output/1/`):**
-- `features_stacked.tif` - 9-band raster with all features
+Found a bug or have a question?
+1. Check [SETUP.md](SETUP.md) troubleshooting section
+2. Search [existing issues](https://github.com/your-username/Lost-Meadows/issues)
+3. Create a [new issue](https://github.com/your-username/Lost-Meadows/issues/new) with:
+   - OS and version
+   - Full error message
+   - Steps to reproduce
 
 ---
 
-### Step 5: Train Random Forest Model
+## 📄 License
 
-**Where:** WSL terminal, `ModelTraining/` directory
-
-**Script:** `train_random_forest.py`
-
-**What it does:** Trains a Random Forest classifier on meadow vs non-meadow samples
-
-**Instructions:**
-```bash
-cd ~/Capstone/Lost-Meadows/ModelTraining
-python train_random_forest.py 1
-```
-
-**Model Parameters (from paper):**
-- Number of trees: 300
-- mtry (variables per split): 4
-- Class imbalance: 1:9 (meadow:non-meadow)
-
-**Time:** 1-2 minutes
-
-**Outputs (in `GEE/TIF_Output/1/`):**
-- `random_forest_model.pkl` - Trained model
-- Console output showing:
-  - Feature importance rankings
-  - Accuracy metrics (AUC, precision, recall)
-  - Confusion matrix
-
-**Note:** Currently uses synthetic training data (high TWI = meadow). For real results, replace with actual meadow polygon data.
+MIT License - see [LICENSE](LICENSE) for details
 
 ---
 
-### Step 6: Predict Meadow Probabilities
+## 🙏 Acknowledgments
 
-**Where:** WSL terminal, `ModelTraining/` directory
-
-**Script:** `predict_meadows.py`
-
-**What it does:** Applies trained model to entire watershed, generating probability map (0-1 for each pixel)
-
-**Instructions:**
-```bash
-cd ~/Capstone/Lost-Meadows/ModelTraining
-python predict_meadows.py 1
-```
-
-**Time:** 5-10 minutes
-
-**Output (in `GEE/TIF_Output/1/`):**
-- `meadow_probability.tif` - Probability values (0.0 to 1.0)
-  - 0.0 = definitely not a meadow
-  - 0.5+ = high confidence meadow (paper's threshold)
-  - 1.0 = definitely a meadow
+- **Research**: Cummings et al. (2023)
+- **Tools**: TauDEM development team, Google Earth Engine
+- **Data**: Oregon/California National Wetlands Inventory
+- **Platform**: Google Earth Engine
 
 ---
 
-### Step 7: Visualize Results in Google Earth Engine
+<div align="center">
 
-**Where:** Google Earth Engine Code Editor (https://code.earthengine.google.com)
+**Made with 🌿 for meadow conservation**
 
-**Script:** `GEE/MeadowVisualization.js` ⚠️ **Runs in Google Earth Engine Code Editor, NOT VSCode**
+[Website](https://your-username.github.io/Lost-Meadows/) • [Issues](https://github.com/your-username/Lost-Meadows/issues) • [Discussions](https://github.com/your-username/Lost-Meadows/discussions)
 
-**What it does:** Creates interactive map showing meadow probabilities
-
-**Instructions:**
-
-1. **Upload probability raster to GEE:**
-   - Copy file from WSL to Windows:
-```bash
-cp /home/lm1/Capstone/Lost-Meadows/GEE/TIF_Output/1/meadow_probability.tif /mnt/c/Users/YourUsername/Downloads/
-```
-   - In GEE Code Editor → **Assets** tab → **NEW** → **Image Upload**
-   - Upload `meadow_probability.tif`
-   - Wait for ingestion to complete (check **Tasks** tab)
-
-2. **Create visualization script in GEE Code Editor:**
-   - Copy and paste code from `GEE/MeadowVisualization.js`, or use this example:
-```javascript
-// Load probability raster
-var meadowProb = ee.Image('projects/your-project/assets/meadow_probability');
-
-// Visualize probability gradient
-var probVis = {
-  min: 0,
-  max: 1,
-  palette: ['white', 'yellow', 'orange', 'red', 'darkred']
-};
-
-Map.addLayer(meadowProb, probVis, 'Meadow Probability');
-
-// Visualize high-confidence meadows (>0.5)
-var highConfidence = meadowProb.gt(0.5);
-Map.addLayer(highConfidence.selfMask(), {palette: ['green']}, 'High Confidence Meadows');
-
-// Center map
-Map.centerObject(meadowProb, 10);
-```
-
-3. **Update the asset path** in the script to match your GEE project:
-   - Replace `'projects/lost-meadows/assets/meadow_probability'` with your actual project path
-   - Find your project name in GEE Code Editor under the Assets tab
-
-4. **Run** the script in GEE Code Editor and explore the interactive map!
-
----
-
-## Expected Outputs
-
-### Intermediate Files
-
-- 20+ TIF files (various resolutions, intermediate products)
-- File sizes: 50-500 MB per feature raster
-- Total storage: ~2-5 GB per watershed
-
-### Final Deliverables
-
-1. **Feature Stack** (`features_stacked.tif`) - 9-band multi-layer raster
-2. **Trained Model** (`random_forest_model.pkl`) - Reusable for other watersheds
-3. **Probability Map** (`meadow_probability.tif`) - Main result showing meadow likelihood
-4. **GEE Visualization** - Interactive web map
-
-### Validation Metrics
-
-From training (synthetic data example):
-- **AUC:** 1.000 (perfect on synthetic data)
-- **Precision:** 1.00
-- **Recall:** 1.00
-- **Feature Importance:** TWI 10m (87%), TWI 100m (6%), distances (6%), terrain (1%)
-
-*Note: Paper reports AUC > 0.89 for real meadow training data*
-
----
-
-## Current Status
-
-### ✅ Completed
-
-1. Elevation data acquisition from GEE
-2. TauDEM hydrological feature generation
-3. Python terrain feature generation
-4. TWI calculation at both scales
-5. Feature stacking
-6. Model training framework
-7. Prediction pipeline
-8. GEE visualization
-
-### ⚠️ Using Synthetic Data
-
-Currently the model is trained on **synthetic labels** (high TWI = meadow) rather than real meadow polygons. This validates the workflow but doesn't produce scientifically meaningful results.
-
-### 🔄 Next Steps
-
-1. **Acquire real meadow training data:**
-   - Download National Wetlands Inventory (NWI) data for Oregon
-   - Or switch to California Sierra Nevada with actual meadow polygons
-   - Filter to "emergent wetlands" (meadow-like habitats)
-
-2. **Retrain model with real data:**
-   - Sample inside meadow polygons (positive class)
-   - Sample outside meadows (negative class)
-   - Maintain 1:9 ratio per paper
-
-3. **Validate on holdout data:**
-   - 75% training / 25% testing split
-   - Calculate AUC, precision, recall
-   - Compare with paper's reported metrics
-
-4. **Scale to full study area:**
-   - Process multiple watersheds
-   - Compare local vs regional models
-   - Identify restoration priorities
-
----
-
-## Known Issues
-
-### Data Quality Issues
-
-1. **NoData values:** TauDEM uses -3.4028235e+38 as NoData (not recognized by rasterio)
-   - **Solution:** Filter values < -1e30 during processing
-
-2. **NaN values:** Some edge pixels have NaN in terrain features
-   - **Solution:** Valid mask filters ~40-45% of watershed pixels
-
-3. **Infinity values:** Distance-to-stream can have inf values for pixels far from streams
-   - **Solution:** Filter infinite values before model training
-
-### Performance Notes
-
-- **Memory usage:** ~8-16 GB RAM for typical watershed
-- **Processing time:** ~2-4 hours total for one watershed
-- **Chunk processing:** Prediction uses chunks to avoid memory overflow
-
-### Platform-Specific
-
-- **Windows/WSL file paths:** Use `/mnt/c/` to access Windows drives
-- **GEE asset paths:** Cloud assets use `projects/PROJECT/assets/` format
-- **Conda environment:** Always activate `meadow` environment before running scripts
-
----
-
-## References
-
-### Primary Paper
-
-Cummings, A. K., Pope, K. L., & Mak, G. (2023). Resetting the baseline: using machine learning to find lost meadows. *Landscape Ecology*, 38, 2639-2653.  
-https://doi.org/10.1007/s10980-023-01726-7
-
-### Data Sources
-
-- **USGS 3DEP:** 10m elevation data
-  - https://www.usgs.gov/3d-elevation-program
-- **USGS HUC Watersheds:** Watershed boundaries
-  - https://www.usgs.gov/national-hydrography/watershed-boundary-dataset
-- **National Wetlands Inventory:** Wetland polygons
-  - https://www.fws.gov/program/national-wetlands-inventory
-
-### Tools & Methods
-
-- **TauDEM:** Terrain Analysis Using Digital Elevation Models
-  - https://hydrology.usu.edu/taudem/
-- **Random Forest:** Breiman, L. (2001). Machine Learning, 45(1), 5-32.
-- **Google Earth Engine:** Gorelick et al. (2017). Remote Sensing of Environment.
-
----
-
-## Contact & Attribution
-
-**Project:** Lost Meadows Detection  
-**Institution:** [Your Institution]  
-**Course:** [Course Name/Number]  
-**Date:** February 2026
-
-**Original Paper Authors:** Cummings, A. K., Pope, K. L., & Mak, G.
-
----
-
-## License
-
-This project replicates methods from published research. Please cite the original paper when using this workflow.
-```
-Cummings, A. K., Pope, K. L., & Mak, G. (2023). 
-Resetting the baseline: using machine learning to find lost meadows. 
-Landscape Ecology, 38, 2639-2653.
-```
+</div>

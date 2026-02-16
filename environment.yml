@@ -1,0 +1,38 @@
+name: meadow
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # Python version
+  - python=3.10
+
+  # Core geospatial libraries
+  - gdal=3.6
+  - rasterio=1.3
+  - geopandas=0.14
+  - fiona=1.9
+
+  # Scientific computing
+  - numpy=1.24
+  - scipy=1.11
+  - pandas=2.0
+
+  # Machine learning
+  - scikit-learn=1.3
+  - joblib=1.3
+
+  # Parallel processing
+  - mpi4py=3.1
+
+  # Utilities
+  - tqdm=4.66
+
+  # Development tools (optional)
+  - jupyter=1.0
+  - ipython=8.14
+  - matplotlib=3.7
+
+  # Pip packages (if any not available via conda)
+  - pip
+  - pip:
+    - ee  # Google Earth Engine API (if needed)
