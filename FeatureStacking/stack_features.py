@@ -9,12 +9,17 @@ import os
 import sys
 from pathlib import Path
 
-def stack_features(run_num):
-    """Stack all 10 features into one multi-band raster"""
-    
+def stack_features(watershed_name):
+    """Stack all 9 features into one multi-band raster"""
+
     # Use absolute path from home directory
-    base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output" / str(run_num)
+    base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output" / watershed_name
     output_dir = str(base_dir)
+
+    if not base_dir.exists():
+        print(f"ERROR: Output directory not found: {output_dir}")
+        print("Make sure you've run all feature engineering steps first!")
+        sys.exit(1)
     
     # Define all feature files in the order they should be stacked
     feature_files = [
@@ -42,7 +47,7 @@ def stack_features(run_num):
     ]
     
     print(f"\n{'='*60}")
-    print(f"Stacking Features - Run #{run_num}")
+    print(f"Stacking Features - {watershed_name}")
     print(f"{'='*60}\n")
     
     # Check all files exist
@@ -103,8 +108,23 @@ def stack_features(run_num):
     print("\nNext step: Convert to CSV or train model directly from raster")
 
 if __name__ == "__main__":
-    run_num = sys.argv[1] if len(sys.argv) > 1 else "1"
-    stack_features(run_num)
+    if len(sys.argv) < 2:
+        print("Usage: python stack_features.py <watershed_name>")
+        print("\nExample:")
+        print("  python stack_features.py Bear_Creek_Watershed_10m")
+        # Auto-detect if only one watershed directory exists
+        base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output"
+        watersheds = [d.name for d in base_dir.iterdir() if d.is_dir() and not d.name.startswith('.')]
+        if len(watersheds) == 1:
+            watershed_name = watersheds[0]
+            print(f"\nAuto-detected: {watershed_name}")
+        else:
+            print(f"\nAvailable watersheds: {', '.join(watersheds)}")
+            sys.exit(1)
+    else:
+        watershed_name = sys.argv[1]
+
+    stack_features(watershed_name)
 
     # Optional cleanup
     print("\nIndividual feature files can now be deleted (optional).")

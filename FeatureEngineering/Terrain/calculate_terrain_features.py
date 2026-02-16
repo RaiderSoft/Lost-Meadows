@@ -86,23 +86,28 @@ def calculate_slope(dem, profile):
     
     return slope_deg
 
-def main(run_num):
+def main(watershed_name):
     """Calculate all terrain features"""
-    
-    output_dir = f"../../GEE/TIF_Output/{run_num}"
-    
+
+    output_dir = f"../../GEE/TIF_Output/{watershed_name}"
+
+    if not os.path.exists(output_dir):
+        print(f"ERROR: Output directory not found: {output_dir}")
+        print("Make sure you've run the TauDEM workflow first!")
+        sys.exit(1)
+
     # Auto-detect the filled DEM in the output directory
     dem_files = glob.glob(f"{output_dir}/*_filled.tif")
-    
+
     if not dem_files:
         print(f"ERROR: No filled DEM (*_filled.tif) found in {output_dir}")
         print("Run TauDEM workflow first!")
         sys.exit(1)
-    
+
     dem_file = dem_files[0]
-    
+
     print(f"\n{'='*60}")
-    print(f"Calculating Terrain Features - Run #{run_num}")
+    print(f"Calculating Terrain Features - {watershed_name}")
     print(f"{'='*60}\n")
     print(f"Using DEM: {dem_file}\n")
     
@@ -162,6 +167,53 @@ def main(run_num):
     print("  - slope.tif")
     print("  - slope_5x5_std_dev.tif")
 
+    # Clean up TauDEM intermediate files (now that all features are done)
+    print(f"\n{'='*60}")
+    print("Cleaning up TauDEM intermediate files...")
+    print(f"{'='*60}")
+
+    # Get all TauDEM intermediate files to delete
+    from pathlib import Path
+    output_path = Path(output_dir)
+
+    # Find all files matching TauDEM patterns (except dd_s, dd_h, dd_v which are features)
+    taudem_patterns = ['*_filled.tif', '*_p.tif', '*_ad8.tif', '*_src.tif',
+                       '*_ang.tif', '*_sd8.tif', '*_sca.tif', '*_slp.tif']
+
+    deleted_count = 0
+    for pattern in taudem_patterns:
+        for file in output_path.glob(pattern):
+            try:
+                file.unlink()
+                print(f"  ✓ Deleted {file.name}")
+                deleted_count += 1
+            except Exception as e:
+                print(f"  ⚠ Could not delete {file.name}: {e}")
+
+    if deleted_count > 0:
+        print(f"\n✓ Cleaned up {deleted_count} TauDEM intermediate files")
+    else:
+        print(f"\n✓ No TauDEM intermediate files to clean up")
+
+    print(f"\nOnly feature files remain in output directory")
+
 if __name__ == "__main__":
-    run_num = sys.argv[1] if len(sys.argv) > 1 else "1"
-    main(run_num)
+    from pathlib import Path
+
+    if len(sys.argv) < 2:
+        print("Usage: python calculate_terrain_features.py <watershed_name>")
+        print("\nExample:")
+        print("  python calculate_terrain_features.py Bear_Creek_Watershed_10m")
+        # Auto-detect if only one watershed directory exists
+        base_dir = Path("../../GEE/TIF_Output")
+        watersheds = [d.name for d in base_dir.iterdir() if d.is_dir() and not d.name.startswith('.')]
+        if len(watersheds) == 1:
+            watershed_name = watersheds[0]
+            print(f"\nAuto-detected: {watershed_name}")
+        else:
+            print(f"\nAvailable watersheds: {', '.join(watersheds)}")
+            sys.exit(1)
+    else:
+        watershed_name = sys.argv[1]
+
+    main(watershed_name)

@@ -108,25 +108,31 @@ def predict_probabilities(features_path, model_path, output_path, chunk_size=100
         
         return probabilities
 
-def main(run_num):
+def main(watershed_name):
     """Main prediction pipeline"""
-    
-    base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output" / str(run_num)
-    
+
+    base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output" / watershed_name
+
+    if not base_dir.exists():
+        print(f"ERROR: Output directory not found: {base_dir}")
+        print("Make sure you've run the full pipeline first!")
+        sys.exit(1)
+
     features_path = base_dir / "features_stacked.tif"
     model_path = base_dir / "random_forest_model.pkl"
-    output_path = base_dir / "meadow_probability.tif"
-    
+    output_path = base_dir / f"{watershed_name}_meadow_probability.tif"
+
     # Check inputs exist
     if not features_path.exists():
         print(f"ERROR: {features_path} not found!")
+        print("Run feature stacking first!")
         sys.exit(1)
-    
+
     if not model_path.exists():
         print(f"ERROR: {model_path} not found!")
         print("Run train_random_forest.py first!")
         sys.exit(1)
-    
+
     # Run prediction
     probabilities = predict_probabilities(
         str(features_path),
@@ -134,15 +140,34 @@ def main(run_num):
         str(output_path),
         chunk_size=500
     )
-    
+
     print(f"\n{'='*60}")
     print("Prediction Complete!")
     print(f"{'='*60}")
     print(f"\nOutput: {output_path}")
+    print(f"\nFinal output file: {watershed_name}_meadow_probability.tif")
     print("\nNext steps:")
-    print("  1. Upload meadow_probability.tif to Google Earth Engine")
+    print(f"  1. Upload {watershed_name}_meadow_probability.tif to Google Earth Engine")
     print("  2. Create GEE app to visualize results")
 
 if __name__ == "__main__":
-    run_num = sys.argv[1] if len(sys.argv) > 1 else "1"
-    main(run_num)
+    import sys
+    from pathlib import Path
+
+    if len(sys.argv) < 2:
+        print("Usage: python predict_meadows.py <watershed_name>")
+        print("\nExample:")
+        print("  python predict_meadows.py Bear_Creek_Watershed_10m")
+        # Auto-detect if only one watershed directory exists
+        base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output"
+        watersheds = [d.name for d in base_dir.iterdir() if d.is_dir() and not d.name.startswith('.')]
+        if len(watersheds) == 1:
+            watershed_name = watersheds[0]
+            print(f"\nAuto-detected: {watershed_name}")
+        else:
+            print(f"\nAvailable watersheds: {', '.join(watersheds)}")
+            sys.exit(1)
+    else:
+        watershed_name = sys.argv[1]
+
+    main(watershed_name)
