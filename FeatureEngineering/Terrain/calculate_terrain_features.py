@@ -167,35 +167,8 @@ def main(watershed_name):
     print("  - slope.tif")
     print("  - slope_5x5_std_dev.tif")
 
-    # Clean up TauDEM intermediate files (now that all features are done)
-    print(f"\n{'='*60}")
-    print("Cleaning up TauDEM intermediate files...")
-    print(f"{'='*60}")
-
-    # Get all TauDEM intermediate files to delete
-    from pathlib import Path
-    output_path = Path(output_dir)
-
-    # Find all files matching TauDEM patterns (except dd_s, dd_h, dd_v which are features)
-    taudem_patterns = ['*_filled.tif', '*_p.tif', '*_ad8.tif', '*_src.tif',
-                       '*_ang.tif', '*_sd8.tif', '*_sca.tif', '*_slp.tif']
-
-    deleted_count = 0
-    for pattern in taudem_patterns:
-        for file in output_path.glob(pattern):
-            try:
-                file.unlink()
-                print(f"  ✓ Deleted {file.name}")
-                deleted_count += 1
-            except Exception as e:
-                print(f"  ⚠ Could not delete {file.name}: {e}")
-
-    if deleted_count > 0:
-        print(f"\n✓ Cleaned up {deleted_count} TauDEM intermediate files")
-    else:
-        print(f"\n✓ No TauDEM intermediate files to clean up")
-
-    print(f"\nOnly feature files remain in output directory")
+    print(f"\nNote: TauDEM intermediate files (*_filled, *_sca, *_slp, etc.) are kept")
+    print("      for advanced features calculation. They'll be cleaned up after that.")
 
 if __name__ == "__main__":
     from pathlib import Path

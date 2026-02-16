@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 def stack_features(watershed_name):
-    """Stack all 9 features into one multi-band raster"""
+    """Stack all 20 features into one multi-band raster"""
 
     # Use absolute path from home directory
     base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output" / watershed_name
@@ -20,9 +20,10 @@ def stack_features(watershed_name):
         print(f"ERROR: Output directory not found: {output_dir}")
         print("Make sure you've run all feature engineering steps first!")
         sys.exit(1)
-    
+
     # Define all feature files in the order they should be stacked
     feature_files = [
+        # Original 9 features
         f"{output_dir}/slope.tif",                          # 1. Slope
         f"{output_dir}/elev_5x5_rel.tif",                   # 2. Relative elevation
         f"{output_dir}/elev_5x5_std_dev.tif",               # 3. Elevation std dev
@@ -32,9 +33,23 @@ def stack_features(watershed_name):
         f"{output_dir}/dd_s.tif",                           # 7. Surface distance to stream
         f"{output_dir}/dd_h.tif",                           # 8. Horizontal distance to stream
         f"{output_dir}/dd_v.tif",                           # 9. Vertical distance to stream
+
+        # New 11 advanced features
+        f"{output_dir}/aspect.tif",                         # 10. Aspect (slope direction)
+        f"{output_dir}/curvature_profile.tif",              # 11. Profile curvature
+        f"{output_dir}/curvature_plan.tif",                 # 12. Plan curvature
+        f"{output_dir}/elevation.tif",                      # 13. Elevation (absolute)
+        f"{output_dir}/tpi_3x3.tif",                        # 14. TPI 3x3
+        f"{output_dir}/tpi_11x11.tif",                      # 15. TPI 11x11
+        f"{output_dir}/tpi_21x21.tif",                      # 16. TPI 21x21
+        f"{output_dir}/tri.tif",                            # 17. TRI
+        f"{output_dir}/elev_std_3x3.tif",                   # 18. Elevation std dev 3x3
+        f"{output_dir}/elev_std_9x9.tif",                   # 19. Elevation std dev 9x9
+        f"{output_dir}/slope_std_9x9.tif",                  # 20. Slope std dev 9x9
     ]
-    
+
     feature_names = [
+        # Original 9
         "slope",
         "elev_5x5_rel",
         "elev_5x5_std_dev",
@@ -43,7 +58,20 @@ def stack_features(watershed_name):
         "twi_100m",
         "dd_s",
         "dd_h",
-        "dd_v"
+        "dd_v",
+
+        # New 11
+        "aspect",
+        "curvature_profile",
+        "curvature_plan",
+        "elevation",
+        "tpi_3x3",
+        "tpi_11x11",
+        "tpi_21x21",
+        "tri",
+        "elev_std_3x3",
+        "elev_std_9x9",
+        "slope_std_9x9"
     ]
     
     print(f"\n{'='*60}")
