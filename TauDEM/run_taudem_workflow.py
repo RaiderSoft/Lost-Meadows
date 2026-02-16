@@ -62,8 +62,8 @@ def main(input_dem):
     base = Path(input_dem).stem
 
     # Number of cores (adjust based on your CPU)
-    # Using 8 out of 16 available cores - good balance of speed and system responsiveness
-    ncores = 8
+    # Using 4 out of 8 available cores - good balance of speed and system responsiveness
+    ncores = 4
 
     print(f"\n{'='*60}")
     print(f"TauDEM Workflow - {watershed_name}")

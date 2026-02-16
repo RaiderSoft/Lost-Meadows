@@ -56,6 +56,10 @@ def run_step(description, command, cwd=None):
 
     return result
 
+def get_repo_root():
+    # ModelTraining/train_random_forest.py
+    return Path(__file__).resolve().parents[1]
+
 def main(input_dem):
     """Run the complete pipeline"""
 
@@ -68,7 +72,8 @@ def main(input_dem):
     watershed_name = Path(input_dem).stem
 
     # Get absolute paths
-    base_dir = Path.home() / "Capstone" / "Lost-Meadows"
+    repo_root = get_repo_root()
+    base_dir = repo_root
     input_dem_abs = Path(input_dem).absolute()
 
     print(f"\n{'='*70}")
@@ -169,8 +174,11 @@ if __name__ == "__main__":
         print("\nExample:")
         print("  python run_pipeline.py GEE/TIF_Input/Bear_Creek_Watershed_10m.tif")
         print("\nAvailable DEMs in TIF_Input:")
+        
+        # Adjustment for file pathing
+        repo_root = get_repo_root()
 
-        tif_input = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Input"
+        tif_input = repo_root / "GEE" / "TIF_Input"
         if tif_input.exists():
             tif_files = sorted(tif_input.glob("*.tif"))
             if tif_files:
