@@ -50,19 +50,30 @@ def calculate_twi(sca_file, slope_file, output_file):
     print(f"  Median: {np.median(twi[np.isfinite(twi)]):.2f}")
 
 if __name__ == "__main__":
-    # Default: process run 1
+    import sys
+    import glob
+    
     run_num = sys.argv[1] if len(sys.argv) > 1 else "1"
+    output_dir = f"../../GEE/TIF_Output/{run_num}"
     
-    output_dir = f"../GEE/TIF_Output/{run_num}"
+    # Auto-detect SCA and slope files
+    sca_files = glob.glob(f"{output_dir}/*_sca.tif")
+    slope_files = glob.glob(f"{output_dir}/*_slp.tif")
     
-    sca_file = f"{output_dir}/3DEP_10m_TEST_watershed_sca.tif"
-    slope_file = f"{output_dir}/3DEP_10m_TEST_watershed_slp.tif"
-    output_file = f"{output_dir}/twi_10m.tif"
-    
-    if not os.path.exists(sca_file):
-        print(f"ERROR: {sca_file} not found!")
-        print("Usage: python calculate_twi.py [run_number]")
+    if not sca_files:
+        print(f"ERROR: No SCA file (*_sca.tif) found in {output_dir}")
         sys.exit(1)
     
+    if not slope_files:
+        print(f"ERROR: No slope file (*_slp.tif) found in {output_dir}")
+        sys.exit(1)
+    
+    sca_file = sca_files[0]
+    slope_file = slope_files[0]
+    output_file = f"{output_dir}/twi_10m.tif"
+    
+    print(f"Input SCA: {sca_file}")
+    print(f"Input slope: {slope_file}")
+    print(f"Output: {output_file}\n")
+    
     calculate_twi(sca_file, slope_file, output_file)
-    print("\n✓ TWI calculation complete!")

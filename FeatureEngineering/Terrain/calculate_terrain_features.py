@@ -12,26 +12,35 @@ import numpy as np
 from scipy.ndimage import uniform_filter, generic_filter
 import sys
 import os
+import glob
 
 def calculate_relative_elevation(elevation, window_size=5):
     """Calculate relative elevation: mean of window minus focal pixel"""
     print("Calculating relative elevation...")
     
-    # Handle NaN values by temporarily replacing with a fill value
+    # Handle NaN values by temporarily replacing with median (more robust than mean)
     mask = np.isnan(elevation)
-    elevation_filled = elevation.copy()
-    elevation_filled[mask] = np.nanmean(elevation)
+    valid_values = elevation[~mask]
     
-    # Calculate mean in window
-    mean_elev = uniform_filter(elevation_filled, size=window_size, mode='reflect')
+    if len(valid_values) == 0:
+        print("ERROR: No valid elevation values!")
+        return elevation
+    
+    fill_value = np.median(valid_values)
+    elevation_filled = elevation.copy()
+    elevation_filled[mask] = fill_value
+    
+    # Calculate mean in window using float64 to avoid overflow
+    elevation_float = elevation_filled.astype(np.float64)
+    mean_elev = uniform_filter(elevation_float, size=window_size, mode='reflect')
     
     # Relative elevation = mean - focal pixel
-    rel_elev = mean_elev - elevation_filled
+    rel_elev = mean_elev - elevation_float
     
     # Restore NaN where original was NaN
     rel_elev[mask] = np.nan
     
-    return rel_elev
+    return rel_elev.astype(np.float32)
 
 def calculate_std_dev(data, window_size=5):
     """Calculate standard deviation in moving window"""
@@ -40,7 +49,7 @@ def calculate_std_dev(data, window_size=5):
     # Handle NaN values
     mask = np.isnan(data)
     data_filled = data.copy()
-    data_filled[mask] = np.nanmean(data)
+    data_filled[mask] = np.nanmedian(data)
     
     def std_func(values):
         return np.std(values)
@@ -63,7 +72,7 @@ def calculate_slope(dem, profile):
     # Create a version without NaN for gradient calculation
     mask = np.isnan(dem)
     dem_filled = dem.copy()
-    dem_filled[mask] = np.nanmean(dem)
+    dem_filled[mask] = np.nanmedian(dem)
     
     # Calculate gradients
     dy, dx = np.gradient(dem_filled, pixel_size)
@@ -80,28 +89,37 @@ def calculate_slope(dem, profile):
 def main(run_num):
     """Calculate all terrain features"""
     
-    input_dir = f"../../GEE/TIF_Input"
     output_dir = f"../../GEE/TIF_Output/{run_num}"
     
-    # Input elevation file (original DEM)
-    dem_file = f"{input_dir}/3DEP_10m_TEST_watershed.tif"
+    # Auto-detect the filled DEM in the output directory
+    dem_files = glob.glob(f"{output_dir}/*_filled.tif")
     
-    if not os.path.exists(dem_file):
-        print(f"ERROR: {dem_file} not found!")
+    if not dem_files:
+        print(f"ERROR: No filled DEM (*_filled.tif) found in {output_dir}")
+        print("Run TauDEM workflow first!")
         sys.exit(1)
+    
+    dem_file = dem_files[0]
     
     print(f"\n{'='*60}")
     print(f"Calculating Terrain Features - Run #{run_num}")
     print(f"{'='*60}\n")
+    print(f"Using DEM: {dem_file}\n")
     
     # Read elevation data
-    print(f"Reading {dem_file}...")
     with rasterio.open(dem_file) as src:
         elevation = src.read(1)
         profile = src.profile
     
+    # CRITICAL: Replace TauDEM NoData values with NaN
+    print("Cleaning TauDEM NoData values...")
+    nodata_mask = elevation > 1e10  # Any huge value is NoData
+    print(f"  Found {np.sum(nodata_mask):,} NoData pixels")
+    elevation[nodata_mask] = np.nan
+    
     print(f"DEM shape: {elevation.shape}")
     print(f"Valid pixels: {np.sum(~np.isnan(elevation)):,}")
+    print(f"Elevation range: {np.nanmin(elevation):.2f} to {np.nanmax(elevation):.2f}\n")
     
     # 1. Relative elevation (5x5 window)
     rel_elev = calculate_relative_elevation(elevation, window_size=5)

@@ -145,6 +145,35 @@ def main(input_dem, run_number=None):
     print(f"  - {base}_slp.tif (slope)")
     print("\nNext: Run calculate_twi.py to generate TWI layers")
 
+    print(f"\n{'='*60}")
+    print("TauDEM Processing Complete!")
+    print(f"{'='*60}")
+    
+    # NEW: Clean up intermediate files
+    print("\nCleaning up intermediate files...")
+    
+    # Get the base name from the input DEM
+    base_name = Path(input_dem).stem
+    
+    intermediates = [
+        output_dir / f"{base_name}_filled.tif",
+        output_dir / f"{base_name}_p.tif",
+        output_dir / f"{base_name}_ad8.tif",
+        output_dir / f"{base_name}_src.tif",
+        output_dir / f"{base_name}_ang.tif",
+        output_dir / f"{base_name}_sd8.tif",
+    ]
+    
+    for file in intermediates:
+        if file.exists():
+            file.unlink()
+            print(f"  ✓ Deleted {file.name}")
+    
+    print(f"\nKept essential files:")
+    print(f"  - {base_name}_sca.tif (for TWI)")
+    print(f"  - {base_name}_slp.tif (slope)")
+    print(f"  - dd_s.tif, dd_h.tif, dd_v.tif (features)")
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python run_taudem_workflow.py input_dem.tif [run_number]")
