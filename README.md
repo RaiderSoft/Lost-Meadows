@@ -211,8 +211,6 @@ This tool helps identify:
 
 **Scale matters**: Traditional field surveys are slow and expensive. Machine learning enables landscape-scale assessment.
 
----
-
 
 
 ---
