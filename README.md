@@ -157,7 +157,7 @@ From the paper (Cummings et al., 2023):
 | dd_h | Horizontal distance to nearest stream | TauDEM |
 | dd_v | Vertical distance to nearest stream | TauDEM |
 
-*Note: Paper uses 11 features including snowpack; this implementation uses 9 (snowpack excluded for initial testing)*
+*Note: Paper uses 10 features including snowpack; this implementation uses 9 (snowpack excluded for initial testing)*
 
 ---
 
