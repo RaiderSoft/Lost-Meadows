@@ -1,4 +1,4 @@
-# 🌿 Lost Meadows Detection
+# Lost Meadows Detection
 
 > **Finding lost meadows using machine learning and terrain analysis**
 
@@ -10,7 +10,7 @@ Automated pipeline for detecting historical and unmapped meadow locations using 
 
 ---
 
-## 🎯 What It Does
+## What It Does
 
 Takes a **10m elevation raster** → Generates **9 terrain features** → Trains **Random Forest model** → Outputs **meadow probability map**
 
@@ -19,7 +19,7 @@ Takes a **10m elevation raster** → Generates **9 terrain features** → Trains
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
 ### Installation
 ```bash
@@ -35,7 +35,7 @@ conda activate meadow
 sudo apt install taudem
 ```
 
-📖 **Full installation guide**: See [SETUP.md](SETUP.md) for detailed instructions (including Windows/macOS)
+ **Full installation guide**: See [SETUP.md](SETUP.md) for detailed instructions (including Windows/macOS)
 
 ### Run Pipeline
 ```bash
@@ -47,7 +47,7 @@ python run_pipeline.py GEE/TIF_Input/Hunter_Creek_1710031205.tif
 
 ---
 
-## 🔬 How It Works
+## How It Works
 
 ```mermaid
 graph LR
@@ -84,7 +84,7 @@ graph LR
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Lost-Meadows/
@@ -112,7 +112,7 @@ Lost-Meadows/
 
 ---
 
-## 🚀 Usage Examples
+## Usage Examples
 
 ### Process Multiple Watersheds
 
@@ -166,7 +166,7 @@ python predict_meadows.py Hunter_Creek_1710031205
 
 ---
 
-## 📊 Model Performance
+## Model Performance
 
 Based on Cummings et al. (2023):
 - **Algorithm**: Random Forest (300 trees)
@@ -177,7 +177,7 @@ Based on Cummings et al. (2023):
 
 ---
 
-## 🛠️ Requirements
+## Requirements
 
 **Software:**
 - Python 3.10+
@@ -196,13 +196,13 @@ Based on Cummings et al. (2023):
 
 ---
 
-## 🌍 Why This Matters
+## Why This Matters
 
 Meadows provide critical ecosystem services but many have been lost or degraded:
-- 💧 **Water storage** - Natural sponges that regulate streamflow
-- 🦋 **Biodiversity** - Habitat for diverse plant and animal species
-- 🌱 **Carbon sequestration** - Store carbon in soils
-- 🏔️ **Erosion control** - Stabilize soil and prevent degradation
+-  **Water storage** - Natural sponges that regulate streamflow
+-  **Biodiversity** - Habitat for diverse plant and animal species
+-  **Carbon sequestration** - Store carbon in soils
+-  **Erosion control** - Stabilize soil and prevent degradation
 
 This tool helps identify:
 - Unmapped current meadows
@@ -213,29 +213,7 @@ This tool helps identify:
 
 ---
 
-## 📚 Citation
 
-If you use this code, please cite the original paper:
-
-```bibtex
-@article{cummings2023resetting,
-  title={Resetting the baseline: using machine learning to find lost meadows},
-  author={Cummings, E. and others},
-  journal={Journal Name},
-  year={2023}
-}
-```
-
----
-
-## 🤝 Contributing
-
-Contributions welcome! Please:
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ---
 
@@ -245,27 +223,11 @@ Contributions welcome! Please:
 - **[docs/](docs/)** - Project website (GitHub Pages)
 - **Original Paper** - Cummings et al. (2023)
 
----
 
-## 🐛 Issues & Support
-
-Found a bug or have a question?
-1. Check [SETUP.md](SETUP.md) troubleshooting section
-2. Search [existing issues](https://github.com/your-username/Lost-Meadows/issues)
-3. Create a [new issue](https://github.com/your-username/Lost-Meadows/issues/new) with:
-   - OS and version
-   - Full error message
-   - Steps to reproduce
 
 ---
 
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) for details
-
----
-
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **Research**: Cummings et al. (2023)
 - **Tools**: TauDEM development team, Google Earth Engine
