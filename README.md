@@ -550,12 +550,7 @@ https://doi.org/10.1007/s10980-023-01726-7
 
 ---
 
-## Contact & Attribution
-
-**Project:** Lost Meadows Detection  
-**Institution:** [Your Institution]  
-**Course:** [Course Name/Number]  
-**Date:** February 2026
+## Attribution
 
 **Original Paper Authors:** Cummings, A. K., Pope, K. L., & Mak, G.
 
