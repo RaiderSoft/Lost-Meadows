@@ -52,10 +52,32 @@ def calculate_twi(sca_file, slope_file, output_file):
 if __name__ == "__main__":
     import sys
     import glob
-    
-    run_num = sys.argv[1] if len(sys.argv) > 1 else "1"
-    output_dir = f"../../GEE/TIF_Output/{run_num}"
-    
+    from pathlib import Path
+
+    if len(sys.argv) < 2:
+        print("Usage: python calculate_twi_10m.py <watershed_name>")
+        print("\nExample:")
+        print("  python calculate_twi_10m.py Bear_Creek_Watershed_10m")
+        print("\nOr auto-detect from TIF_Output (if only one watershed):")
+        # Auto-detect if only one watershed directory exists
+        base_dir = Path("../../GEE/TIF_Output")
+        watersheds = [d.name for d in base_dir.iterdir() if d.is_dir() and not d.name.startswith('.')]
+        if len(watersheds) == 1:
+            watershed_name = watersheds[0]
+            print(f"  Auto-detected: {watershed_name}")
+        else:
+            print(f"  Available watersheds: {', '.join(watersheds)}")
+            sys.exit(1)
+    else:
+        watershed_name = sys.argv[1]
+
+    output_dir = f"../../GEE/TIF_Output/{watershed_name}"
+
+    if not Path(output_dir).exists():
+        print(f"ERROR: Output directory not found: {output_dir}")
+        print("Make sure you've run the TauDEM workflow first!")
+        sys.exit(1)
+
     # Auto-detect SCA and slope files
     sca_files = glob.glob(f"{output_dir}/*_sca.tif")
     slope_files = glob.glob(f"{output_dir}/*_slp.tif")

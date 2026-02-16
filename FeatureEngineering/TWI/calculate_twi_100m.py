@@ -114,20 +114,43 @@ def resample_back_to_10m(input_100m, reference_10m, output_file):
 if __name__ == "__main__":
     import sys
     import glob
-    
-    run_num = sys.argv[1] if len(sys.argv) > 1 else "1"
-    output_dir = f"../../GEE/TIF_Output/{run_num}"
-    
+    from pathlib import Path
+
+    if len(sys.argv) < 2:
+        print("Usage: python calculate_twi_100m.py <watershed_name>")
+        print("\nExample:")
+        print("  python calculate_twi_100m.py Bear_Creek_Watershed_10m")
+        # Auto-detect if only one watershed directory exists
+        base_dir = Path("../../GEE/TIF_Output")
+        watersheds = [d.name for d in base_dir.iterdir() if d.is_dir() and not d.name.startswith('.')]
+        if len(watersheds) == 1:
+            watershed_name = watersheds[0]
+            print(f"\nAuto-detected: {watershed_name}")
+        else:
+            print(f"\nAvailable watersheds: {', '.join(watersheds)}")
+            sys.exit(1)
+    else:
+        watershed_name = sys.argv[1]
+
+    output_dir = f"../../GEE/TIF_Output/{watershed_name}"
+
+    if not Path(output_dir).exists():
+        print(f"ERROR: Output directory not found: {output_dir}")
+        print("Make sure you've run the TauDEM workflow first!")
+        sys.exit(1)
+
     # Auto-detect filled DEM and SCA files
     dem_files = glob.glob(f"{output_dir}/*_filled.tif")
     sca_files = glob.glob(f"{output_dir}/*_sca.tif")
-    
+
     if not dem_files:
         print(f"ERROR: No filled DEM (*_filled.tif) found in {output_dir}")
+        print("Make sure TauDEM workflow completed successfully!")
         sys.exit(1)
-    
+
     if not sca_files:
         print(f"ERROR: No SCA file (*_sca.tif) found in {output_dir}")
+        print("Make sure TauDEM workflow completed successfully!")
         sys.exit(1)
     
     dem_filled = dem_files[0]

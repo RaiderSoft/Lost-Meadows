@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """
 Automated TauDEM workflow for meadow detection
-Usage: python run_taudem_workflow.py input_dem.tif [run_number]
+Usage: python run_taudem_workflow.py <input_dem.tif>
 
-# Future runs will auto-create folders 2, 3, 4, etc.
-python run_taudem_workflow.py ../GEE/TIF_Input/3DEP_10m_TEST_watershed.tif
+Examples:
+  python run_taudem_workflow.py ../GEE/TIF_Input/Bear_Creek_Watershed_10m.tif
+  python run_taudem_workflow.py ../GEE/TIF_Input/East_Fork_Illinois_River_10m.tif
 
-# Or specify a run number manually
-python run_taudem_workflow.py ../GEE/TIF_Input/some_other.tif 5
-
+Output directory will be automatically created as: TIF_Output/<watershed_name>/
 """
 
 import subprocess
@@ -22,58 +21,56 @@ def run_cmd(cmd, description):
     print(f"RUNNING: {description}")
     print(f"{'='*60}")
     print(f"Command: {cmd}\n")
-    
+
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-    
+
     if result.returncode != 0:
         print(f"ERROR: {description} failed!")
         print(f"stderr: {result.stderr}")
         sys.exit(1)
     else:
         print(f"SUCCESS: {description} completed!")
-    
+
     return result
 
-def get_next_run_number(base_output_dir):
-    """Find the next available run number"""
-    if not os.path.exists(base_output_dir):
-        return 1
-    
-    existing = [d for d in os.listdir(base_output_dir) if d.isdigit()]
-    if not existing:
-        return 1
-    
-    return max(int(d) for d in existing) + 1
+def extract_watershed_name(input_dem):
+    """
+    Extract watershed name from input DEM filename
+    Examples:
+      Bear_Creek_Watershed_10m.tif -> Bear_Creek_Watershed_10m
+      East_Fork_Illinois_River_10m.tif -> East_Fork_Illinois_River_10m
+    """
+    return Path(input_dem).stem
 
-def main(input_dem, run_number=None):
+def main(input_dem):
     """Run full TauDEM workflow"""
-    
+
     # Check if file exists
     if not os.path.exists(input_dem):
         print(f"ERROR: Input file {input_dem} not found!")
         sys.exit(1)
-    
-    # Setup output directory
+
+    # Extract watershed name from filename
+    watershed_name = extract_watershed_name(input_dem)
+
+    # Setup output directory using watershed name
     base_output_dir = "../GEE/TIF_Output"
-    
-    if run_number is None:
-        run_number = get_next_run_number(base_output_dir)
-    
-    output_dir = os.path.join(base_output_dir, str(run_number))
+    output_dir = os.path.join(base_output_dir, watershed_name)
     os.makedirs(output_dir, exist_ok=True)
-    
-    # Get base name without extension
+
+    # Get base name without extension (for TauDEM internal files)
     base = Path(input_dem).stem
-    
+
     # Number of cores (adjust based on your CPU)
-    ncores = 4
-    
+    # Using 8 out of 16 available cores - good balance of speed and system responsiveness
+    ncores = 8
+
     print(f"\n{'='*60}")
-    print(f"TauDEM Workflow - Run #{run_number}")
+    print(f"TauDEM Workflow - {watershed_name}")
     print(f"{'='*60}")
     print(f"Input: {input_dem}")
     print(f"Output: {output_dir}")
-    print(f"Cores: {ncores}\n")
+    print(f"Cores: {ncores} (out of 16 available)\n")
     
     # Helper to create output path
     def out(filename):
@@ -148,38 +145,18 @@ def main(input_dem, run_number=None):
     print(f"\n{'='*60}")
     print("TauDEM Processing Complete!")
     print(f"{'='*60}")
-    
-    # NEW: Clean up intermediate files
-    print("\nCleaning up intermediate files...")
-    
-    # Get the base name from the input DEM
-    base_name = Path(input_dem).stem
-    
-    intermediates = [
-        output_dir / f"{base_name}_filled.tif",
-        output_dir / f"{base_name}_p.tif",
-        output_dir / f"{base_name}_ad8.tif",
-        output_dir / f"{base_name}_src.tif",
-        output_dir / f"{base_name}_ang.tif",
-        output_dir / f"{base_name}_sd8.tif",
-    ]
-    
-    for file in intermediates:
-        if file.exists():
-            file.unlink()
-            print(f"  ✓ Deleted {file.name}")
-    
-    print(f"\nKept essential files:")
-    print(f"  - {base_name}_sca.tif (for TWI)")
-    print(f"  - {base_name}_slp.tif (slope)")
-    print(f"  - dd_s.tif, dd_h.tif, dd_v.tif (features)")
+
+    print("\nNOTE: TauDEM intermediate files (_sca, _slp, _filled) are kept")
+    print("      temporarily - they're needed for TWI and terrain calculations.")
+    print("      They will be cleaned up after terrain features are done.")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python run_taudem_workflow.py input_dem.tif [run_number]")
+        print("Usage: python run_taudem_workflow.py <input_dem.tif>")
+        print("\nExample:")
+        print("  python run_taudem_workflow.py ../GEE/TIF_Input/Bear_Creek_Watershed_10m.tif")
         sys.exit(1)
-    
+
     input_dem = sys.argv[1]
-    run_number = int(sys.argv[2]) if len(sys.argv) > 2 else None
-    
-    main(input_dem, run_number)
+
+    main(input_dem)

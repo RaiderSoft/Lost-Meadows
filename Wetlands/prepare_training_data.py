@@ -240,16 +240,21 @@ def sample_training_points(wetland_raster, features_raster, n_wetland=1000, n_no
     
     return sampled_features, labels
 
-def main(run_num):
+def main(watershed_name):
     """Main pipeline for preparing training data"""
-    
+
     print(f"\n{'='*60}")
-    print("Preparing Real Training Data from Wetlands")
+    print(f"Preparing Real Training Data - {watershed_name}")
     print(f"{'='*60}\n")
-    
+
     # Paths
     base_dir = Path.home() / "Capstone" / "Lost-Meadows"
-    output_dir = base_dir / "GEE" / "TIF_Output" / str(run_num)
+    output_dir = base_dir / "GEE" / "TIF_Output" / watershed_name
+
+    if not output_dir.exists():
+        print(f"ERROR: Output directory not found: {output_dir}")
+        print("Make sure you've run the feature stacking step first!")
+        sys.exit(1)
     
     reference_raster = output_dir / "features_stacked.tif"
     wetland_raster_path = output_dir / "wetland_mask.tif"
@@ -312,7 +317,7 @@ def main(run_num):
     print(f"  - Training CSV: {training_csv}")
     print(f"\nNext: Retrain model with real wetland data")
     print(f"  cd ~/Capstone/Lost-Meadows/ModelTraining")
-    print(f"  python train_random_forest.py {run_num}")
+    print(f"  python train_random_forest.py {watershed_name}")
 
     # Clean up wetland mask
     print("\nCleaning up intermediate files...")
@@ -331,6 +336,21 @@ if __name__ == "__main__":
         print("ERROR: geopandas not installed!")
         print("Install with: conda install -c conda-forge geopandas")
         sys.exit(1)
-    
-    run_num = sys.argv[1] if len(sys.argv) > 1 else "1"
-    main(run_num)
+
+    if len(sys.argv) < 2:
+        print("Usage: python prepare_training_data.py <watershed_name>")
+        print("\nExample:")
+        print("  python prepare_training_data.py Bear_Creek_Watershed_10m")
+        # Auto-detect if only one watershed directory exists
+        base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output"
+        watersheds = [d.name for d in base_dir.iterdir() if d.is_dir() and not d.name.startswith('.')]
+        if len(watersheds) == 1:
+            watershed_name = watersheds[0]
+            print(f"\nAuto-detected: {watershed_name}")
+        else:
+            print(f"\nAvailable watersheds: {', '.join(watersheds)}")
+            sys.exit(1)
+    else:
+        watershed_name = sys.argv[1]
+
+    main(watershed_name)
