@@ -57,7 +57,6 @@ def run_step(description, command, cwd=None):
     return result
 
 def get_repo_root():
-    # ModelTraining/train_random_forest.py
     return Path(__file__).resolve().parents[1]
 
 def main(input_dem):
@@ -73,7 +72,7 @@ def main(input_dem):
 
     # Get absolute paths
     repo_root = get_repo_root()
-    base_dir = repo_root
+    base_dir = repo_root / "Lost-Meadows"
     input_dem_abs = Path(input_dem).absolute()
 
     print(f"\n{'='*70}")
