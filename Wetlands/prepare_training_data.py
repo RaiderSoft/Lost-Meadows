@@ -30,68 +30,59 @@ def load_wetlands(study_bounds):
     # Oregon/CA border is at 42°N
     use_oregon = max_lat >= 42.0
     use_california = min_lat < 42.5  # Small overlap for border watersheds
-    
+
     print(f"\nDatasets to load:")
     print(f"  Oregon: {'Yes' if use_oregon else 'No'}")
     print(f"  California: {'Yes' if use_california else 'No'}")
-    
+
     wetlands_list = []
-    
-    # Load Oregon if needed (with spatial filter to avoid memory issues)
+
+    # Use ACTUAL study bounds with small buffer (0.1 degree = ~10km)
+    # This prevents loading hundreds of thousands of unnecessary polygons
+    buffer = 0.1
+    filter_bounds_tight = box(
+        min_lon - buffer,
+        min_lat - buffer,
+        max_lon + buffer,
+        max_lat + buffer
+    )
+
+    print(f"\nFilter area (study bounds + 0.1° buffer):")
+    print(f"  Longitude: {min_lon - buffer:.2f} to {max_lon + buffer:.2f}")
+    print(f"  Latitude: {min_lat - buffer:.2f} to {max_lat + buffer:.2f}")
+
+    # Load Oregon if needed (with tight spatial filter)
     if use_oregon:
         print("\nLoading Oregon wetlands...")
         try:
             or_gdb = 'OR_geodatabase_wetlands.gdb'
-            
-            # Oregon extent with GENEROUS padding for watersheds
-            # Your full Oregon study area + 0.5 degree buffer
-            or_filter_bounds = box(
-                -125.15,  # min_lon with padding
-                41.3,     # min_lat with padding
-                -121.25,  # max_lon with padding
-                43.85     # max_lat with padding
-            )
-            or_filter_gdf = gpd.GeoDataFrame([1], geometry=[or_filter_bounds], crs='EPSG:4326')
-            
-            print(f"  Oregon filter area (with padding):")
-            print(f"    Longitude: -125.15 to -121.25")
-            print(f"    Latitude: 41.3 to 43.85")
-            
+
+            or_filter_gdf = gpd.GeoDataFrame([1], geometry=[filter_bounds_tight], crs='EPSG:4326')
+
             # Get CRS and reproject filter
             or_crs = gpd.read_file(or_gdb, rows=1).crs
             print(f"  Oregon CRS: {or_crs}")
             or_filter = or_filter_gdf.to_crs(or_crs).geometry.iloc[0]
-            
+
             or_wetlands = gpd.read_file(or_gdb, layer='OR_Wetlands', mask=or_filter)
             print(f"  ✓ Loaded {len(or_wetlands):,} Oregon wetland polygons")
             wetlands_list.append(or_wetlands)
         except Exception as e:
             print(f"  ⚠ Warning: Could not load Oregon wetlands: {e}")
-    
-    # Load California if needed (with spatial filter)
+
+    # Load California if needed (with tight spatial filter)
     if use_california:
         print("\nLoading California wetlands...")
         try:
             ca_gdb = 'CA_geodatabase_wetlands.gdb'
-            
-            # California extent - northern CA with padding
-            ca_filter_bounds = box(
-                -125.0,   # min_lon with padding
-                41.0,     # min_lat with padding
-                -121.0,   # max_lon with padding
-                43.0      # max_lat with padding
-            )
-            ca_filter_gdf = gpd.GeoDataFrame([1], geometry=[ca_filter_bounds], crs='EPSG:4326')
-            
-            print(f"  California filter area (northern CA with padding):")
-            print(f"    Longitude: -125.0 to -121.0")
-            print(f"    Latitude: 41.0 to 43.0")
-            
+
+            ca_filter_gdf = gpd.GeoDataFrame([1], geometry=[filter_bounds_tight], crs='EPSG:4326')
+
             # Get CRS and reproject filter
             ca_crs = gpd.read_file(ca_gdb, layer='CA_Wetlands', rows=1).crs
             print(f"  California CRS: {ca_crs}")
             ca_filter = ca_filter_gdf.to_crs(ca_crs).geometry.iloc[0]
-            
+
             ca_wetlands = gpd.read_file(
                 ca_gdb,
                 layer='CA_Wetlands',
@@ -302,8 +293,15 @@ def main(watershed_name):
     print(f"\nSaving training data to: {training_csv}")
     
     feature_names = [
+        # Original 9 features
         'slope', 'elev_5x5_rel', 'elev_5x5_std_dev', 'slope_5x5_std_dev',
-        'twi_10m', 'twi_100m', 'dd_s', 'dd_h', 'dd_v'
+        'twi_10m', 'twi_100m', 'dd_s', 'dd_h', 'dd_v',
+        # Advanced features (11)
+        'aspect', 'curvature_profile', 'curvature_plan', 'elevation',
+        'tpi_3x3', 'tpi_11x11', 'tpi_21x21', 'tri',
+        'elev_std_3x3', 'elev_std_9x9', 'slope_std_9x9',
+        # Climate features (2)
+        'precip_annual', 'precip_spring'
     ]
     
     df = pd.DataFrame(features, columns=feature_names)

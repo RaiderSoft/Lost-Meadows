@@ -32,8 +32,15 @@ def load_training_data(watershed_name):
         df = pd.read_csv(training_csv)
         
         feature_names = [
+            # Original 9 features
             'slope', 'elev_5x5_rel', 'elev_5x5_std_dev', 'slope_5x5_std_dev',
-            'twi_10m', 'twi_100m', 'dd_s', 'dd_h', 'dd_v'
+            'twi_10m', 'twi_100m', 'dd_s', 'dd_h', 'dd_v',
+            # Advanced features (11)
+            'aspect', 'curvature_profile', 'curvature_plan', 'elevation',
+            'tpi_3x3', 'tpi_11x11', 'tpi_21x21', 'tri',
+            'elev_std_3x3', 'elev_std_9x9', 'slope_std_9x9',
+            # Climate features (2)
+            'precip_annual', 'precip_spring'
         ]
         
         features = df[feature_names].values
@@ -117,15 +124,15 @@ def train_model(features, labels, watershed_name):
     print(f"Training set: {X_train.shape[0]:,} samples")
     print(f"Testing set: {X_test.shape[0]:,} samples")
     
-    # Train Random Forest (parameters from paper)
+    # Train Random Forest (parameters from paper, adapted for 20 features)
     print("\nTraining Random Forest...")
     print("  - n_estimators: 300")
-    print("  - max_features: 4 (mtry)")
+    print("  - max_features: 'sqrt' (~4.5 for 20 features)")
     print("  - random_state: 42")
-    
+
     rf = RandomForestClassifier(
         n_estimators=300,
-        max_features=4,
+        max_features='sqrt',  # sqrt(20) ≈ 4.5
         random_state=42,
         n_jobs=-1,
         verbose=1
@@ -164,8 +171,15 @@ def train_model(features, labels, watershed_name):
     print(f"{'='*60}\n")
     
     feature_names = [
+        # Original 9 features
         "slope", "elev_5x5_rel", "elev_5x5_std_dev", "slope_5x5_std_dev",
-        "twi_10m", "twi_100m", "dd_s", "dd_h", "dd_v"
+        "twi_10m", "twi_100m", "dd_s", "dd_h", "dd_v",
+        # Advanced features (11)
+        "aspect", "curvature_profile", "curvature_plan", "elevation",
+        "tpi_3x3", "tpi_11x11", "tpi_21x21", "tri",
+        "elev_std_3x3", "elev_std_9x9", "slope_std_9x9",
+        # Climate features (2)
+        "precip_annual", "precip_spring"
     ]
     
     importances = rf.feature_importances_

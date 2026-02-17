@@ -12,7 +12,7 @@ Automated pipeline for detecting historical and unmapped meadow locations using 
 
 ## What It Does
 
-Takes a **10m elevation raster** → Generates **9 terrain features** → Trains **Random Forest model** → Outputs **meadow probability map**
+Takes a **10m elevation raster** → Generates **20 terrain features** → Trains **Random Forest model** → Outputs **meadow probability map**
 
 **Input**: Digital Elevation Model (DEM) from Google Earth Engine
 **Output**: Probability map showing where meadows likely exist (0.0 - 1.0 scale)
@@ -52,7 +52,7 @@ python run_pipeline.py GEE/TIF_Input/Hunter_Creek_1710031205.tif
 ```mermaid
 graph LR
     A[DEM<br/>Elevation] --> B[TauDEM<br/>Hydro Features]
-    B --> C[Feature Eng<br/>9 Features]
+    B --> C[Feature Eng<br/>20 Features]
     C --> D[Training Data<br/>OR/CA Wetlands]
     D --> E[Random Forest<br/>300 trees]
     E --> F[Prediction<br/>Probability Map]
@@ -65,7 +65,7 @@ graph LR
 | **1. TauDEM** | Hydrological analysis | Flow direction, stream network, distances |
 | **2. TWI** | Topographic Wetness Index | TWI at 10m and 100m scales |
 | **3. Terrain** | Slope & variability | Slope, relative elevation, std deviations |
-| **4. Stacking** | Combine features | 9-band multi-layer raster |
+| **4. Stacking** | Combine features | 20-band multi-layer raster |
 | **5. Training** | Sample wetlands | 10,000 labeled pixels (1:9 ratio) |
 | **6. Model** | Random Forest ML | Trained classifier (.pkl) |
 | **7. Prediction** | Apply to watershed | Meadow probability map (0-1) |
@@ -168,9 +168,9 @@ python predict_meadows.py Hunter_Creek_1710031205
 
 ## Model Performance
 
-Based on Cummings et al. (2023):
+Based on Cummings et al. (2023) with expanded feature set:
 - **Algorithm**: Random Forest (300 trees)
-- **Features**: 9 hydrogeomorphic variables
+- **Features**: 20 hydrogeomorphic variables (expanded from original 9)
 - **Training**: 1:9 class imbalance (meadow:non-meadow)
 - **Validation**: 75/25 train/test split
 - **Expected AUC**: >0.89 for local models
