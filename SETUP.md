@@ -128,8 +128,8 @@ If you see "PitRemove version 5.x.x", TauDEM is installed correctly!
 
 **Required for training data:**
 
-1. **Oregon Wetlands**: Download from [Oregon Geospatial Data Clearinghouse](https://spatialdata.oregonexplorer.info/)
-2. **California Wetlands**: Download from [CA Open Data Portal](https://data.ca.gov/)
+1. **Oregon Wetlands**: Download from [FWS](https://www.fws.gov/program/national-wetlands-inventory/download-state-wetlands-data)
+2. **California Wetlands**: Download from [FWS](https://www.fws.gov/program/national-wetlands-inventory/download-state-wetlands-data)
 
 Place the `.gdb` folders in the `Wetlands/` directory:
 ```
