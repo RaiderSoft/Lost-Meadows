@@ -8,6 +8,9 @@ Miniconda3-*.sh
 GEE/TIF_Input/*.tif
 GEE/TIF_Output/**/*.tif
 
+# Exception: small regional climate TIFs that are shared across watersheds
+!GEE/TIF_Input/Precip/*.tif
+
 # Geodatabase files (very large - 2.4 GB)
 *.gdb/
 Wetlands/*.gdb/
