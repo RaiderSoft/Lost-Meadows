@@ -33,9 +33,7 @@ def load_training_data(watershed_name):
             # Advanced features (11)
             'aspect', 'curvature_profile', 'curvature_plan', 'elevation',
             'tpi_3x3', 'tpi_11x11', 'tpi_21x21', 'tri',
-            'elev_std_3x3', 'elev_std_9x9', 'slope_std_9x9',
-            # Climate features (2)
-            'precip_annual', 'precip_spring'
+            'elev_std_3x3', 'elev_std_9x9', 'slope_std_9x9'
         ]
         
         features = df[feature_names].values
@@ -127,7 +125,7 @@ def train_model(features, labels, watershed_name):
 
     rf = RandomForestClassifier(
         n_estimators=300,
-        max_features='sqrt',  # sqrt(20) ≈ 4.5
+        max_features='sqrt',
         random_state=42,
         n_jobs=-1,
         verbose=1
@@ -172,9 +170,7 @@ def train_model(features, labels, watershed_name):
         # Advanced features (11)
         "aspect", "curvature_profile", "curvature_plan", "elevation",
         "tpi_3x3", "tpi_11x11", "tpi_21x21", "tri",
-        "elev_std_3x3", "elev_std_9x9", "slope_std_9x9",
-        # Climate features (2)
-        "precip_annual", "precip_spring"
+        "elev_std_3x3", "elev_std_9x9", "slope_std_9x9"
     ]
     
     importances = rf.feature_importances_
