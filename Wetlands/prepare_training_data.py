@@ -279,8 +279,8 @@ def main(watershed_name):
     features, labels = sample_training_points(
         wetland_raster, 
         str(reference_raster),
-        n_wetland=1000,
-        n_non_wetland=9000
+        n_wetland=10000,
+        n_non_wetland=90000
     )
     
     if features is None:
@@ -296,9 +296,7 @@ def main(watershed_name):
         # Advanced features (11)
         'aspect', 'curvature_profile', 'curvature_plan', 'elevation',
         'tpi_3x3', 'tpi_11x11', 'tpi_21x21', 'tri',
-        'elev_std_3x3', 'elev_std_9x9', 'slope_std_9x9',
-        # Climate features (2)
-        'precip_annual', 'precip_spring'
+        'elev_std_3x3', 'elev_std_9x9', 'slope_std_9x9'
     ]
     
     df = pd.DataFrame(features, columns=feature_names)

@@ -43,11 +43,12 @@ var monthlyPrecip = months.map(function(month) {
   return filtered.set('month', month);
 });
 
-// Seasonal precipitation
+// Seasonal precipitation (average monthly value for that season)
 var springPrecip = ee.ImageCollection('OREGONSTATE/PRISM/AN81m')
-  .filter(ee.Filter.calendarRange(3, 5, 'month'))  // March-May
+  .filter(ee.Filter.date('2010-01-01', '2020-12-31'))  // 10-year average
+  .filter(ee.Filter.calendarRange(3, 5, 'month'))       // March-May only
   .select('ppt')
-  .sum()  // Total spring precipitation
+  .mean()  // Average monthly spring precipitation
   .clip(studyArea);
 
 var summerPrecip = ee.ImageCollection('OREGONSTATE/PRISM/AN81m')
