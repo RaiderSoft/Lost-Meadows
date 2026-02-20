@@ -99,12 +99,31 @@ def load_wetlands(study_bounds):
         return None
     elif len(wetlands_list) == 1:
         gdf = wetlands_list[0]
-        print(f"\n✓ Total wetlands: {len(gdf):,}")
     else:
         print("\nMerging Oregon and California wetlands...")
         gdf = gpd.pd.concat(wetlands_list, ignore_index=True)
-        print(f"✓ Combined total: {len(gdf):,} wetland polygons")
-    
+
+    print(f"\nTotal wetland polygons before filter: {len(gdf):,}")
+
+    # Filter to meadow and degraded meadow wetland types:
+    # PEM = Palustrine Emergent (active wet meadows)
+    # PSS = Palustrine Scrub-Shrub (meadows degraded by shrub/willow encroachment)
+    # PFO = Palustrine Forested (meadows degraded by conifer encroachment)
+    meadow_mask = gdf['ATTRIBUTE'].str.startswith(('PEM', 'PSS', 'PFO'))
+    gdf = gdf[meadow_mask].copy()
+
+    pem_count = gdf['ATTRIBUTE'].str.startswith('PEM').sum()
+    pss_count = gdf['ATTRIBUTE'].str.startswith('PSS').sum()
+    pfo_count = gdf['ATTRIBUTE'].str.startswith('PFO').sum()
+    print(f"  PEM (active wet meadow):          {pem_count:,}")
+    print(f"  PSS (shrub-encroached meadow):    {pss_count:,}")
+    print(f"  PFO (conifer-encroached meadow):  {pfo_count:,}")
+    print(f"  Total lost meadow polygons:       {len(gdf):,}")
+
+    if len(gdf) == 0:
+        print("ERROR: No meadow wetlands (PEM/PSS/PFO) found in study area!")
+        return None
+
     return gdf
 
 def rasterize_wetlands(wetlands_gdf, reference_raster, output_path):
@@ -279,8 +298,8 @@ def main(watershed_name):
     features, labels = sample_training_points(
         wetland_raster, 
         str(reference_raster),
-        n_wetland=10000,
-        n_non_wetland=90000
+        n_wetland=1000,
+        n_non_wetland=9000
     )
     
     if features is None:
