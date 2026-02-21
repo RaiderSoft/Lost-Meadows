@@ -14,11 +14,10 @@ Steps executed:
   2. TWI calculation (10m and 100m scales)
   3. Terrain features calculation
   4. Advanced features calculation (aspect, curvature, TPI, etc.)
-  5. Precipitation features (annual, spring)
-  6. Feature stacking (22 features)
-  7. Training data preparation
-  8. Model training
-  9. Meadow probability prediction
+  5. Feature stacking (20 features)
+  6. Training data preparation
+  7. Model training
+  8. Meadow probability prediction
 """
 
 import subprocess
@@ -83,7 +82,7 @@ def main(input_dem):
     print(f"Input DEM: {input_dem}")
     print(f"Watershed: {watershed_name}")
     print(f"Output directory: {base_dir}/GEE/TIF_Output/{watershed_name}")
-    print(f"\nThis will execute 9 major steps and may take 2-4 hours.")
+    print(f"\nThis will execute 8 major steps and may take 2-4 hours.")
     print(f"{'='*70}")
 
     input(f"\nPress Enter to start the pipeline...")
@@ -125,37 +124,30 @@ def main(input_dem):
         cwd=base_dir / "FeatureEngineering" / "Advanced"
     )
 
-    # Step 5: Precipitation features
+    # Step 5: Stack features
     run_step(
-        "5. Process Precipitation Features (annual, spring)",
-        f"python calculate_precipitation_features.py {watershed_name}",
-        cwd=base_dir / "FeatureEngineering" / "Climate"
-    )
-
-    # Step 6: Stack features
-    run_step(
-        "6. Stack all 22 features into multi-band raster",
+        "5. Stack all 20 features into multi-band raster",
         f"python stack_features.py {watershed_name}",
         cwd=base_dir / "FeatureStacking"
     )
 
-    # Step 7: Prepare training data
+    # Step 6: Prepare training data
     run_step(
-        "7. Prepare Training Data from Wetlands (OR/CA geodatabases)",
+        "6. Prepare Training Data from Wetlands (OR/CA geodatabases)",
         f"python prepare_training_data.py {watershed_name}",
         cwd=base_dir / "Wetlands"
     )
 
-    # Step 8: Train model
+    # Step 7: Train model
     run_step(
-        "8. Train Random Forest Model (300 trees, 75/25 split)",
+        "7. Train Random Forest Model (300 trees, 75/25 split)",
         f"python train_random_forest.py {watershed_name}",
         cwd=base_dir / "ModelTraining"
     )
 
-    # Step 9: Predict meadow probabilities
+    # Step 8: Predict meadow probabilities
     run_step(
-        "9. Generate Meadow Probability Map",
+        "8. Generate Meadow Probability Map",
         f"python predict_meadows.py {watershed_name}",
         cwd=base_dir / "ModelTraining"
     )
@@ -173,10 +165,9 @@ def main(input_dem):
     print(f"Total time: {total_minutes}m {total_seconds}s")
     print(f"\nOutputs in: {output_dir}")
     print(f"\nKey files generated:")
-    print(f"  ✓ 22 feature rasters (terrain + climate)")
-    print(f"     - Terrain: dd_h, dd_s, dd_v, slope, TWI, aspect, curvature, TPI, etc.")
-    print(f"     - Climate: annual precip, spring precip")
-    print(f"  ✓ features_stacked.tif (22-band multi-band raster)")
+    print(f"  ✓ 20 feature rasters (terrain)")
+    print(f"     - dd_h, dd_s, dd_v, slope, TWI, aspect, curvature, TPI, TRI, etc.")
+    print(f"  ✓ features_stacked.tif (20-band multi-band raster)")
     print(f"  ✓ training_data_real.csv")
     print(f"  ✓ random_forest_model.pkl (trained model)")
     print(f"  ✓ {watershed_name}_meadow_probability.tif (FINAL OUTPUT)")

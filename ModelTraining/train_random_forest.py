@@ -33,7 +33,11 @@ def load_training_data(watershed_name):
         
         feature_names = [
             'slope', 'elev_5x5_rel', 'elev_5x5_std_dev', 'slope_5x5_std_dev',
-            'twi_10m', 'twi_100m', 'dd_s', 'dd_h', 'dd_v'
+            'twi_10m', 'twi_100m', 'dd_s', 'dd_h', 'dd_v',
+            # Advanced features (11)
+            'aspect', 'curvature_profile', 'curvature_plan', 'elevation',
+            'tpi_3x3', 'tpi_11x11', 'tpi_21x21', 'tri',
+            'elev_std_3x3', 'elev_std_9x9', 'slope_std_9x9'
         ]
         
         features = df[feature_names].values
@@ -152,21 +156,21 @@ def train_model(features, labels, watershed_name, use_grid_search=False):
 
         rf = grid_search.best_estimator_
     else:
-        # Train Random Forest (parameters from paper)
-        print("\nTraining Random Forest...")
-        print("  - n_estimators: 300")
-        print("  - max_features: 4 (mtry)")
-        print("  - random_state: 42")
+    # Train Random Forest (parameters from paper, adapted for 20 features)
+    print("\nTraining Random Forest...")
+    print("  - n_estimators: 300")
+    print("  - max_features: 'sqrt' (~4.5 for 20 features)")
+    print("  - random_state: 42")
 
-        rf = RandomForestClassifier(
-            n_estimators=300,
-            max_features=4,
-            random_state=42,
-            n_jobs=-1,
-            verbose=1
-        )
-
-        rf.fit(X_train, y_train)
+    rf = RandomForestClassifier(
+        n_estimators=300,
+        max_features='sqrt',
+        random_state=42,
+        n_jobs=-1,
+        verbose=1
+    )
+    
+    rf.fit(X_train, y_train)
     
     print("\n✓ Model training complete!")
     
@@ -200,7 +204,11 @@ def train_model(features, labels, watershed_name, use_grid_search=False):
     
     feature_names = [
         "slope", "elev_5x5_rel", "elev_5x5_std_dev", "slope_5x5_std_dev",
-        "twi_10m", "twi_100m", "dd_s", "dd_h", "dd_v"
+        "twi_10m", "twi_100m", "dd_s", "dd_h", "dd_v",
+        # Advanced features (11)
+        "aspect", "curvature_profile", "curvature_plan", "elevation",
+        "tpi_3x3", "tpi_11x11", "tpi_21x21", "tri",
+        "elev_std_3x3", "elev_std_9x9", "slope_std_9x9"
     ]
     
     importances = rf.feature_importances_

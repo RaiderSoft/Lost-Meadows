@@ -14,7 +14,7 @@ def get_repo_root():
     return Path(__file__).resolve().parents[1]
 
 def stack_features(watershed_name):
-    """Stack all 22 features into one multi-band raster"""
+    """Stack all 20 features into one multi-band raster"""
 
     # Use absolute path from home directory
     repo_root = get_repo_root()
@@ -52,9 +52,6 @@ def stack_features(watershed_name):
         f"{output_dir}/elev_std_9x9.tif",                   # 19. Elevation std dev 9x9
         f"{output_dir}/slope_std_9x9.tif",                  # 20. Slope std dev 9x9
 
-        # Climate features
-        f"{output_dir}/precip_annual.tif",                  # 21. Annual precipitation
-        f"{output_dir}/precip_spring.tif",                  # 22. Spring precipitation
     ]
 
     feature_names = [
@@ -82,9 +79,6 @@ def stack_features(watershed_name):
         "elev_std_9x9",
         "slope_std_9x9",
 
-        # Climate
-        "precip_annual",
-        "precip_spring"
     ]
     
     print(f"\n{'='*60}")
