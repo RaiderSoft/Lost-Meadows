@@ -58,7 +58,8 @@ def run_step(description, command, cwd=None):
     return result
 
 def get_repo_root():
-    return Path(__file__).resolve().parents[1]
+    # run_pipeline.py is at the repo root
+    return Path(__file__).resolve().parent
 
 def main(input_dem):
     """Run the complete pipeline"""
@@ -72,8 +73,7 @@ def main(input_dem):
     watershed_name = Path(input_dem).stem
 
     # Get absolute paths
-    repo_root = get_repo_root()
-    base_dir = repo_root / "Lost-Meadows"
+    base_dir = get_repo_root()
     input_dem_abs = Path(input_dem).absolute()
 
     print(f"\n{'='*70}")

@@ -13,6 +13,10 @@ import joblib
 import sys
 from pathlib import Path
 
+def get_repo_root():
+    # ModelTraining/train_xgboost.py
+    return Path(__file__).resolve().parents[1]
+
 FEATURE_NAMES = [
     # Original 9 features
     'slope', 'elev_5x5_rel', 'elev_5x5_std_dev', 'slope_5x5_std_dev',
@@ -24,7 +28,7 @@ FEATURE_NAMES = [
 ]
 
 def load_training_data(watershed_name):
-    base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output" / watershed_name
+    base_dir = get_repo_root() / "GEE" / "TIF_Output" / watershed_name
     training_csv = base_dir / "training_data_real.csv"
 
     if not training_csv.exists():
@@ -130,7 +134,7 @@ def train_model(features, labels, watershed_name):
         print(f"{i:2d}. {FEATURE_NAMES[idx]:20s} {importances[idx]:.4f}")
 
     # Save model
-    output_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output" / watershed_name
+    output_dir = get_repo_root() / "GEE" / "TIF_Output" / watershed_name
     model_path = output_dir / "xgboost_model.pkl"
 
     print(f"\nSaving model to: {model_path}")
@@ -156,7 +160,7 @@ if __name__ == "__main__":
         print("Usage: python train_xgboost.py <watershed_name>")
         print("\nExample:")
         print("  python train_xgboost.py Hunter_Creek_1710031205")
-        base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output"
+        base_dir = get_repo_root() / "GEE" / "TIF_Output"
         watersheds = [d.name for d in base_dir.iterdir() if d.is_dir() and not d.name.startswith('.')]
         if len(watersheds) == 1:
             watershed_name = watersheds[0]

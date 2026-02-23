@@ -12,6 +12,10 @@ from sklearn.metrics import classification_report, roc_auc_score, f1_score
 import sys
 from pathlib import Path
 
+def get_repo_root():
+    # ModelTraining/xgboost_gridsearch.py
+    return Path(__file__).resolve().parents[1]
+
 FEATURE_NAMES = [
     'slope', 'elev_5x5_rel', 'elev_5x5_std_dev', 'slope_5x5_std_dev',
     'twi_10m', 'twi_100m', 'dd_s', 'dd_h', 'dd_v',
@@ -23,7 +27,7 @@ FEATURE_NAMES = [
 def main(watershed_name):
 
     # Load training data
-    csv = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output" / watershed_name / "training_data_real.csv"
+    csv = get_repo_root() / "GEE" / "TIF_Output" / watershed_name / "training_data_real.csv"
     if not csv.exists():
         print(f"ERROR: {csv} not found. Run prepare_training_data.py first.")
         sys.exit(1)
@@ -137,7 +141,7 @@ if __name__ == "__main__":
         print("Usage: python xgboost_gridsearch.py <watershed_name>")
         print("\nExample:")
         print("  python xgboost_gridsearch.py Bear_Creek_1710030801")
-        base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output"
+        base_dir = get_repo_root() / "GEE" / "TIF_Output"
         watersheds = [d.name for d in base_dir.iterdir() if d.is_dir() and not d.name.startswith('.')]
         if len(watersheds) == 1:
             print(f"\nAuto-detected: {watersheds[0]}")

@@ -156,22 +156,22 @@ def train_model(features, labels, watershed_name, use_grid_search=False):
 
         rf = grid_search.best_estimator_
     else:
-    # Train Random Forest (parameters from paper, adapted for 20 features)
-    print("\nTraining Random Forest...")
-    print("  - n_estimators: 300")
-    print("  - max_features: 'sqrt' (~4.5 for 20 features)")
-    print("  - random_state: 42")
+        # Train Random Forest (parameters from paper, adapted for 20 features)
+        print("\nTraining Random Forest...")
+        print("  - n_estimators: 300")
+        print("  - max_features: 'sqrt' (~4.5 for 20 features)")
+        print("  - random_state: 42")
 
-    rf = RandomForestClassifier(
-        n_estimators=300,
-        max_features='sqrt',
-        random_state=42,
-        n_jobs=-1,
-        verbose=1
-    )
-    
-    rf.fit(X_train, y_train)
-    
+        rf = RandomForestClassifier(
+            n_estimators=300,
+            max_features='sqrt',
+            random_state=42,
+            n_jobs=-1,
+            verbose=1
+        )
+
+        rf.fit(X_train, y_train)
+
     print("\n✓ Model training complete!")
     
     # Evaluate on test set
