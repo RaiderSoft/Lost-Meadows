@@ -21,7 +21,7 @@ def predict_probabilities(features_path, model_path, output_path, chunk_size=100
     # Load model
     print(f"Loading model from: {model_path}")
     model = joblib.load(model_path)
-    print(f"✓ Model loaded (n_estimators={model.n_estimators})")
+    print(f"✓ Model loaded ({type(model).__name__}, n_estimators={model.n_estimators})")
     
     # Open features raster
     print(f"\nReading features from: {features_path}")
@@ -108,7 +108,7 @@ def predict_probabilities(features_path, model_path, output_path, chunk_size=100
         
         return probabilities
 
-def main(watershed_name):
+def main(watershed_name, model_file="xgboost_model.pkl"):
     """Main prediction pipeline"""
 
     base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output" / watershed_name
@@ -119,8 +119,11 @@ def main(watershed_name):
         sys.exit(1)
 
     features_path = base_dir / "features_stacked.tif"
-    model_path = base_dir / "random_forest_model.pkl"
-    output_path = base_dir / f"{watershed_name}_meadow_probability.tif"
+    model_path = base_dir / model_file
+
+    # Name output file after the model used
+    model_stem = Path(model_file).stem
+    output_path = base_dir / f"{watershed_name}_{model_stem}_probability.tif"
 
     # Check inputs exist
     if not features_path.exists():
@@ -145,7 +148,7 @@ def main(watershed_name):
     print("Prediction Complete!")
     print(f"{'='*60}")
     print(f"\nOutput: {output_path}")
-    print(f"\nFinal output file: {watershed_name}_meadow_probability.tif")
+    print(f"\nFinal output file: {output_path.name}")
     print("\nNext steps:")
     print(f"  1. Upload {watershed_name}_meadow_probability.tif to Google Earth Engine")
     print("  2. Create GEE app to visualize results")
@@ -170,4 +173,5 @@ if __name__ == "__main__":
     else:
         watershed_name = sys.argv[1]
 
-    main(watershed_name)
+    model_file = sys.argv[2] if len(sys.argv) > 2 else "xgboost_model.pkl"
+    main(watershed_name, model_file)
