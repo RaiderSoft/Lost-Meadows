@@ -38,6 +38,9 @@ twi_*_temp.tif
 Wetlands/training_data_*.csv
 ModelTraining/training_data_*.csv
 
+# Environment / secrets (never commit)
+.env
+
 # Python cache
 __pycache__/
 *.py[cod]

@@ -15,23 +15,9 @@ import sys
 from pathlib import Path
 import mlflow
 import mlflow.sklearn
-import dagshub
+from mlflow_config import init_mlflow
 
-# ========================================
-# DAGSHUB / MLFLOW CONFIGURATION
-# ========================================
-DAGSHUB_REPO_OWNER = "Laurlov413"   
-DAGSHUB_REPO_NAME  = "Lost-Meadows"             # <-- change this
-MLFLOW_EXPERIMENT  = "random-forest-meadow"
-
-def init_mlflow():
-    """Initialise DagsHub remote tracking and set experiment."""
-    dagshub.init(
-        repo_owner=DAGSHUB_REPO_OWNER,
-        repo_name=DAGSHUB_REPO_NAME,
-        mlflow=True,
-    )
-    mlflow.set_experiment(MLFLOW_EXPERIMENT)
+MLFLOW_EXPERIMENT = "random-forest-meadow"
 
 
 def get_repo_root():
@@ -316,7 +302,7 @@ def main(watershed_name, use_grid_search=False):
     """Main training pipeline"""
 
     # Initialise DagsHub remote tracking
-    init_mlflow()
+    init_mlflow(MLFLOW_EXPERIMENT)
 
     # Load training data (real or synthetic)
     features, labels = load_training_data(watershed_name)

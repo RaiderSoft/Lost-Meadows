@@ -127,19 +127,29 @@ If you see "PitRemove version 5.x.x", TauDEM is installed correctly!
 
 ## Step 4: Configure DagsHub Experiment Tracking
 
-MLflow run data is stored remotely on DagsHub. Before running the pipeline:
+MLflow run data is stored remotely on DagsHub. The shared config lives in
+`ModelTraining/mlflow_config.py` — both `train_random_forest.py` and
+`train_xgboost.py` pull from it automatically.
 
 1. Create a free account at [dagshub.com](https://dagshub.com) and create a repo named `Lost-Meadows`.
-2. Open `ModelTraining/train_random_forest.py` and set your credentials at the top:
+2. Open `ModelTraining/mlflow_config.py` and set your username:
    ```python
    DAGSHUB_REPO_OWNER = "your-dagshub-username"
-   DAGSHUB_REPO_NAME  = "Lost-Meadows"
    ```
-3. Authenticate DagsHub (first time only):
+3. Generate a DagsHub access token: **Settings → Tokens** on DagsHub.
+4. Copy `.env.example` to `.env` (never commit this file) and paste your token:
    ```bash
-   python -c "import dagshub; dagshub.auth.add_app_token(input('Token: '))"
+   cp .env.example .env
+   # Edit .env and replace the placeholder with your real token
    ```
-   Paste your DagsHub access token when prompted (Settings → Tokens on DagsHub).
+5. Load the token into your shell before running any training script:
+   ```bash
+   source .env
+   ```
+   Or export it directly for a single session:
+   ```bash
+   export DAGSHUB_USER_TOKEN=your_token_here
+   ```
 
 After training, runs will appear under the **Experiments** tab of your DagsHub repo.
 
