@@ -9,11 +9,16 @@ import os
 import sys
 from pathlib import Path
 
+def get_repo_root():
+    # ModelTraining/train_random_forest.py
+    return Path(__file__).resolve().parents[1]
+
 def stack_features(watershed_name):
     """Stack all 20 features into one multi-band raster"""
 
     # Use absolute path from home directory
-    base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output" / watershed_name
+    repo_root = get_repo_root()
+    base_dir = repo_root / "GEE" / "TIF_Output" / watershed_name
     output_dir = str(base_dir)
 
     if not base_dir.exists():

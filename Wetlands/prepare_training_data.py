@@ -252,6 +252,9 @@ def sample_training_points(wetland_raster, features_raster, n_wetland=1000, n_no
     
     return sampled_features, labels
 
+def get_repo_root():
+    return Path(__file__).resolve().parents[1]
+
 def main(watershed_name):
     """Main pipeline for preparing training data"""
 
@@ -260,8 +263,8 @@ def main(watershed_name):
     print(f"{'='*60}\n")
 
     # Paths
-    base_dir = Path.home() / "Capstone" / "Lost-Meadows"
-    output_dir = base_dir / "GEE" / "TIF_Output" / watershed_name
+    repo_root = get_repo_root()
+    output_dir = repo_root / "GEE" / "TIF_Output" / watershed_name
 
     if not output_dir.exists():
         print(f"ERROR: Output directory not found: {output_dir}")

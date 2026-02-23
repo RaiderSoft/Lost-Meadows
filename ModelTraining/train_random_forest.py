@@ -8,18 +8,23 @@ import rasterio
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
 import joblib
 import sys
 from pathlib import Path
+
+def get_repo_root():
+    # ModelTraining/train_random_forest.py
+    return Path(__file__).resolve().parents[1]
 
 def load_training_data(watershed_name):
     """
     Load training data from CSV (real wetland labels)
     Falls back to synthetic labels if CSV doesn't exist
     """
-    base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output" / watershed_name
+    repo_root = get_repo_root()
+    base_dir = repo_root / "GEE" / "TIF_Output" / watershed_name
     training_csv = base_dir / "training_data_real.csv"
     
     if training_csv.exists():
@@ -27,7 +32,6 @@ def load_training_data(watershed_name):
         df = pd.read_csv(training_csv)
         
         feature_names = [
-            # Original 9 features
             'slope', 'elev_5x5_rel', 'elev_5x5_std_dev', 'slope_5x5_std_dev',
             'twi_10m', 'twi_100m', 'dd_s', 'dd_h', 'dd_v',
             # Advanced features (11)
@@ -102,7 +106,7 @@ def extract_samples_from_raster_synthetic(raster_path, n_samples=10000):
         
         return sampled_data, labels
 
-def train_model(features, labels, watershed_name):
+def train_model(features, labels, watershed_name, use_grid_search=False):
     """Train Random Forest classifier"""
 
     print(f"\n{'='*60}")
@@ -117,6 +121,41 @@ def train_model(features, labels, watershed_name):
     print(f"Training set: {X_train.shape[0]:,} samples")
     print(f"Testing set: {X_test.shape[0]:,} samples")
     
+    if use_grid_search:
+        print("\nRunning GridSearchCV for Random Forest...")
+
+        param_grid = {
+            "n_estimators": list(range(50, 301, 50)),
+            "max_depth": [None, 10, 20],
+            "min_samples_split": [2, 5],
+            "min_samples_leaf": [1, 2],
+            "bootstrap": [True, False],
+            "class_weight": [None, "balanced", "balanced_subsample", {0: 1, 1: 3}, {0: 1, 1: 5}],
+        }
+
+        base_rf = RandomForestClassifier(
+            random_state=42,
+            n_jobs=-1
+        )
+
+        grid_search = GridSearchCV(
+            estimator=base_rf,
+            param_grid=param_grid,
+            cv=5,
+            scoring="roc_auc",
+            n_jobs=-1,
+            verbose=2
+        )
+
+        grid_search.fit(X_train, y_train)
+
+        print("\nBest Parameters:")
+        print(grid_search.best_params_)
+        print("\nBest Estimator:")
+        print(grid_search.best_estimator_)
+
+        rf = grid_search.best_estimator_
+    else:
     # Train Random Forest (parameters from paper, adapted for 20 features)
     print("\nTraining Random Forest...")
     print("  - n_estimators: 300")
@@ -164,7 +203,6 @@ def train_model(features, labels, watershed_name):
     print(f"{'='*60}\n")
     
     feature_names = [
-        # Original 9 features
         "slope", "elev_5x5_rel", "elev_5x5_std_dev", "slope_5x5_std_dev",
         "twi_10m", "twi_100m", "dd_s", "dd_h", "dd_v",
         # Advanced features (11)
@@ -180,7 +218,8 @@ def train_model(features, labels, watershed_name):
         print(f"{i}. {feature_names[idx]:20s} {importances[idx]:.4f}")
     
     # Save model
-    output_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output" / watershed_name
+    repo_root = get_repo_root()
+    output_dir = repo_root / "GEE" / "TIF_Output" / watershed_name
     model_path = output_dir / "random_forest_model.pkl"
 
     print(f"\nSaving model to: {model_path}")
@@ -190,14 +229,14 @@ def train_model(features, labels, watershed_name):
 
     return rf
 
-def main(watershed_name):
+def main(watershed_name, use_grid_search=False):
     """Main training pipeline"""
 
     # Load training data (real or synthetic)
     features, labels = load_training_data(watershed_name)
 
     # Train model
-    model = train_model(features, labels, watershed_name)
+    model = train_model(features, labels, watershed_name, use_grid_search=use_grid_search)
 
     print(f"\n{'='*60}")
     print("Training Complete!")
@@ -206,12 +245,20 @@ def main(watershed_name):
     print(f"  python predict_meadows.py {watershed_name}")
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
+    args = sys.argv[1:]
+    use_grid_search = False
+    if "--grid-search" in args:
+        use_grid_search = True
+        args.remove("--grid-search")
+
+    if len(args) < 1:
         print("Usage: python train_random_forest.py <watershed_name>")
+        print("       python train_random_forest.py <watershed_name> --grid-search")
         print("\nExample:")
         print("  python train_random_forest.py Bear_Creek_Watershed_10m")
         # Auto-detect if only one watershed directory exists
-        base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output"
+        repo_root = get_repo_root()
+        base_dir = repo_root / "GEE" / "TIF_Output"
         watersheds = [d.name for d in base_dir.iterdir() if d.is_dir() and not d.name.startswith('.')]
         if len(watersheds) == 1:
             watershed_name = watersheds[0]
@@ -220,6 +267,6 @@ if __name__ == "__main__":
             print(f"\nAvailable watersheds: {', '.join(watersheds)}")
             sys.exit(1)
     else:
-        watershed_name = sys.argv[1]
+        watershed_name = args[0]
 
-    main(watershed_name)
+    main(watershed_name, use_grid_search=use_grid_search)

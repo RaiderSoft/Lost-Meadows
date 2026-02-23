@@ -10,6 +10,10 @@ import joblib
 import sys
 from pathlib import Path
 
+def get_repo_root():
+    # ModelTraining/train_random_forest.py
+    return Path(__file__).resolve().parents[1]
+
 def predict_probabilities(features_path, model_path, output_path, chunk_size=1000):
     """
     Apply model to entire raster in chunks to avoid memory issues
@@ -110,8 +114,8 @@ def predict_probabilities(features_path, model_path, output_path, chunk_size=100
 
 def main(watershed_name, model_file="xgboost_model.pkl"):
     """Main prediction pipeline"""
-
-    base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output" / watershed_name
+    repo_root = get_repo_root()
+    base_dir = repo_root / "GEE" / "TIF_Output" / watershed_name
 
     if not base_dir.exists():
         print(f"ERROR: Output directory not found: {base_dir}")
@@ -162,7 +166,8 @@ if __name__ == "__main__":
         print("\nExample:")
         print("  python predict_meadows.py Bear_Creek_Watershed_10m")
         # Auto-detect if only one watershed directory exists
-        base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output"
+        repo_root = get_repo_root()
+        base_dir = repo_root / "GEE" / "TIF_Output"
         watersheds = [d.name for d in base_dir.iterdir() if d.is_dir() and not d.name.startswith('.')]
         if len(watersheds) == 1:
             watershed_name = watersheds[0]
