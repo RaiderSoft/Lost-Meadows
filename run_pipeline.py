@@ -136,8 +136,8 @@ def main(input_dem):
 
     # Step 7: Train model
     run_step(
-        "7. Train Random Forest Model (300 trees, 75/25 split)",
-        f"python train_random_forest.py {watershed_name}",
+        "7. Train XGBoost Model (300 trees, 75/25 split)",
+        f"python train_xgboost.py {watershed_name}",
         cwd=base_dir / "ModelTraining"
     )
 
