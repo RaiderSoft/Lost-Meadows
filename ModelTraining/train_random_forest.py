@@ -170,7 +170,7 @@ def train_model(features, labels, watershed_name, use_grid_search=False):
             verbose=1
         )
     
-    rf.fit(X_train, y_train)
+        rf.fit(X_train, y_train)
     
     print("\n✓ Model training complete!")
     

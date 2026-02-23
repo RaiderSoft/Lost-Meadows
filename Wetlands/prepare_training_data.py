@@ -336,7 +336,7 @@ def main(watershed_name):
     print(f"  - Wetland mask: {wetland_raster_path}")
     print(f"  - Training CSV: {training_csv}")
     print(f"\nNext: Retrain model with real wetland data")
-    print(f"  cd ~/Capstone/Lost-Meadows/ModelTraining")
+    print(f"  cd {get_repo_root() / 'ModelTraining'}")
     print(f"  python train_random_forest.py {watershed_name}")
 
     # Clean up wetland mask
@@ -362,7 +362,7 @@ if __name__ == "__main__":
         print("\nExample:")
         print("  python prepare_training_data.py Bear_Creek_Watershed_10m")
         # Auto-detect if only one watershed directory exists
-        base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output"
+        base_dir = get_repo_root() / "GEE" / "TIF_Output"
         watersheds = [d.name for d in base_dir.iterdir() if d.is_dir() and not d.name.startswith('.')]
         if len(watersheds) == 1:
             watershed_name = watersheds[0]
