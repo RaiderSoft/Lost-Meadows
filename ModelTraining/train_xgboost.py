@@ -61,25 +61,31 @@ def train_model(features, labels, watershed_name):
     print(f"Training set: {X_train.shape[0]:,} samples")
     print(f"Testing set:  {X_test.shape[0]:,} samples")
 
-    # scale_pos_weight handles class imbalance (ratio of negatives to positives)
-    neg = np.sum(y_train == 0)
-    pos = np.sum(y_train == 1)
-    scale_pos_weight = neg / pos
-
     print(f"\nTraining XGBoost...")
-    print(f"  - n_estimators:     300")
-    print(f"  - max_depth:        6")
-    print(f"  - learning_rate:    0.1")
-    print(f"  - scale_pos_weight: {scale_pos_weight:.1f} (handles 1:{int(scale_pos_weight)} imbalance)")
+    print(f"  - n_estimators:     200")
+    print(f"  - max_depth:        8")
+    print(f"  - learning_rate:    0.05")
+    print(f"  - subsample:        0.8")
+    print(f"  - colsample_bytree: 0.6")
+    print(f"  - scale_pos_weight: 3")
+    print(f"  - gamma:            0.5")
+    print(f"  - reg_alpha:        0")
+    print(f"  - reg_lambda:       2.0")
+    print(f"  - min_child_weight: 1")
     print(f"  - random_state:     42")
+    print(f"  (Parameters from RandomizedSearchCV, best CV AUC=0.9326)")
 
     xgb = XGBClassifier(
-        n_estimators=300,
-        max_depth=6,
-        learning_rate=0.1,
+        n_estimators=200,
+        max_depth=8,
+        learning_rate=0.05,
         subsample=0.8,
-        colsample_bytree=0.8,
-        scale_pos_weight=scale_pos_weight,
+        colsample_bytree=0.6,
+        scale_pos_weight=3,
+        gamma=0.5,
+        reg_alpha=0,
+        reg_lambda=2.0,
+        min_child_weight=1,
         random_state=42,
         n_jobs=-1,
         eval_metric='logloss',

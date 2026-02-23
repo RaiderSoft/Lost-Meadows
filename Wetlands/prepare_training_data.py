@@ -109,15 +109,17 @@ def load_wetlands(study_bounds):
     # PEM = Palustrine Emergent (active wet meadows)
     # PSS = Palustrine Scrub-Shrub (meadows degraded by shrub/willow encroachment)
     # PFO = Palustrine Forested (meadows degraded by conifer encroachment)
-    meadow_mask = gdf['ATTRIBUTE'].str.startswith(('PEM', 'PSS', 'PFO'))
+    meadow_mask = gdf['ATTRIBUTE'].str.startswith((
+        'PEM',   # Palustrine Emergent - active wet meadows
+        'PSS',   # Palustrine Scrub-Shrub - shrub-encroached meadows
+        # 'PFO', # Palustrine Forested - conifer-encroached meadows (disabled)
+    ))
     gdf = gdf[meadow_mask].copy()
 
     pem_count = gdf['ATTRIBUTE'].str.startswith('PEM').sum()
     pss_count = gdf['ATTRIBUTE'].str.startswith('PSS').sum()
-    pfo_count = gdf['ATTRIBUTE'].str.startswith('PFO').sum()
     print(f"  PEM (active wet meadow):          {pem_count:,}")
     print(f"  PSS (shrub-encroached meadow):    {pss_count:,}")
-    print(f"  PFO (conifer-encroached meadow):  {pfo_count:,}")
     print(f"  Total lost meadow polygons:       {len(gdf):,}")
 
     if len(gdf) == 0:
@@ -301,8 +303,8 @@ def main(watershed_name):
     features, labels = sample_training_points(
         wetland_raster, 
         str(reference_raster),
-        n_wetland=1000,
-        n_non_wetland=9000
+        n_wetland=10000,
+        n_non_wetland=90000
     )
     
     if features is None:
