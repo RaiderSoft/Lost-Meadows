@@ -27,6 +27,10 @@ pandas>=2.0.0,<3.0.0
 scikit-learn>=1.3.0,<2.0.0
 joblib>=1.3.0,<2.0.0
 
+# Experiment tracking
+mlflow>=2.10.0
+dagshub>=0.3.0
+
 # Parallel processing (requires MPI system library)
 # Ubuntu: sudo apt install mpich
 # macOS: brew install open-mpi

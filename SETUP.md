@@ -66,6 +66,7 @@ conda activate meadow
 - NumPy, SciPy, Pandas (scientific computing)
 - Scikit-learn (machine learning)
 - MPI4Py (parallel processing)
+- MLflow + DagsHub (experiment tracking)
 
 ---
 
@@ -124,7 +125,27 @@ If you see "PitRemove version 5.x.x", TauDEM is installed correctly!
 
 ---
 
-## Step 4: Get Wetland Geodatabase Files
+## Step 4: Configure DagsHub Experiment Tracking
+
+MLflow run data is stored remotely on DagsHub. Before running the pipeline:
+
+1. Create a free account at [dagshub.com](https://dagshub.com) and create a repo named `Lost-Meadows`.
+2. Open `ModelTraining/train_random_forest.py` and set your credentials at the top:
+   ```python
+   DAGSHUB_REPO_OWNER = "your-dagshub-username"
+   DAGSHUB_REPO_NAME  = "Lost-Meadows"
+   ```
+3. Authenticate DagsHub (first time only):
+   ```bash
+   python -c "import dagshub; dagshub.auth.add_app_token(input('Token: '))"
+   ```
+   Paste your DagsHub access token when prompted (Settings → Tokens on DagsHub).
+
+After training, runs will appear under the **Experiments** tab of your DagsHub repo.
+
+---
+
+## Step 5: Get Wetland Geodatabase Files
 
 **Required for training data:**
 
@@ -145,6 +166,7 @@ Lost-Meadows/
 
 ## Step 6: Verify Installation
 
+
 Run this test script to verify everything is set up correctly:
 
 ```bash
@@ -160,6 +182,8 @@ import geopandas
 import sklearn
 import numpy
 import scipy
+import mlflow
+import dagshub
 print('All Python packages installed successfully!')
 "
 
