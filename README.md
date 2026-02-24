@@ -237,6 +237,6 @@ This tool helps identify:
 <div align="center">
 
 
-[Website](https://your-username.github.io/Lost-Meadows/) • [Issues](https://github.com/your-username/Lost-Meadows/issues) • [Discussions](https://github.com/your-username/Lost-Meadows/discussions)
+[Website](https://raidersoft.github.io/Lost-Meadows/)
 
 </div>
