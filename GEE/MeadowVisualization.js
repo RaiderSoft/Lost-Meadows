@@ -1,5 +1,5 @@
 // Import the meadow probability raster as an asset
-var meadowProb = ee.Image('projects/lost-meadows/assets/Bear_Creek_1710030801_xgboost_model_probability');
+var meadowProb = ee.Image('projects/lost-meadows/assets/Bear_Creek_1710030801_xgboost_model_probability_100k_new');
 
 // Print image information to the console
 print('Meadow Probability Image:', meadowProb);
@@ -31,10 +31,10 @@ Map.addLayer(meadowBinary, {min: 0, max: 1, palette: ['white', 'darkgreen']},
              'Meadow (>50%)', false);
 
 // Confidence threshold layers
-Map.addLayer(meadowProb.gt(0.6).selfMask(), {palette: ['#41ab5d']}, 'Threshold >0.6', false);
-Map.addLayer(meadowProb.gt(0.7).selfMask(), {palette: ['#238b45']}, 'Threshold >0.7', false);
-Map.addLayer(meadowProb.gt(0.8).selfMask(), {palette: ['#006d2c']}, 'Threshold >0.8', false);
-Map.addLayer(meadowProb.gt(0.9).selfMask(), {palette: ['#00441b']}, 'Threshold >0.9', false);
+Map.addLayer(meadowProb.gt(0.6), {min: 0, max: 1, palette: ['white', '#41ab5d']}, 'Threshold >0.6', false);
+Map.addLayer(meadowProb.gt(0.7), {min: 0, max: 1, palette: ['white', '#238b45']}, 'Threshold >0.7', false);
+Map.addLayer(meadowProb.gt(0.8), {min: 0, max: 1, palette: ['white', '#006d2c']}, 'Threshold >0.8', false);
+Map.addLayer(meadowProb.gt(0.9), {min: 0, max: 1, palette: ['white', '#00441b']}, 'Threshold >0.9', false);
 
 // Add a legend
 var legend = ui.Panel({

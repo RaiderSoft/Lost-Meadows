@@ -303,8 +303,8 @@ def main(watershed_name):
     features, labels = sample_training_points(
         wetland_raster, 
         str(reference_raster),
-        n_wetland=10000,
-        n_non_wetland=90000
+        n_wetland=20000,
+        n_non_wetland=80000
     )
     
     if features is None:
