@@ -148,7 +148,7 @@ if __name__ == "__main__":
         print("\nExample:")
         print("  python stack_features.py Bear_Creek_Watershed_10m")
         # Auto-detect if only one watershed directory exists
-        base_dir = Path.home() / "Capstone" / "Lost-Meadows" / "GEE" / "TIF_Output"
+        base_dir = get_repo_root() / "GEE" / "TIF_Output"
         watersheds = [d.name for d in base_dir.iterdir() if d.is_dir() and not d.name.startswith('.')]
         if len(watersheds) == 1:
             watershed_name = watersheds[0]

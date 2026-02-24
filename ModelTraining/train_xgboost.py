@@ -18,6 +18,10 @@ from mlflow_config import init_mlflow
 
 MLFLOW_EXPERIMENT = "xgboost-meadow"
 
+def get_repo_root():
+    # ModelTraining/train_xgboost.py
+    return Path(__file__).resolve().parents[1]
+
 FEATURE_NAMES = [
     # Original 9 features
     'slope', 'elev_5x5_rel', 'elev_5x5_std_dev', 'slope_5x5_std_dev',
@@ -109,13 +113,17 @@ def train_model(features, labels, watershed_name):
         print(f"  - random_state:     42")
 
         xgb_params = {
-            "n_estimators": 300,
-            "max_depth": 6,
-            "learning_rate": 0.1,
-            "subsample": 0.8,
-            "colsample_bytree": 0.8,
-            "scale_pos_weight": round(scale_pos_weight, 4),
-            "random_state": 42,
+          "n_estimators": 200,
+          "max_depth": 8,
+          "learning_rate": 0.05,
+          "subsample": 0.8,
+          "colsample_bytree": 0.6,
+          "scale_pos_weight": round(scale_pos_weight, 4),  # dynamic, not hardcoded 3
+          "gamma": 0.5,
+          "reg_alpha": 0,
+          "reg_lambda": 2.0,
+          "min_child_weight": 1,
+          "random_state": 42,
         }
         mlflow.log_params(xgb_params)
 
