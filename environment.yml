@@ -4,7 +4,7 @@ channels:
   - defaults
 dependencies:
   # Python version
-  - python=3.10
+  - python=3.11
 
   # Core geospatial libraries
   - gdal=3.6

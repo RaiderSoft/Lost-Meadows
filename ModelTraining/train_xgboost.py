@@ -216,7 +216,7 @@ def main(watershed_name):
     print("Training Complete!")
     print(f"{'='*60}")
     print("\nTo predict with XGBoost:")
-    print(f"  python predict_meadows.py {watershed_name} --model xgboost_model.pkl")
+    print(f"  python predict_meadows.py {watershed_name} xgboost_model.pkl")
 
 
 if __name__ == "__main__":
