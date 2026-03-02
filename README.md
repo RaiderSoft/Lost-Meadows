@@ -29,8 +29,8 @@ cd Lost-Meadows
 
 # 2. Install mamba and create environment
 conda install -c conda-forge mamba -y
-conda create -n taudem_env -c conda-forge taudem python=3.11 -y
-conda activate taudem_env
+conda create -n meadow -c conda-forge taudem python=3.11 -y
+conda activate meadow
 
 # 3. Install Python dependencies
 mamba install -c conda-forge rasterio numpy scipy pandas scikit-learn geopandas xgboost mlflow -y
