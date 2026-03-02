@@ -61,8 +61,8 @@ conda install -c conda-forge mamba -y
 Then create the environment with TauDEM included:
 
 ```bash
-conda create -n taudem_env -c conda-forge taudem python=3.11 -y
-conda activate taudem_env
+conda create -n meadow -c conda-forge taudem python=3.11 -y
+conda activate meadow
 ```
 
 Then install the remaining Python packages:
