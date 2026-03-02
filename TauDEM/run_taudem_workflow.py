@@ -70,7 +70,7 @@ def main(input_dem):
     print(f"{'='*60}")
     print(f"Input: {input_dem}")
     print(f"Output: {output_dir}")
-    print(f"Cores: {ncores} (out of 16 available)\n")
+    print(f"Cores: {ncores}\n")
     
     # Helper to create output path
     def out(filename):

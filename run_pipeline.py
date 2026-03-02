@@ -14,7 +14,8 @@ Steps executed:
   2. TWI calculation (10m and 100m scales)
   3. Terrain features calculation
   4. Advanced features calculation (aspect, curvature, TPI, etc.)
-  5. Feature stacking (20 features)
+  4b. Soil features processing
+  5. Feature stacking (23 features)
   6. Training data preparation
   7. Model training
   8. Meadow probability prediction
@@ -82,7 +83,7 @@ def main(input_dem):
     print(f"Input DEM: {input_dem}")
     print(f"Watershed: {watershed_name}")
     print(f"Output directory: {base_dir}/GEE/TIF_Output/{watershed_name}")
-    print(f"\nThis will execute 8 major steps and may take 2-4 hours.")
+    print(f"\nThis will execute 9 major steps and may take 2-4 hours.")
     print(f"{'='*70}")
 
     input(f"\nPress Enter to start the pipeline...")
@@ -124,9 +125,16 @@ def main(input_dem):
         cwd=base_dir / "FeatureEngineering" / "Advanced"
     )
 
+    # Step 4b: Soil features
+    run_step(
+        "4b. Process Soil Features (depth to restrictive layer, hydraulic connectivity, organic matter)",
+        f"python calculate_soil_features.py {watershed_name}",
+        cwd=base_dir / "FeatureEngineering" / "Soil"
+    )
+
     # Step 5: Stack features
     run_step(
-        "5. Stack all 20 features into multi-band raster",
+        "5. Stack all 23 features into multi-band raster",
         f"python stack_features.py {watershed_name}",
         cwd=base_dir / "FeatureStacking"
     )
@@ -140,7 +148,7 @@ def main(input_dem):
 
     # Step 7: Train model
     run_step(
-        "7. Train XGBoost Model (300 trees, 75/25 split)",
+        "7. Train XGBoost Model (200 trees, 75/25 split)",
         f"python train_xgboost.py {watershed_name}",
         cwd=base_dir / "ModelTraining"
     )
@@ -165,11 +173,12 @@ def main(input_dem):
     print(f"Total time: {total_minutes}m {total_seconds}s")
     print(f"\nOutputs in: {output_dir}")
     print(f"\nKey files generated:")
-    print(f"  ✓ 20 feature rasters (terrain)")
+    print(f"  ✓ 23 feature rasters (terrain + soil)")
     print(f"     - dd_h, dd_s, dd_v, slope, TWI, aspect, curvature, TPI, TRI, etc.")
-    print(f"  ✓ features_stacked.tif (20-band multi-band raster)")
+    print(f"     - soil_depth_restrictive, soil_hydraulic_connectivity, soil_organic_matter")
+    print(f"  ✓ features_stacked.tif (23-band multi-band raster)")
     print(f"  ✓ training_data_real.csv")
-    print(f"  ✓ random_forest_model.pkl (trained model)")
+    print(f"  ✓ xgboost_model.pkl (trained model)")
     print(f"  ✓ {watershed_name}_meadow_probability.tif (FINAL OUTPUT)")
     print(f"\nNext steps:")
     print(f"  1. Upload {watershed_name}_meadow_probability.tif to Google Earth Engine")

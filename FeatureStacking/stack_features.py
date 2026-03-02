@@ -52,6 +52,11 @@ def stack_features(watershed_name):
         f"{output_dir}/elev_std_9x9.tif",                   # 19. Elevation std dev 9x9
         f"{output_dir}/slope_std_9x9.tif",                  # 20. Slope std dev 9x9
 
+        # Soil features (3)
+        f"{output_dir}/soil_depth_restrictive.tif",          # 21. Depth to restrictive layer
+        f"{output_dir}/soil_hydraulic_connectivity.tif",     # 22. Soil hydraulic connectivity
+        f"{output_dir}/soil_organic_matter.tif",             # 23. Soil organic matter
+
     ]
 
     feature_names = [
@@ -78,6 +83,11 @@ def stack_features(watershed_name):
         "elev_std_3x3",
         "elev_std_9x9",
         "slope_std_9x9",
+
+        # Soil features (3)
+        "soil_depth_restrictive",
+        "soil_hydraulic_connectivity",
+        "soil_organic_matter",
 
     ]
     
