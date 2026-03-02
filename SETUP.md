@@ -48,80 +48,37 @@ cd Lost-Meadows
 
 ---
 
-## Step 2: Create Conda Environment
+## Step 2: Create Conda Environment with TauDEM
 
-Create the environment with all required Python dependencies:
+The entire pipeline runs from a single conda environment with Python 3.11 and TauDEM.
 
-```bash
-# Create environment from environment.yml
-conda env create -f environment.yml
-
-# Activate the environment
-conda activate meadow
-```
-
-**What this installs:**
-- Python 3.10
-- GDAL, Rasterio, GeoPandas (geospatial tools)
-- NumPy, SciPy, Pandas (scientific computing)
-- Scikit-learn (machine learning)
-- MPI4Py (parallel processing)
-- MLflow + DagsHub (experiment tracking)
-
----
-
-## Step 3: Install TauDEM
-
-TauDEM is required for hydrological analysis.
-
-**Option 1: Install via Conda (Recommended - Easiest)**
+First, install mamba for faster dependency solving:
 
 ```bash
-# Activate your environment
-conda activate meadow
-
-# Install TauDEM from conda-forge
-conda install -c conda-forge taudem
-
-# Verify installation
-mpiexec -n 1 pitremove
+conda install -c conda-forge mamba -y
 ```
 
-**Option 2: Build from Source (If conda install fails)**
+Then create the environment with TauDEM included:
 
 ```bash
-# Install build dependencies
-sudo apt update
-sudo apt install -y cmake g++ mpich libgdal-dev gdal-bin git
-
-# Clone TauDEM repository
-cd ~
-git clone https://github.com/dtarb/TauDEM.git
-cd TauDEM
-
-# Build TauDEM
-mkdir build
-cd build
-cmake ..
-make -j$(nproc)  # Use all CPU cores for faster build
-
-# Install system-wide
-sudo make install
-
-# Return to home directory
-cd ~
+conda create -n taudem_env -c conda-forge taudem python=3.11 -y
+conda activate taudem_env
 ```
 
-**Verify TauDEM Installation:**
+Then install the remaining Python packages:
 
 ```bash
-# Should show TauDEM version info
-mpiexec -n 1 pitremove
+mamba install -c conda-forge rasterio numpy scipy pandas scikit-learn geopandas xgboost mlflow -y
+pip install dagshub
 ```
 
-If you see "PitRemove version 5.x.x", TauDEM is installed correctly!
+**Verify TauDEM installation:**
 
-**Note:** If using Option 2, building takes 5-10 minutes on most systems.
+```bash
+pitremove
+```
+
+If you see TauDEM output, the installation is working correctly.
 
 ---
 
@@ -176,14 +133,13 @@ Lost-Meadows/
 
 ## Step 6: Verify Installation
 
-
 Run this test script to verify everything is set up correctly:
 
 ```bash
 cd ~/Capstone/Lost-Meadows
 
 # Activate environment
-conda activate meadow
+conda activate taudem_env
 
 # Test imports
 python -c "
@@ -198,7 +154,7 @@ print('All Python packages installed successfully!')
 "
 
 # Test TauDEM
-mpiexec -n 1 pitremove -h > /dev/null 2>&1 && echo "TauDEM installed successfully!"
+pitremove && echo "TauDEM installed successfully!"
 
 # Check for wetland data
 if [ -d "Wetlands/OR_geodatabase_wetlands.gdb" ]; then
@@ -223,7 +179,10 @@ fi
 cd ~/Capstone/Lost-Meadows
 
 # Activate environment
-conda activate meadow
+conda activate taudem_env
+
+# Load DagsHub token
+set -a && source .env && set +a
 
 # Run the full pipeline on a test watershed
 python run_pipeline.py GEE/TIF_Input/Hunter_Creek_1710031205.tif
@@ -244,6 +203,8 @@ Lost-Meadows/
 │
 ├── GEE/
 │   ├── TIF_Input/              # Put your DEM files here
+│   │   ├── Precip/             # Regional precipitation TIF files
+│   │   └── Soil/               # Soil TIF files (depth, hydraulic, organic matter)
 │   ├── TIF_Output/             # Output folders created here
 │   ├── TIF_Export.js           # GEE script for DEM export
 │   └── MeadowVisualization.js  # GEE visualization
@@ -254,7 +215,8 @@ Lost-Meadows/
 ├── FeatureEngineering/
 │   ├── TWI/
 │   ├── Terrain/
-│   └── Advanced/
+│   ├── Advanced/
+│   └── Soil/
 │
 ├── FeatureStacking/
 │   └── stack_features.py
@@ -265,7 +227,7 @@ Lost-Meadows/
 │   └── CA_geodatabase_wetlands.gdb/  # Download these!
 │
 └── ModelTraining/
-    ├── train_random_forest.py
+    ├── train_xgboost.py
     └── predict_meadows.py
 ```
 
@@ -279,12 +241,12 @@ Lost-Meadows/
 - Make sure you ran `source ~/.bashrc` after installation
 
 ### Issue: "TauDEM not found"
-- Make sure MPI is installed: `mpiexec --version`
-- Reinstall TauDEM: `sudo apt install -y taudem`
+- Make sure you are in the `taudem_env` environment: `conda activate taudem_env`
+- Verify with: `pitremove`
 
 ### Issue: "GDAL ERROR: ..."
-- Ensure GDAL is installed: `gdalinfo --version`
-- Recreate conda environment: `conda env remove -n meadow && conda env create -f environment.yml`
+- Ensure you are in the correct environment: `conda activate taudem_env`
+- Reinstall: `mamba install -c conda-forge rasterio gdal -y`
 
 ### Issue: "No wetland data found"
 - Download the geodatabase files (Step 4)
@@ -343,11 +305,16 @@ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
 source ~/.bashrc
 
-# 2. Create environment (once)
-conda env create -f environment.yml
+# 2. Install mamba and create environment (once)
+conda install -c conda-forge mamba -y
+conda create -n taudem_env -c conda-forge taudem python=3.11 -y
+conda activate taudem_env
+mamba install -c conda-forge rasterio numpy scipy pandas scikit-learn geopandas xgboost mlflow -y
+pip install dagshub
 
 # 3. Activate environment (every session)
-conda activate meadow
+conda activate taudem_env
+set -a && source .env && set +a
 
 # 4. Run pipeline
 python run_pipeline.py GEE/TIF_Input/your_watershed.tif

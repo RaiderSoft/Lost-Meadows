@@ -12,7 +12,7 @@ Automated pipeline for detecting historical and unmapped meadow locations using 
 
 ## What It Does
 
-Takes a **10m elevation raster** → Generates **20 terrain features** → Trains **Random Forest model** → Outputs **meadow probability map**
+Takes a **10m elevation raster** → Generates **23 terrain and soil features** → Trains **XGBoost model** → Outputs **meadow probability map**
 
 **Input**: Digital Elevation Model (DEM) from Google Earth Engine
 **Output**: Probability map showing where meadows likely exist (0.0 - 1.0 scale)
@@ -27,12 +27,14 @@ Takes a **10m elevation raster** → Generates **20 terrain features** → Train
 git clone https://github.com/your-username/Lost-Meadows.git
 cd Lost-Meadows
 
-# 2. Set up environment
-conda env create -f environment.yml
-conda activate meadow
+# 2. Install mamba and create environment
+conda install -c conda-forge mamba -y
+conda create -n taudem_env -c conda-forge taudem python=3.11 -y
+conda activate taudem_env
 
-# 3. Install TauDEM (Ubuntu/WSL2)
-sudo apt install taudem
+# 3. Install Python dependencies
+mamba install -c conda-forge rasterio numpy scipy pandas scikit-learn geopandas xgboost mlflow -y
+pip install dagshub
 ```
 
  **Full installation guide**: See [SETUP.md](SETUP.md) for detailed instructions (including Windows/macOS)
@@ -52,9 +54,9 @@ python run_pipeline.py GEE/TIF_Input/Hunter_Creek_1710031205.tif
 ```mermaid
 graph LR
     A[DEM<br/>Elevation] --> B[TauDEM<br/>Hydro Features]
-    B --> C[Feature Eng<br/>20 Features]
+    B --> C[Feature Eng<br/>23 Features]
     C --> D[Training Data<br/>OR/CA Wetlands]
-    D --> E[Random Forest<br/>300 trees]
+    D --> E[XGBoost<br/>200 trees]
     E --> F[Prediction<br/>Probability Map]
 ```
 
@@ -65,10 +67,12 @@ graph LR
 | **1. TauDEM** | Hydrological analysis | Flow direction, stream network, distances |
 | **2. TWI** | Topographic Wetness Index | TWI at 10m and 100m scales |
 | **3. Terrain** | Slope & variability | Slope, relative elevation, std deviations |
-| **4. Stacking** | Combine features | 20-band multi-layer raster |
-| **5. Training** | Sample wetlands | 10,000 labeled pixels (1:9 ratio) |
-| **6. Model** | Random Forest ML | Trained classifier (.pkl) |
-| **7. Prediction** | Apply to watershed | Meadow probability map (0-1) |
+| **4. Advanced** | Aspect, curvature, TPI, TRI | 11 additional terrain features |
+| **4b. Soil** | Soil properties | Depth to restrictive layer, hydraulic connectivity, organic matter |
+| **5. Stacking** | Combine features | 23-band multi-layer raster |
+| **6. Training** | Sample wetlands | 100,000 labeled pixels (1:4 ratio) |
+| **7. Model** | XGBoost ML | Trained classifier (.pkl) |
+| **8. Prediction** | Apply to watershed | Meadow probability map (0-1) |
 
 ### Features Generated
 
@@ -96,13 +100,19 @@ Lost-Meadows/
 │   ├── TIF_Export.js            # Export DEMs from GEE
 │   ├── MeadowVisualization.js   # Interactive map viewer
 │   ├── TIF_Input/               # Place input DEMs here
+│   │   ├── Precip/              # Regional precipitation TIF files
+│   │   └── Soil/                # Soil TIF files (see below)
 │   └── TIF_Output/              # Results organized by watershed name
 │       ├── Hunter_Creek_1710031205/
 │       ├── Bear_Creek_1710030801/
 │       └── ...
 │
 ├── TauDEM/                      # Hydrological processing
-├── FeatureEngineering/          # Terrain feature calculation
+├── FeatureEngineering/          # Terrain and soil feature calculation
+│   ├── TWI/
+│   ├── Terrain/
+│   ├── Advanced/
+│   └── Soil/                    # Soil feature processing
 ├── FeatureStacking/             # Combine into multi-band raster
 ├── Wetlands/                    # Training data preparation
 │   ├── OR_geodatabase_wetlands.gdb/  # Download separately
@@ -131,7 +141,7 @@ python run_pipeline.py GEE/TIF_Input/Bear_Creek_1710030801.tif
 ### Run Individual Steps
 
 ```bash
-conda activate meadow
+conda activate taudem_env
 
 # Step 1: TauDEM
 cd TauDEM
@@ -169,9 +179,9 @@ python predict_meadows.py Hunter_Creek_1710031205
 ## Model Performance
 
 Based on Cummings et al. (2023) with expanded feature set:
-- **Algorithm**: Random Forest (300 trees)
-- **Features**: 20 hydrogeomorphic variables (expanded from original 9)
-- **Training**: 1:9 class imbalance (meadow:non-meadow)
+- **Algorithm**: XGBoost (200 trees)
+- **Features**: 23 hydrogeomorphic and soil variables (expanded from original 9)
+- **Training**: 1:4 class imbalance (meadow:non-meadow)
 - **Validation**: 75/25 train/test split
 - **Expected AUC**: >0.89 for local models
 
@@ -192,6 +202,10 @@ Based on Cummings et al. (2023) with expanded feature set:
 
 **Data:**
 - Oregon/California wetland geodatabases (~2.4 GB total)
+- Soil TIF files placed in `GEE/TIF_Input/Soil/`:
+  - `soil_depth_restrictive.tif`
+  - `soil_hydraulic_connectivity.tif`
+  - `soil_organic_matter.tif`
 - See [SETUP.md](SETUP.md) for download links
 
 ---
