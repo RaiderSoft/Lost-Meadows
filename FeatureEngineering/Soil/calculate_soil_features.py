@@ -87,19 +87,19 @@ def process_soil_features(watershed_name):
     # Format: (input_filename, output_name, description, resampling_method)
     soil_layers = [
         (
-            "depth_to_restrictive_layer.tif",
+            "soil_depth_restrictive.tif",
             "soil_depth_restrictive",
             "Depth to restrictive layer (cm)",
             Resampling.bilinear,
         ),
         (
-            "hydraulic_connectivity.tif",
+            "soil_hydraulic_connectivity.tif",
             "soil_hydraulic_connectivity",
             "Soil hydraulic connectivity (mm/hr)",
             Resampling.bilinear,
         ),
         (
-            "organic_matter_pct.tif",
+            "soil_organic_matter.tif",
             "soil_organic_matter",
             "Soil organic matter (% by weight)",
             Resampling.bilinear,
@@ -124,6 +124,7 @@ def process_soil_features(watershed_name):
             print(f"  Source resolution: {src.res[0]:.1f}m")
             print(f"  Source CRS: {src.crs}")
             print(f"  Source nodata: {src.nodata}")
+            src_nodata = src.nodata
 
             output_data = np.zeros((ref_height, ref_width), dtype=np.float32)
 
@@ -136,6 +137,10 @@ def process_soil_features(watershed_name):
                 dst_crs=ref_crs,
                 resampling=resampling,
             )
+
+        # Mask out nodata values (-9999) that may bleed in from bilinear interpolation
+        if src_nodata is not None:
+            output_data[output_data <= src_nodata * 0.9] = np.nan
 
         # Write output
         output_file = output_dir / f"{output_name}.tif"

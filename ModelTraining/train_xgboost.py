@@ -29,7 +29,9 @@ FEATURE_NAMES = [
     # Advanced features (11)
     'aspect', 'curvature_profile', 'curvature_plan', 'elevation',
     'tpi_3x3', 'tpi_11x11', 'tpi_21x21', 'tri',
-    'elev_std_3x3', 'elev_std_9x9', 'slope_std_9x9'
+    'elev_std_3x3', 'elev_std_9x9', 'slope_std_9x9',
+    # Soil features (3)
+    'soil_depth_restrictive', 'soil_hydraulic_connectivity', 'soil_organic_matter'
 ]
 
 def get_repo_root():
@@ -106,7 +108,7 @@ def train_model(features, labels, watershed_name):
 
         # ---- model training ---------------------------------------------
         print(f"\nTraining XGBoost...")
-        print(f"  - n_estimators:     300")
+        print(f"  - n_estimators:     200")
         print(f"  - max_depth:        6")
         print(f"  - learning_rate:    0.1")
         print(f"  - scale_pos_weight: {scale_pos_weight:.1f} (handles 1:{int(scale_pos_weight)} imbalance)")
@@ -188,7 +190,7 @@ def train_model(features, labels, watershed_name):
         indices = np.argsort(importances)[::-1]
 
         for i, idx in enumerate(indices, 1):
-            print(f"{i:2d}. {FEATURE_NAMES[idx]:20s} {importances[idx]:.4f}")
+            print(f"{i:2d}. {FEATURE_NAMES[idx]:35s} {importances[idx]:.4f}")
 
         for name, imp in zip(FEATURE_NAMES, importances):
             mlflow.log_metric(f"importance_{name}", round(float(imp), 6))
