@@ -91,33 +91,6 @@ header.scrolled {
   margin: 0;
 }
 
-/* Ensure anchor inside header logo keeps the same heading styles */
-.logo { margin: 0; }
-
-.logo a,
-.logo a:link,
-.logo a:visited {
-  font: inherit;
-  color: inherit;
-  text-decoration: none;
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  display: inline-block;
-}
-
-.logo a:hover,
-.logo a:focus {
-  text-decoration: underline;
-}
-
-.logo a:focus {
-  box-shadow: 0 0 0 3px rgba(74,124,44,0.15);
-  border-radius: 4px;
-  outline: none;
-}
-
 .nav-menu {
   display: flex;
   list-style: none;
