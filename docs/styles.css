@@ -144,6 +144,33 @@ header.scrolled {
   display: none;
 }
 
+.launch-app-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: 1.5rem;
+  padding: 0.5rem 1.2rem;
+  background: linear-gradient(135deg, var(--accent-green), var(--light-green));
+  color: var(--white);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-radius: 999px;
+  border: 2px solid var(--light-green);
+  box-shadow: 0 3px 10px rgba(144, 198, 149, 0.4);
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.launch-app-btn:hover {
+  background: linear-gradient(135deg, var(--light-green), var(--secondary-green));
+  border-color: var(--secondary-green);
+  box-shadow: 0 5px 16px rgba(74, 124, 44, 0.45);
+  transform: translateY(-2px);
+  color: var(--white);
+}
+
 /* Main content */
 main {
   margin-top: 70px;
