@@ -46,7 +46,7 @@ Users will be able to adjust environmental condition sliders — such as snowpac
 
 - The GEE app presents sliders on the side panel for key environmental variables (snowpack and drought/EDDI).
 - Adjusting sliders updates a visual overlay showing how those conditions manifest across the landscape; the underlying meadow predictions do not change.
- 
+
 ### Known Risks
 
 - Desired slider variables may not be available in GEE at the required resolution.
@@ -77,6 +77,7 @@ Users will be able to export information about specific meadows (acreage, rainfa
 - Exported data may lack important metadata or context if not carefully structured.
 
 ### Definition of Done
+
 Users launch the GEE application, filter to their desired location, press the export button, and successfully download a file containing meadow information with complete metadata.
 
 ---
