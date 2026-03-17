@@ -4,11 +4,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const logoIcon = document.querySelector(".logo-icon");
 
   if (!logo || !logoIcon) {
-    console.log("Logo or icon not found");
     return;
   }
-
-  console.log("Starting logo animation");
 
   // Hide icon initially for animation
   logoIcon.style.opacity = "0";

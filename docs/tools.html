@@ -43,104 +43,66 @@
 
       <section class="section">
         <div class="container">
-          <h2>Technology Stack</h2>
-          <div class="content">
-            <p>
-              We've carefully selected a robust technology stack that enables us
-              to build scalable, efficient, and maintainable solutions for
-              environmental conservation.
-            </p>
-
-            <div class="tech-grid">
-              <!-- Frontend -->
-              <div class="tech-category">
-                <h3>Frontend Development</h3>
-                <div class="tech-items">
-                  <div class="tech-item">
-                    <h4>Static Site</h4>
-                    <p>HTML, CSS, Java Script</p>
-                  </div>
-                  <div class="tech-item">
-                    <h4>Google Earth Engine App</h4>
-                    <p>Java Script</p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Backend -->
-              <div class="tech-category">
-                <h3>Machine Learning</h3>
-                <div class="tech-items">
-                  <div class="tech-item">
-                    <h4>Data Cleaning</h4>
-                    <p>Python, Pandas, Numpy</p>
-                  </div>
-                  <div class="tech-item">
-                    <h4>Machine Training</h4>
-                    <p>SciKit Learn, Tensor Flow, Pandas</p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Cloud & DevOps -->
-              <div class="tech-category">
-                <h3>Cloud Hosting</h3>
-                <div class="tech-items">
-                  <div class="tech-item">
-                    <h4>Google Cloud</h4>
-                    <p>Google Cloud Run, Google Earth Engine</p>
-                  </div>
-                  <div class="tech-item">
-                    <h4>Version Control</h4>
-                    <p>GitHub, Google Earth Engine Repositories</p>
-                  </div>
-                </div>
-              </div>
+          <!-- Core Platform -->
+          <div class="core-platform-card">
+            <div class="core-platform-label">CORE<br />PLATFORM</div>
+            <div class="core-platform-content">
+              <h3>Google Earth Engine</h3>
+              <p>
+                Digital Elevation Model (DEM) data source (USGS 3DEP 10m) and
+                final visualization platform. The output GeoTIFF probability
+                raster is uploaded to GEE and displayed with a color scale with
+                multiple threshold layers.
+              </p>
             </div>
           </div>
-        </div>
-      </section>
 
-      <section class="section bg-light">
-        <div class="container">
-          <h2>Development Tools</h2>
-          <div class="content">
-            <div class="tools-grid">
-              <div class="tool-card">
-                <h3>Version Control</h3>
-                <p><strong>GitHub, Google Earth Engine Repositories</strong></p>
-                <p>For multiple developers working on the same code</p>
-              </div>
+          <!-- TauDEM + Python ML Stack -->
+          <div class="tools-grid-2">
+            <div class="tool-card">
+              <h3>TauDEM</h3>
+              <p>
+                Hydrological processing suite that fills pits, computes flow
+                direction, and calculates drainage density in 3 directions
+                (horizontal, vertical, slope). Provides core water-flow features
+                that define where meadows form.
+              </p>
+            </div>
 
-              <div class="tool-card">
-                <h3>Project Management</h3>
-                <p><strong>Github Issues</strong></p>
-                <p>For task tracking and project organization</p>
-              </div>
+            <div class="tool-card">
+              <h3>Python ML Stack</h3>
+              <p>
+                Scikit-Learn · Pandas · GeoPandas · Rasterio · NumPy · Shapely ·
+                JobLib — feature engineering, RandomizedSearchCV hyperparameter
+                tuning, model training, and chunked raster prediction.
+              </p>
+            </div>
+          </div>
 
-              <div class="tool-card">
-                <h3>Design Tools</h3>
-                <p><strong>Figma, Canva</strong></p>
-                <p>For UI/UX design and prototyping</p>
-              </div>
+          <!-- XGBoost + NWI + GitHub Pages -->
+          <div class="tools-grid-3">
+            <div class="tool-card">
+              <h3>XGBoost</h3>
+              <p>
+                Similar to Random Forests but builds trees sequentially instead
+                of in parallel. Each new tree tries to correct previous errors.
+              </p>
+            </div>
 
-              <div class="tool-card">
-                <h3>Testing</h3>
-                <p><strong>N/A</strong></p>
-                <p>N/A</p>
-              </div>
+            <div class="tool-card">
+              <h3>NWI Geodatabase</h3>
+              <p>
+                National Wetland Inventory (OR &amp; CA) — source of training
+                labels for different types of meadows.
+              </p>
+            </div>
 
-              <div class="tool-card">
-                <h3>Communication</h3>
-                <p><strong>Slack, Discord</strong></p>
-                <p>For team communication and collaboration</p>
-              </div>
-
-              <div class="tool-card">
-                <h3>Documentation</h3>
-                <p><strong>Google Drive</strong></p>
-                <p>For project documentation and knowledge sharing</p>
-              </div>
+            <div class="tool-card">
+              <h3>GitHub Pages</h3>
+              <p>
+                Static site hosting for the public project landing page and app
+                launch point.
+              </p>
             </div>
           </div>
         </div>

@@ -1,7 +1,6 @@
 // Enhanced navigation with scroll effects
 (function () {
   const header = document.querySelector("header");
-  let lastScroll = 0;
 
   window.addEventListener("scroll", () => {
     const currentScroll = window.pageYOffset;
@@ -12,7 +11,5 @@
     } else {
       header.classList.remove("scrolled");
     }
-
-    lastScroll = currentScroll;
   });
 })();
