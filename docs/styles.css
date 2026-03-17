@@ -21,8 +21,9 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+    Cantarell, sans-serif;
   line-height: 1.6;
   color: var(--text-dark);
   background-color: var(--cream);
@@ -164,7 +165,11 @@ header.scrolled {
 }
 
 .launch-app-btn:hover {
-  background: linear-gradient(135deg, var(--light-green), var(--secondary-green));
+  background: linear-gradient(
+    135deg,
+    var(--light-green),
+    var(--secondary-green)
+  );
   border-color: var(--secondary-green);
   box-shadow: 0 5px 16px rgba(74, 124, 44, 0.45);
   transform: translateY(-2px);
@@ -206,7 +211,8 @@ main {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: radial-gradient(
+  background-image:
+    radial-gradient(
       circle at 20% 50%,
       rgba(255, 255, 255, 0.15) 0%,
       transparent 50%
@@ -1064,7 +1070,9 @@ footer p {
 .fade-in-section {
   opacity: 0;
   transform: translateY(15px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
 }
 
 .fade-in-section.is-visible {
