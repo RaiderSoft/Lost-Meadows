@@ -377,22 +377,6 @@ h3 {
   border-color: var(--secondary-green);
 }
 
-/* Overview content */
-.overview-list {
-  list-style: none;
-  padding: 0;
-  margin: 2rem 0;
-}
-
-.overview-list li {
-  padding: 1rem 1.5rem;
-  margin-bottom: 1rem;
-  background: var(--white);
-  border-left: 4px solid var(--light-green);
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-
 /* Client page styles */
 .client-card {
   background: var(--white);
@@ -504,59 +488,13 @@ h3 {
 }
 
 .problem-statement,
-.solution-overview,
-.expected-outcomes {
+.solution-overview {
   background: var(--white);
   padding: 2rem;
   border-radius: 10px;
   margin-bottom: 2rem;
   border-left: 5px solid var(--secondary-green);
   box-shadow: 0 4px 10px rgba(45, 80, 22, 0.1);
-}
-
-.problem-details,
-.solution-goals {
-  margin-top: 2rem;
-}
-
-.detail-card {
-  background: var(--white);
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(45, 80, 22, 0.1);
-  margin-bottom: 2rem;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid var(--accent-green);
-}
-
-.detail-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 30px rgba(45, 80, 22, 0.2);
-  border-color: var(--secondary-green);
-}
-
-.detail-card ul {
-  padding-left: 1.5rem;
-  margin-top: 1rem;
-}
-
-.detail-card li {
-  margin-bottom: 0.75rem;
-  color: var(--text-dark);
-}
-
-.goals-list {
-  list-style: none;
-  padding: 0;
-  margin-top: 1.5rem;
-}
-
-.goals-list li {
-  padding: 1rem 1.5rem;
-  margin-bottom: 1rem;
-  background: var(--cream);
-  border-left: 4px solid var(--light-green);
-  border-radius: 5px;
 }
 
 /* Team page styles - 3D Flip Cards */
@@ -628,16 +566,6 @@ h3 {
 }
 
 /* Back card content - hidden by default */
-.team-card-back h3,
-.team-card-back .team-role,
-.team-card-back .team-bio,
-.team-card-back .team-contact {
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  transition-delay: 0s;
-}
-
-/* Remove the duplicate rules and keep only this clean version */
 .team-card-back {
   background: linear-gradient(135deg, var(--white) 0%, var(--cream) 100%);
   border: 2px solid var(--secondary-green);
@@ -748,20 +676,6 @@ h3 {
   background: rgba(45, 80, 22, 0.3);
 }
 
-.flip-hint {
-  color: var(--white);
-  font-size: 0.85rem;
-  font-weight: 600;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: all 0.3s ease;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.team-card-container:hover .flip-hint {
-  opacity: 1;
-  transform: translateY(0);
-}
 
 .team-card-front h3 {
   font-size: 1.5rem;
@@ -818,75 +732,7 @@ h3 {
   color: var(--text-light);
 }
 
-.collaboration-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
-.collaboration-card {
-  background: var(--white);
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(45, 80, 22, 0.1);
-  border-left: 5px solid var(--light-green);
-}
-
 /* Tools page styles */
-.tech-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
-.tech-category {
-  background: var(--white);
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(45, 80, 22, 0.1);
-  border-top: 4px solid var(--secondary-green);
-}
-
-.tech-category h3 {
-  color: var(--primary-green);
-  margin-bottom: 1.5rem;
-  font-size: 1.3rem;
-}
-
-.tech-items {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.tech-item {
-  padding: 1rem;
-  background: var(--cream);
-  border-radius: 8px;
-  border-left: 3px solid var(--light-green);
-}
-
-.tech-item h4 {
-  color: var(--secondary-green);
-  margin-bottom: 0.5rem;
-  font-size: 1.1rem;
-}
-
-.tech-item p {
-  font-size: 0.95rem;
-  margin-bottom: 0;
-  color: var(--text-light);
-}
-
-.tools-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-top: 2rem;
-}
-
 .tool-card {
   background: var(--white);
   padding: 1.5rem;
@@ -917,19 +763,50 @@ h3 {
   color: var(--secondary-green);
 }
 
-.rationale {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
+/* Tools page layout */
+.core-platform-card {
+  display: flex;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(45, 80, 22, 0.15);
+  overflow: hidden;
   margin-top: 2rem;
+  border: 1px solid var(--accent-green);
 }
 
-.rationale-item {
+.core-platform-label {
+  background: var(--primary-green);
+  color: var(--accent-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  min-width: 120px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+}
+
+.core-platform-content {
   background: var(--white);
   padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(45, 80, 22, 0.1);
-  border-left: 5px solid var(--light-green);
+  flex: 1;
+}
+
+
+.tools-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.tools-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 1.5rem;
 }
 
 /* Video page styles */
@@ -942,111 +819,6 @@ h3 {
   position: relative;
   width: 100%;
   margin-bottom: 2rem;
-}
-
-.video-placeholder {
-  background: var(--white);
-  border: 3px dashed var(--light-green);
-  border-radius: 15px;
-  padding: 3rem;
-  text-align: center;
-  min-height: 500px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.video-content h3 {
-  color: var(--primary-green);
-  margin-bottom: 1rem;
-  font-size: 2rem;
-}
-
-.video-instructions {
-  margin-top: 2rem;
-  background: var(--cream);
-  padding: 2rem;
-  border-radius: 10px;
-  border: 2px solid var(--accent-green);
-}
-
-.embed-examples {
-  text-align: left;
-  margin-top: 1.5rem;
-}
-
-.embed-examples h4 {
-  color: var(--secondary-green);
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.embed-examples code {
-  display: block;
-  background: var(--white);
-  padding: 1rem;
-  border-radius: 5px;
-  border-left: 3px solid var(--light-green);
-  font-size: 0.85rem;
-  overflow-x: auto;
-  margin-bottom: 1rem;
-  color: var(--text-dark);
-}
-
-.highlights-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
-.highlight-card {
-  background: var(--white);
-  padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(45, 80, 22, 0.1);
-  text-align: center;
-  border: 2px solid var(--accent-green);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.highlight-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 35px rgba(45, 80, 22, 0.25);
-  border-color: var(--secondary-green);
-}
-
-.resources {
-  background: var(--white);
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(45, 80, 22, 0.1);
-}
-
-.resources-list {
-  list-style: none;
-  padding: 0;
-  margin-top: 1.5rem;
-}
-
-.resources-list li {
-  padding: 1rem 1.5rem;
-  margin-bottom: 1rem;
-  background: var(--cream);
-  border-left: 4px solid var(--light-green);
-  border-radius: 5px;
-}
-
-.resources-list a {
-  color: var(--secondary-green);
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s ease;
-}
-
-.resources-list a:hover {
-  color: var(--primary-green);
-  text-decoration: underline;
 }
 
 /* Footer */
@@ -1149,14 +921,15 @@ footer p {
 
   .feature-grid,
   .team-grid,
-  .tools-grid,
-  .highlights-grid,
-  .rationale {
+  .tools-grid-2,
+  .tools-grid-3 {
     grid-template-columns: 1fr;
   }
 
-  .tech-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .core-platform-label {
+    min-width: 90px;
+    font-size: 0.85rem;
+    padding: 1.5rem 1rem;
   }
 
   .team-card-container {
@@ -1168,10 +941,6 @@ footer p {
     height: 160px;
   }
 
-  .video-placeholder {
-    padding: 2rem;
-    min-height: 350px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -1210,7 +979,4 @@ footer p {
     height: 500px; /* Increased from 400px */
   }
 
-  .tech-grid {
-    grid-template-columns: 1fr;
-  }
 }
