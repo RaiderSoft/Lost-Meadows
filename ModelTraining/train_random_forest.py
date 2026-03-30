@@ -2,6 +2,19 @@
 """
 Train Random Forest model for meadow detection
 Uses real wetland labels from CSV if available, otherwise falls back to synthetic labels
+
+NOTE FOR NEW USERS:
+This script is NOT part of the main production pipeline (run_pipeline.py).
+It is kept for model comparison and validation purposes only.
+
+The primary model is XGBoost (train_xgboost.py), which outperformed Random Forest
+on this dataset. This script lets you run a Random Forest on the same data to
+verify that XGBoost is still the better choice, or to experiment with alternative
+approaches. Results are tracked separately in MLflow under the "random-forest-meadow"
+experiment so they can be compared side-by-side with XGBoost runs.
+
+To run comparison:
+    python train_random_forest.py <watershed_name>
 """
 
 import rasterio
