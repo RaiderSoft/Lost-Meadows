@@ -45,16 +45,11 @@ cd Lost-Meadows
 
 ## Step 2: Create the Conda Environment
 
-Install mamba for faster dependency resolution, then create the environment with TauDEM and Python 3.11:
+The repository includes `environment.yml` which specifies every dependency including TauDEM, all Python packages, mlflow, and dagshub. This is the recommended way to set up the environment:
 
 ```bash
-conda install -c conda-forge mamba -y
-
-conda create -n meadow -c conda-forge taudem python=3.11 -y
+conda env create -f environment.yml
 conda activate meadow
-
-mamba install -c conda-forge rasterio numpy scipy pandas scikit-learn geopandas xgboost mlflow -y
-pip install dagshub
 ```
 
 **Verify TauDEM is working:**
@@ -64,6 +59,21 @@ pitremove
 ```
 
 You should see TauDEM output. If it says "command not found", make sure you are in the `meadow` environment.
+
+<details>
+<summary>Manual install (if environment.yml fails)</summary>
+
+```bash
+conda install -c conda-forge mamba -y
+
+conda create -n meadow -c conda-forge taudem python=3.11 -y
+conda activate meadow
+
+mamba install -c conda-forge rasterio numpy scipy pandas scikit-learn geopandas xgboost -y
+pip install mlflow dagshub
+```
+
+</details>
 
 ---
 
@@ -294,11 +304,8 @@ Lost-Meadows/
 
 ```bash
 # One-time setup
-conda install -c conda-forge mamba -y
-conda create -n meadow -c conda-forge taudem python=3.11 -y
+conda env create -f environment.yml
 conda activate meadow
-mamba install -c conda-forge rasterio numpy scipy pandas scikit-learn geopandas xgboost mlflow -y
-pip install dagshub
 
 # Every session
 conda activate meadow
