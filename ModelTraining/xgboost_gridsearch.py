@@ -2,6 +2,20 @@
 """
 Randomized hyperparameter search for XGBoost meadow detection model
 Uses 10k samples for speed, then reports best parameters to use in train_xgboost.py
+
+NOTE FOR NEW USERS:
+This script is NOT part of the main production pipeline (run_pipeline.py).
+It is a standalone tuning utility used to find the best hyperparameters for XGBoost.
+
+How to use it:
+    1. Run this script on a watershed to search across many parameter combinations:
+           python xgboost_gridsearch.py <watershed_name>
+    2. It will print the best parameters found.
+    3. Copy those parameters manually into train_xgboost.py to use them in production.
+
+This search runs on a 10k sample subset for speed. Once good parameters are found
+they should be locked into train_xgboost.py — do not run this script on every
+pipeline run, only when you want to re-tune the model.
 """
 
 import numpy as np
@@ -17,11 +31,15 @@ def get_repo_root():
     return Path(__file__).resolve().parents[1]
 
 FEATURE_NAMES = [
+    # Terrain features (9)
     'slope', 'elev_5x5_rel', 'elev_5x5_std_dev', 'slope_5x5_std_dev',
     'twi_10m', 'twi_100m', 'dd_s', 'dd_h', 'dd_v',
+    # Advanced terrain features (11)
     'aspect', 'curvature_profile', 'curvature_plan', 'elevation',
     'tpi_3x3', 'tpi_11x11', 'tpi_21x21', 'tri',
-    'elev_std_3x3', 'elev_std_9x9', 'slope_std_9x9'
+    'elev_std_3x3', 'elev_std_9x9', 'slope_std_9x9',
+    # Soil features (3)
+    'soil_depth_restrictive', 'soil_hydraulic_connectivity', 'soil_organic_matter',
 ]
 
 def main(watershed_name):
