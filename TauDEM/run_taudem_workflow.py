@@ -15,6 +15,7 @@ import sys
 import os
 import numpy as np
 import rasterio
+from scipy.ndimage import distance_transform_edt
 from pathlib import Path
 
 def run_cmd(cmd, description):
@@ -44,48 +45,45 @@ def extract_watershed_name(input_dem):
     """
     return Path(input_dem).stem
 
-def fix_stream_pixel_distances(output_dir, base):
+def fix_distance_rasters(output_dir):
     """
-    TauDEM's dinfdistdown outputs NoData for pixels that lie on the stream
-    network itself (where _src.tif == 1), because the downslope distance is
-    undefined when you are already at the stream.
+    TauDEM's dinfdistdown leaves invalid values (nodata sentinel ~-3.4e38 and
+    Inf) in the distance rasters for pixels where it cannot determine a valid
+    downslope flow path — typically at watershed boundary edges and flow
+    divides. These invalid pixels are dropped by predict_meadows.py, creating
+    gaps in the final output.
 
-    This causes a gap of missing pixels along every stream in the final
-    meadow probability output — predict_meadows.py masks out any pixel where
-    a feature value is below -1e30, which catches TauDEM's NoData sentinel
-    (~-3.4e38).
-
-    The correct value for stream pixels is 0 — they are literally zero distance
-    from the stream. This function replaces those NoData values with 0 so that
-    stream-adjacent and riparian pixels are not incorrectly dropped from
-    the prediction.
+    This function fills those invalid pixels using nearest-neighbor
+    interpolation from surrounding valid pixels, recovering ~1.4M pixels
+    that would otherwise be missing from the prediction.
     """
-    stream_file = os.path.join(output_dir, f"{base}_src.tif")
     distance_files = ["dd_s.tif", "dd_h.tif", "dd_v.tif"]
 
     print(f"\n{'='*60}")
-    print("Fixing NoData in stream distance rasters")
+    print("Fixing invalid pixels in stream distance rasters")
     print(f"{'='*60}")
-
-    with rasterio.open(stream_file) as src:
-        stream_mask = src.read(1) == 1
-
-    print(f"Stream pixels identified: {np.sum(stream_mask):,}")
 
     for fname in distance_files:
         fpath = os.path.join(output_dir, fname)
         with rasterio.open(fpath) as src:
             profile = src.profile.copy()
-            data = src.read(1)
+            data = src.read(1).astype(np.float32)
 
-        nodata_pixels = stream_mask & (data < -1e10)
-        n_fixed = int(np.sum(nodata_pixels))
-        data[nodata_pixels] = 0.0
+        invalid = np.isnan(data) | np.isinf(data) | (data < -1e10)
+        n_invalid = int(invalid.sum())
+
+        if n_invalid > 0:
+            # distance_transform_edt returns the indices of the nearest valid
+            # pixel for every invalid pixel — fill from those neighbours
+            _, nearest = distance_transform_edt(
+                invalid, return_distances=True, return_indices=True
+            )
+            data[invalid] = data[nearest[0][invalid], nearest[1][invalid]]
 
         with rasterio.open(fpath, "w", **profile) as dst:
             dst.write(data, 1)
 
-        print(f"  ✓ {fname}: replaced {n_fixed:,} NoData stream pixels with 0")
+        print(f"  ✓ {fname}: filled {n_invalid:,} invalid pixels via nearest-neighbour")
 
 
 def main(input_dem):
@@ -186,11 +184,11 @@ def main(input_dem):
         "Step 7c: Distance to stream (vertical)"
     )
 
-    # Step 8: Fix NoData in stream distance rasters
-    # dinfdistdown outputs NoData for pixels ON the stream network. Those pixels
-    # are dropped by predict_meadows.py, creating visible gaps along every stream
-    # in the final output. The correct value is 0 (zero distance from the stream).
-    fix_stream_pixel_distances(output_dir, base)
+    # Step 8: Fix invalid pixels in stream distance rasters
+    # dinfdistdown leaves nodata sentinels (~-3.4e38) and Inf values for pixels
+    # where it cannot compute a valid downslope path (boundary edges, flow divides).
+    # These are filled via nearest-neighbor interpolation so no pixels are dropped.
+    fix_distance_rasters(output_dir)
 
     print(f"\n{'='*60}")
     print(f"TauDEM workflow completed successfully!")

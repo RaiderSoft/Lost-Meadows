@@ -13,7 +13,7 @@ Adds 11 new features:
 
 import rasterio
 import numpy as np
-from scipy.ndimage import generic_filter, uniform_filter
+from scipy.ndimage import generic_filter, uniform_filter, distance_transform_edt
 import sys
 from pathlib import Path
 
@@ -79,6 +79,24 @@ def calculate_tri(elevation):
     return tri.astype(np.float32)
 
 
+def fill_boundary_nans(data, watershed_mask):
+    """
+    Fill NaN pixels that are inside the watershed but got NaN'd due to edge
+    effects in gradient or windowed filter operations. Uses nearest-neighbor
+    interpolation from surrounding valid pixels.
+
+    watershed_mask: boolean array, True where DEM is valid (inside watershed)
+    """
+    invalid = np.isnan(data) & watershed_mask
+    n_invalid = int(invalid.sum())
+    if n_invalid > 0:
+        _, nearest = distance_transform_edt(
+            np.isnan(data), return_distances=True, return_indices=True
+        )
+        data[invalid] = data[nearest[0][invalid], nearest[1][invalid]]
+    return data, n_invalid
+
+
 def calculate_std_dev_multiwindow(data, window_sizes=[3, 5, 9]):
     """Calculate standard deviation at multiple window sizes"""
     results = {}
@@ -118,9 +136,14 @@ def main(watershed_name):
         nodata_mask = dem > 1e10
         dem[nodata_mask] = np.nan
 
+    # Mask of pixels inside the watershed (used for boundary NaN filling)
+    watershed_mask = ~nodata_mask
+
     # 1. Aspect
     print("Calculating aspect...")
     aspect = calculate_aspect(dem)
+    aspect, n = fill_boundary_nans(aspect, watershed_mask)
+    if n: print(f"  (filled {n:,} boundary NaN pixels)")
     with rasterio.open(output_dir / "aspect.tif", 'w', **profile) as dst:
         dst.write(aspect, 1)
     print("✓ aspect.tif")
@@ -128,6 +151,10 @@ def main(watershed_name):
     # 2. Curvature
     print("Calculating curvature...")
     curv_prof, curv_plan = calculate_curvature(dem)
+    curv_prof, n = fill_boundary_nans(curv_prof, watershed_mask)
+    if n: print(f"  (filled {n:,} boundary NaN pixels in profile curvature)")
+    curv_plan, n = fill_boundary_nans(curv_plan, watershed_mask)
+    if n: print(f"  (filled {n:,} boundary NaN pixels in plan curvature)")
     with rasterio.open(output_dir / "curvature_profile.tif", 'w', **profile) as dst:
         dst.write(curv_prof, 1)
     with rasterio.open(output_dir / "curvature_plan.tif", 'w', **profile) as dst:
@@ -151,6 +178,8 @@ def main(watershed_name):
     # 5. TRI
     print("Calculating TRI...")
     tri = calculate_tri(dem)
+    tri, n = fill_boundary_nans(tri, watershed_mask)
+    if n: print(f"  (filled {n:,} boundary NaN pixels)")
     with rasterio.open(output_dir / "tri.tif", 'w', **profile) as dst:
         dst.write(tri, 1)
     print("✓ tri.tif")
@@ -160,6 +189,8 @@ def main(watershed_name):
     elev_std = calculate_std_dev_multiwindow(dem, [3, 9])
     for window, data in elev_std.items():
         size = window.split('_')[1]
+        data, n = fill_boundary_nans(data, watershed_mask)
+        if n: print(f"  (filled {n:,} boundary NaN pixels in elev_std_{size}x{size})")
         with rasterio.open(output_dir / f"elev_std_{size}x{size}.tif", 'w', **profile) as dst:
             dst.write(data, 1)
         print(f"✓ elev_std_{size}x{size}.tif")
@@ -174,6 +205,8 @@ def main(watershed_name):
         slope_std = calculate_std_dev_multiwindow(slope, [3, 9])
         for window, data in slope_std.items():
             size = window.split('_')[1]
+            data, n = fill_boundary_nans(data, watershed_mask)
+            if n: print(f"  (filled {n:,} boundary NaN pixels in slope_std_{size}x{size})")
             with rasterio.open(output_dir / f"slope_std_{size}x{size}.tif", 'w', **profile) as dst:
                 dst.write(data, 1)
             print(f"✓ slope_std_{size}x{size}.tif")
