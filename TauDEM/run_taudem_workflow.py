@@ -13,6 +13,8 @@ Output directory will be automatically created as: TIF_Output/<watershed_name>/
 import subprocess
 import sys
 import os
+import numpy as np
+import rasterio
 from pathlib import Path
 
 def run_cmd(cmd, description):
@@ -42,6 +44,50 @@ def extract_watershed_name(input_dem):
     """
     return Path(input_dem).stem
 
+def fix_stream_pixel_distances(output_dir, base):
+    """
+    TauDEM's dinfdistdown outputs NoData for pixels that lie on the stream
+    network itself (where _src.tif == 1), because the downslope distance is
+    undefined when you are already at the stream.
+
+    This causes a gap of missing pixels along every stream in the final
+    meadow probability output — predict_meadows.py masks out any pixel where
+    a feature value is below -1e30, which catches TauDEM's NoData sentinel
+    (~-3.4e38).
+
+    The correct value for stream pixels is 0 — they are literally zero distance
+    from the stream. This function replaces those NoData values with 0 so that
+    stream-adjacent and riparian pixels are not incorrectly dropped from
+    the prediction.
+    """
+    stream_file = os.path.join(output_dir, f"{base}_src.tif")
+    distance_files = ["dd_s.tif", "dd_h.tif", "dd_v.tif"]
+
+    print(f"\n{'='*60}")
+    print("Fixing NoData in stream distance rasters")
+    print(f"{'='*60}")
+
+    with rasterio.open(stream_file) as src:
+        stream_mask = src.read(1) == 1
+
+    print(f"Stream pixels identified: {np.sum(stream_mask):,}")
+
+    for fname in distance_files:
+        fpath = os.path.join(output_dir, fname)
+        with rasterio.open(fpath) as src:
+            profile = src.profile.copy()
+            data = src.read(1)
+
+        nodata_pixels = stream_mask & (data < -1e10)
+        n_fixed = int(np.sum(nodata_pixels))
+        data[nodata_pixels] = 0.0
+
+        with rasterio.open(fpath, "w", **profile) as dst:
+            dst.write(data, 1)
+
+        print(f"  ✓ {fname}: replaced {n_fixed:,} NoData stream pixels with 0")
+
+
 def main(input_dem):
     """Run full TauDEM workflow"""
 
@@ -61,9 +107,19 @@ def main(input_dem):
     # Get base name without extension (for TauDEM internal files)
     base = Path(input_dem).stem
 
-    # Number of cores (adjust based on your CPU)
-    # Using 4 out of 8 available cores - good balance of speed and system responsiveness
-    ncores = 4
+    # Ask user how many cores to use for MPI parallelism
+    available_cores = os.cpu_count() or 4
+    print(f"\nYour machine has {available_cores} CPU cores available.")
+    print("More cores = faster TauDEM processing.")
+    print("Recommended: leave at least 2 cores free for the OS.")
+    while True:
+        try:
+            ncores = int(input(f"How many cores should TauDEM use? [1-{available_cores}]: "))
+            if 1 <= ncores <= available_cores:
+                break
+            print(f"  Please enter a number between 1 and {available_cores}.")
+        except ValueError:
+            print("  Please enter a valid number.")
 
     print(f"\n{'='*60}")
     print(f"TauDEM Workflow - {watershed_name}")
@@ -129,7 +185,13 @@ def main(input_dem):
         f"mpiexec -n {ncores} dinfdistdown -ang {out(base + '_ang.tif')} -fel {out(base + '_filled.tif')} -src {out(base + '_src.tif')} -dd {out('dd_v.tif')} -m ave v",
         "Step 7c: Distance to stream (vertical)"
     )
-    
+
+    # Step 8: Fix NoData in stream distance rasters
+    # dinfdistdown outputs NoData for pixels ON the stream network. Those pixels
+    # are dropped by predict_meadows.py, creating visible gaps along every stream
+    # in the final output. The correct value is 0 (zero distance from the stream).
+    fix_stream_pixel_distances(output_dir, base)
+
     print(f"\n{'='*60}")
     print(f"TauDEM workflow completed successfully!")
     print(f"{'='*60}")
