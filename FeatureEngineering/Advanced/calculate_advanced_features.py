@@ -133,11 +133,10 @@ def main(watershed_name):
     with rasterio.open(dem_file) as src:
         dem = src.read(1).astype(np.float64)
         profile = src.profile
-        nodata_mask = dem > 1e10
-        dem[nodata_mask] = np.nan
 
     # Mask of pixels inside the watershed (used for boundary NaN filling)
-    watershed_mask = ~nodata_mask
+    # Outside-watershed pixels are stored as NaN in the GEE-exported DEM
+    watershed_mask = ~np.isnan(dem)
 
     # 1. Aspect
     print("Calculating aspect...")
