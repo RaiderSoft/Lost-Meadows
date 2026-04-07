@@ -95,9 +95,9 @@ This release contains the three soil TIF files required by the pipeline.
 
 ```
 GEE/TIF_Input/Soil/
-├── depth_to_restrictive_layer.tif
-├── hydraulic_connectivity.tif
-└── organic_matter_pct.tif
+├── soil_depth_restrictive.tif
+├── soil_hydraulic_connectivity.tif
+└── soil_organic_matter.tif
 ```
 
 These files are already in `.gitignore` — they will not be committed.
@@ -137,9 +137,9 @@ GEE/TIF_Input/
 ├── Hunter_Creek_1710031205.tif      ← example watershed
 ├── Bear_Creek_1710030801.tif        ← another watershed
 └── Soil/
-    ├── depth_to_restrictive_layer.tif
-    ├── hydraulic_connectivity.tif
-    └── organic_matter_pct.tif
+    ├── soil_depth_restrictive.tif
+    ├── soil_hydraulic_connectivity.tif
+    └── soil_organic_matter.tif
 ```
 
 You only need to place the watersheds you intend to process — you do not need all 122 at once. All `.tif` files in `GEE/TIF_Input/` are already in `.gitignore`.
@@ -207,9 +207,9 @@ else
 fi
 
 # Check for soil data
-if [ -f "GEE/TIF_Input/Soil/depth_to_restrictive_layer.tif" ] && \
-   [ -f "GEE/TIF_Input/Soil/hydraulic_connectivity.tif" ] && \
-   [ -f "GEE/TIF_Input/Soil/organic_matter_pct.tif" ]; then
+if [ -f "GEE/TIF_Input/Soil/soil_depth_restrictive.tif" ] && \
+   [ -f "GEE/TIF_Input/Soil/soil_hydraulic_connectivity.tif" ] && \
+   [ -f "GEE/TIF_Input/Soil/soil_organic_matter.tif" ]; then
     echo "Soil TIF files found!"
 else
     echo "WARNING: Soil TIF files missing — download from TIFInputFiles release"
