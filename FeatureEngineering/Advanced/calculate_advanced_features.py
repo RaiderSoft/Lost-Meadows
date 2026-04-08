@@ -134,9 +134,14 @@ def main(watershed_name):
         dem = src.read(1).astype(np.float64)
         profile = src.profile
 
+    # Outside-watershed pixels may be encoded as NaN, large positive, or large
+    # negative depending on GEE export settings and TauDEM version. Normalize
+    # all nodata to NaN so gradient/filter operations propagate correctly.
+    dem_nodata = np.isnan(dem) | (dem > 1e10) | (dem < -1e10)
+    dem[dem_nodata] = np.nan
+
     # Mask of pixels inside the watershed (used for boundary NaN filling)
-    # Outside-watershed pixels are stored as NaN in the GEE-exported DEM
-    watershed_mask = ~np.isnan(dem)
+    watershed_mask = ~dem_nodata
 
     # 1. Aspect
     print("Calculating aspect...")
