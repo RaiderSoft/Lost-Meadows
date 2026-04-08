@@ -154,7 +154,7 @@ def main(watershed_name, model_file="xgboost_model.pkl"):
     print(f"\nOutput: {output_path}")
     print(f"\nFinal output file: {output_path.name}")
     print("\nNext steps:")
-    print(f"  1. Upload {watershed_name}_meadow_probability.tif to Google Earth Engine")
+    print(f"  1. Upload {output_path.name} to Google Earth Engine")
     print("  2. Create GEE app to visualize results")
 
 if __name__ == "__main__":

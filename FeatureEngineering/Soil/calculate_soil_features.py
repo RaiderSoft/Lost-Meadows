@@ -180,7 +180,7 @@ def process_soil_features(watershed_name):
         print("\nNo soil features were processed. Check that input files exist.")
         sys.exit(1)
 
-    print("\nNext step: Add soil features to FeatureStacking/stack_features.py")
+    print("\nNext step: Run stack_features.py to combine all 23 features")
 
 
 if __name__ == "__main__":

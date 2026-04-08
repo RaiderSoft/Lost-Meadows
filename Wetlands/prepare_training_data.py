@@ -339,7 +339,7 @@ def main(watershed_name):
     print(f"  - Training CSV: {training_csv}")
     print(f"\nNext: Retrain model with real wetland data")
     print(f"  cd {get_repo_root() / 'ModelTraining'}")
-    print(f"  python train_random_forest.py {watershed_name}")
+    print(f"  python train_xgboost.py {watershed_name}")
 
     # Clean up wetland mask
     print("\nCleaning up intermediate files...")

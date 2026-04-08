@@ -179,9 +179,9 @@ def main(input_dem):
     print(f"  ✓ features_stacked.tif (23-band multi-band raster)")
     print(f"  ✓ training_data_real.csv")
     print(f"  ✓ xgboost_model.pkl (trained model)")
-    print(f"  ✓ {watershed_name}_meadow_probability.tif (FINAL OUTPUT)")
+    print(f"  ✓ {watershed_name}_xgboost_model_probability.tif (FINAL OUTPUT)")
     print(f"\nNext steps:")
-    print(f"  1. Upload {watershed_name}_meadow_probability.tif to Google Earth Engine")
+    print(f"  1. Upload {watershed_name}_xgboost_model_probability.tif to Google Earth Engine")
     print(f"  2. Run GEE/MeadowVisualization.js for interactive map")
     print(f"{'='*70}\n")
 

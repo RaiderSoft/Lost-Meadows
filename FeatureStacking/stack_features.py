@@ -14,7 +14,7 @@ def get_repo_root():
     return Path(__file__).resolve().parents[1]
 
 def stack_features(watershed_name):
-    """Stack all 20 features into one multi-band raster"""
+    """Stack all 23 features into one multi-band raster"""
 
     # Use absolute path from home directory
     repo_root = get_repo_root()
