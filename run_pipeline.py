@@ -17,8 +17,9 @@ Steps executed:
   4b. Soil features processing
   5. Feature stacking (23 features)
   6. Training data preparation
-  7. Model training
-  8. Meadow probability prediction
+  7. Per-watershed hyperparameter tuning (100 combinations, 5-fold CV)
+  8. Model training (uses tuned hyperparameters)
+  9. Meadow probability prediction
 """
 
 import subprocess
@@ -84,6 +85,7 @@ def main(input_dem):
     print(f"Watershed: {watershed_name}")
     print(f"Output directory: {base_dir}/GEE/TIF_Output/{watershed_name}")
     print(f"\nThis will execute 9 major steps and may take 2-4 hours.")
+    print(f"  (Includes per-watershed hyperparameter tuning — adds ~1 minute)")
     print(f"{'='*70}")
 
     input(f"\nPress Enter to start the pipeline...")
@@ -146,16 +148,23 @@ def main(input_dem):
         cwd=base_dir / "Wetlands"
     )
 
-    # Step 7: Train model
+    # Step 7: Hyperparameter tuning
     run_step(
-        "7. Train XGBoost Model (200 trees, 75/25 split)",
+        "7. Tune XGBoost Hyperparameters (100 combinations, 5-fold CV)",
+        f"python xgboost_gridsearch.py {watershed_name}",
+        cwd=base_dir / "ModelTraining"
+    )
+
+    # Step 8: Train model
+    run_step(
+        "8. Train XGBoost Model (tuned hyperparameters, 75/25 split)",
         f"python train_xgboost.py {watershed_name}",
         cwd=base_dir / "ModelTraining"
     )
 
-    # Step 8: Predict meadow probabilities
+    # Step 9: Predict meadow probabilities
     run_step(
-        "8. Generate Meadow Probability Map",
+        "9. Generate Meadow Probability Map",
         f"python predict_meadows.py {watershed_name}",
         cwd=base_dir / "ModelTraining"
     )

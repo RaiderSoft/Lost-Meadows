@@ -295,7 +295,7 @@ Lost-Meadows/
     ├── predict_meadows.py
     ├── mlflow_config.py
     ├── train_random_forest.py         # Comparison only — not in pipeline
-    └── xgboost_gridsearch.py          # Tuning utility — not in pipeline
+    └── xgboost_gridsearch.py          # Per-watershed hyperparameter tuning (runs automatically in pipeline)
 ```
 
 ---

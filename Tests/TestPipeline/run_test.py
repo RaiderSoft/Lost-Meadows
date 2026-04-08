@@ -346,19 +346,25 @@ def run_pipeline_steps():
                f"missing from Wetlands/: {', '.join(missing)} — "
                "download from WetlandGeodatabases release (see SETUP.md Step 3)")
 
+    # Hyperparameter tuning
+    run_step("7. Hyperparameter tuning",
+             f"python xgboost_gridsearch.py {TEST_WATERSHED}",
+             REPO_ROOT / "ModelTraining",
+             timeout=300)
+
     # Training — uses test_train.py to avoid DagsHub network calls
-    run_step("7. Train XGBoost",
+    run_step("8. Train XGBoost",
              f"python Tests/TestPipeline/test_train.py {TEST_WATERSHED}",
              REPO_ROOT)
 
     # Prediction (only if model file was produced)
     model_file = OUTPUT_DIR / "xgboost_model.pkl"
     if model_file.exists():
-        run_step("8. Predict meadow probabilities",
+        run_step("9. Predict meadow probabilities",
                  f"python predict_meadows.py {TEST_WATERSHED}",
                  REPO_ROOT / "ModelTraining")
     else:
-        record("8. Predict meadow probabilities", "SKIP",
+        record("9. Predict meadow probabilities", "SKIP",
                "model not produced — training step was skipped or failed")
 
 

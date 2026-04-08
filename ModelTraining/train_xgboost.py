@@ -4,6 +4,7 @@ Train XGBoost model for meadow detection
 Mirrors train_random_forest.py for direct comparison
 """
 
+import json
 import numpy as np
 import pandas as pd
 from xgboost import XGBClassifier
@@ -82,6 +83,36 @@ def train_model(features, labels, watershed_name):
     pos = int(np.sum(y_train == 1))
     scale_pos_weight = neg / pos
 
+    # Load per-watershed hyperparameters if available (written by xgboost_gridsearch.py)
+    # Fall back to Bear Creek defaults if not found
+    output_dir = get_repo_root() / "GEE" / "TIF_Output" / watershed_name
+    params_path = output_dir / "best_params.json"
+    default_params = {
+        "n_estimators": 200,
+        "max_depth": 8,
+        "learning_rate": 0.05,
+        "subsample": 0.8,
+        "colsample_bytree": 0.6,
+        "gamma": 0.5,
+        "reg_alpha": 0,
+        "reg_lambda": 2.0,
+        "min_child_weight": 1,
+    }
+    if params_path.exists():
+        with open(params_path) as f:
+            tuned_params = json.load(f)
+        print(f"\nLoading tuned hyperparameters from: {params_path}")
+        xgb_params = {**default_params, **tuned_params}
+        params_source = "tuned (per-watershed)"
+    else:
+        print(f"\nNo tuned hyperparameters found — using Bear Creek defaults.")
+        xgb_params = default_params.copy()
+        params_source = "default (Bear Creek)"
+
+    # scale_pos_weight is always computed dynamically from class distribution
+    xgb_params["scale_pos_weight"] = round(scale_pos_weight, 4)
+    xgb_params["random_state"] = 42
+
     with mlflow.start_run(run_name=watershed_name):
 
         # ---- tags -------------------------------------------------------
@@ -89,6 +120,7 @@ def train_model(features, labels, watershed_name):
             "watershed": watershed_name,
             "model_type": "XGBoost",
             "label_source": "real",
+            "params_source": params_source,
         })
 
         # ---- data params ------------------------------------------------
@@ -107,26 +139,10 @@ def train_model(features, labels, watershed_name):
         })
 
         # ---- model training ---------------------------------------------
-        print(f"\nTraining XGBoost...")
-        print(f"  - n_estimators:     200")
-        print(f"  - max_depth:        6")
-        print(f"  - learning_rate:    0.1")
-        print(f"  - scale_pos_weight: {scale_pos_weight:.1f} (handles 1:{int(scale_pos_weight)} imbalance)")
-        print(f"  - random_state:     42")
-
-        xgb_params = {
-          "n_estimators": 200,
-          "max_depth": 8,
-          "learning_rate": 0.05,
-          "subsample": 0.8,
-          "colsample_bytree": 0.6,
-          "scale_pos_weight": round(scale_pos_weight, 4),  # dynamic, not hardcoded 3
-          "gamma": 0.5,
-          "reg_alpha": 0,
-          "reg_lambda": 2.0,
-          "min_child_weight": 1,
-          "random_state": 42,
-        }
+        print(f"\nTraining XGBoost ({params_source} parameters)...")
+        for k, v in sorted(xgb_params.items()):
+            print(f"  - {k}: {v}")
+        print()
         mlflow.log_params(xgb_params)
 
         xgb = XGBClassifier(
