@@ -7,10 +7,13 @@
 //   in Southern Oregon and Northern California.
 //
 // Data Inputs:
-//   - Meadow probability raster: GEE Asset (XGBoost predictions, band 'b1')
+//   - Meadow probability rasters: All IMAGE assets in FOLDER_ID
+//     (loaded dynamically — add new rasters to the folder and
+//     they appear automatically on the next app load)
 //   - Watershed boundaries: HUC10 FeatureCollection (GEE Asset)
 //
 // Features:
+//   - Dynamic asset discovery from MeadowPredictions folder
 //   - Watershed navigator with zoom + highlight
 //   - Probability threshold masking
 //   - Opacity control
@@ -20,32 +23,86 @@
 //   - Gradient legend
 //
 // Project: Lost Meadows Conservation Science
+//
+// NOTE: We grab a reference to GEE's default map widget BEFORE
+// calling ui.root.clear(), then reuse it in the SplitPanel.
+// This preserves the logo that GEE attaches to the map widget.
 // ============================================================
 
 // ------------------------------------------------------------
 // ASSET CONFIGURATION
-// Change these values to point to different prediction rasters
-// or watershed boundaries without modifying the rest of the app.
+// FOLDER_ID: path to the GEE asset folder containing all
+//   prediction rasters. Any IMAGE asset added to this folder
+//   will be automatically included in the mosaic on next load.
+// BAND_NAME: the band in each raster holding probability values.
+// VALUE_SCALE: divisor to normalize raw values if needed
+//   (e.g. 100 if stored as integers 0–100; leave at 1 for floats).
+// WATERSHEDS: path to the HUC10 watershed FeatureCollection.
 // ------------------------------------------------------------
-var ASSET_ID =
-  "projects/lost-meadows/assets/MeadowPredictions/Bear_Creek_23_Features_XGboost_2080";
-var BAND_NAME = "b1"; // Band containing probability values (0–1 float)
-var VALUE_SCALE = 1; // Divisor to normalize raw values if needed (e.g. 100 if stored as integers 0–100)
-var WATERSHEDS =
-  "projects/lost-meadows/assets/MeadowPredictions/study_watersheds_HUC10";
+var FOLDER_ID = "projects/lost-meadows/assets/MeadowPredictions";
+var BAND_NAME = "b1";
+var VALUE_SCALE = 1;
+var WATERSHEDS = "projects/lost-meadows/assets/study_watersheds_HUC10";
+
+// ------------------------------------------------------------
+// EXCLUDED WATERSHEDS
+// Add watershed names here to hide them from the map and the
+// dropdown navigator. No other code changes needed.
+// ------------------------------------------------------------
+var EXCLUDED_WATERSHEDS = [
+  "171003060500-Pacific Ocean",
+  "Mack Arch Cove-Pacific Ocean",
+  "North Cove-Pacific Ocean",
+];
+
+// ------------------------------------------------------------
+// DYNAMIC ASSET DISCOVERY
+// Lists all assets in FOLDER_ID at runtime, filters to IMAGE
+// type only (skipping the watershed FeatureCollection and any
+// other non-raster assets), then builds an ImageCollection
+// from all discovered rasters.
+//
+// To add a new watershed prediction to the app:
+//   1. Export your prediction raster to FOLDER_ID
+//   2. Reload the app — no code changes needed.
+// ------------------------------------------------------------
+var assetList = ee.data.listAssets(FOLDER_ID);
+
+var imageIds = assetList.assets
+  .filter(function (a) {
+    return a.type === "IMAGE";
+  })
+  .map(function (a) {
+    return a.name;
+  });
+
+// Load each discovered raster, select the probability band,
+// and combine into a single ImageCollection
+var collection = ee.ImageCollection(
+  imageIds.map(function (id) {
+    return ee.Image(id).select(BAND_NAME);
+  }),
+);
+
+// Mosaic all rasters into one image. Where watersheds overlap,
+// later assets in the collection take precedence (paint on top).
+var prob = collection.mosaic().divide(VALUE_SCALE);
 
 // ------------------------------------------------------------
 // LOAD WATERSHED FEATURE COLLECTION
-// Used for boundary rendering, watershed navigator, and
-// pixel inspector spatial validation.
+// Excludes any watersheds in EXCLUDED_WATERSHEDS so they are
+// hidden from the map boundary layer, navigator dropdown, and
+// pixel inspector spatial check.
 // ------------------------------------------------------------
-var watershedFC = ee.FeatureCollection(WATERSHEDS);
+var watershedFC = ee
+  .FeatureCollection(WATERSHEDS)
+  .filter(ee.Filter.inList("name", EXCLUDED_WATERSHEDS).not());
 
 // ------------------------------------------------------------
 // WATERSHED NAMES LIST
 // Hard-coded from the HUC10 'name' property for use in the
 // dropdown navigator. Sorted alphabetically in the UI.
-// Source: USGS WBD HUC10, filtered to study area bounding box.
+// Remove a name here if you also add it to EXCLUDED_WATERSHEDS.
 // ------------------------------------------------------------
 var watershedNames = [
   "Red Rock Valley-Antelope Creek",
@@ -144,7 +201,6 @@ var watershedNames = [
   "Little Applegate River",
   "Sucker Creek",
   "North Cove-Pacific Ocean",
-  "171003060500-Pacific Ocean",
   "Bear Creek",
   "Lower Cow Creek",
   "Horseshoe Bend-Rogue River",
@@ -173,21 +229,11 @@ var watershedNames = [
 ];
 
 // ============================================================
-// IMAGE PREP
-// ============================================================
-
-// Load the prediction raster and select the probability band.
-// VALUE_SCALE allows normalization if predictions were stored as
-// scaled integers rather than 0–1 floats (e.g. divide by 100).
-var raw = ee.Image(ASSET_ID).select(BAND_NAME);
-var prob = raw.divide(VALUE_SCALE);
-
-// ------------------------------------------------------------
 // COLOR PALETTES
 // Each palette maps low (0) → high (1) probability values.
 // Add additional palettes here as key-value pairs to expose
 // them in the Color Scheme dropdown without other code changes.
-// ------------------------------------------------------------
+// ============================================================
 var PALETTES = {
   Blue: ["#f7fbff", "#c6dbef", "#6baed6", "#2171b5", "#084594"],
   Red: ["#fff5f0", "#fcbba1", "#fb6a4a", "#cb181d", "#67000d"],
@@ -201,20 +247,19 @@ var currentPalette = PALETTES["Blue"];
 // UI LAYOUT — Sidebar + Map
 // ============================================================
 
-// Clear any default GEE UI elements before building the custom layout
-ui.root.clear();
-
-// Main map panel — defaults to hybrid satellite/road basemap
-var map = ui.Map();
+// Grab a reference to GEE's default map widget BEFORE clearing
+// root. The logo configured in App settings is attached to this
+// widget — reusing it in the SplitPanel preserves the logo.
+// honestly I dont know at this point I think the logo issue is a bug with GEE
+var map = ui.root.widgets().get(0);
 map.setOptions("HYBRID");
-map.setControlVisibility({ fullscreenControl: false, layerList: false });
 
 // Sidebar panel — fixed width left panel for all controls
 var sidebar = ui.Panel({
   style: { width: "300px", padding: "10px", backgroundColor: "#f5f5f5" },
 });
 
-// Split layout: sidebar on left, map fills remaining space
+ui.root.clear();
 ui.root.add(
   ui.SplitPanel({
     firstPanel: sidebar,
@@ -340,6 +385,8 @@ var clearButton = ui.Button({
 });
 sidebar.add(clearButton);
 
+sidebar.add(divider());
+
 // ============================================================
 // LAYER CONTROLS
 // Visibility toggle, opacity, and threshold masking for the
@@ -356,15 +403,13 @@ var toggleCheck = ui.Checkbox({
 });
 sidebar.add(toggleCheck);
 
-// Toggle visibility of the cyan watershed boundary outlines
+// Toggle visibility of the red watershed boundary outlines.
+// Uses a named layer reference rather than a fragile index.
 var watershedCheck = ui.Checkbox({
   label: "Show Watershed Boundary",
   value: true,
   style: { fontSize: "12px", color: "#333333", margin: "2px 0 8px 0" },
 });
-// Uses the named watershedLayer reference (defined in INITIALIZE)
-// rather than a fragile layer index to avoid breaking if layer
-// order changes as predictions are added
 watershedCheck.onChange(function (val) {
   watershedLayer.setShown(val);
 });
@@ -405,8 +450,7 @@ sidebar.add(divider());
 
 // ============================================================
 // COLOR SCHEME SELECTOR
-// Swaps the active palette and re-renders both the layer and
-// the legend gradient bar to stay in sync.
+// Swaps the active palette and re-renders the layer and legend.
 // ============================================================
 
 sidebar.add(sectionLabel("Color Scheme"));
@@ -445,9 +489,8 @@ sidebar.add(divider());
 
 // ============================================================
 // LEGEND
-// Renders a gradient thumbnail image spanning the full palette
-// from 0 (low) to 1 (high) probability. Rebuilt whenever the
-// active palette changes via updateLegend().
+// Renders a gradient thumbnail spanning the full palette from
+// 0 (low) to 1 (high) probability. Rebuilt on palette change.
 // ============================================================
 
 sidebar.add(sectionLabel("Legend"));
@@ -504,9 +547,10 @@ sidebar.add(divider());
 
 // ============================================================
 // PIXEL INSPECTOR
-// Samples the probability raster at the clicked location and
-// displays the value in the sidebar. Includes spatial and
-// raster coverage validation with user-friendly error messages.
+// Samples the mosaicked probability raster at the clicked
+// location. Validates the click is inside a watershed first,
+// then reports the probability value or a clear message if
+// no prediction data exists for that location yet.
 // ============================================================
 
 sidebar.add(sectionLabel("Pixel Inspector"));
@@ -516,7 +560,6 @@ sidebar.add(
   ),
 );
 
-// Output label — updated dynamically on each map click
 var clickOutput = ui.Label("Click the map to inspect…", {
   fontSize: "12px",
   color: "#2c3e50",
@@ -527,49 +570,36 @@ sidebar.add(clickOutput);
 map.onClick(function (coords) {
   clickOutput.setValue("Sampling…");
   var point = ee.Geometry.Point([coords.lon, coords.lat]);
-
-  // Step 1: Check whether the click falls inside any watershed.
-  // This catches clicks on ocean, outside the study area, etc.
   var inWatershed = watershedFC.filterBounds(point);
 
+  // First check whether the click falls inside any watershed
   inWatershed.size().evaluate(function (count) {
     if (count === 0) {
-      // Click was outside all watershed boundaries
       clickOutput.setValue(
-        "Outside study area.\n" + "Click inside a watershed boundary.",
+        "Outside study area.\nClick inside a watershed boundary.",
       );
       return;
     }
 
-    // Step 2: Click is inside a watershed — attempt raster sample.
-    // Not all watersheds have predictions yet, so we handle both
-    // the null (no data at pixel) and error (asset not covering
-    // this area) cases separately.
-    prob
-      .sample({ region: point, scale: 30, numPixels: 1 })
+    // Get the watershed name, then sample the mosaicked raster.
+    // Since prob is the full mosaic of all folder assets, one
+    // sample call covers whichever watershed has data here.
+    inWatershed
       .first()
-      .get(BAND_NAME)
-      .evaluate(function (val, error) {
-        inWatershed
+      .get("name")
+      .evaluate(function (watershedName) {
+        prob
+          .sample({ region: point, scale: 30, numPixels: 1 })
           .first()
-          .get("name")
-          .evaluate(function (watershedName) {
-            if (error) {
+          .get(BAND_NAME)
+          .evaluate(function (val, error) {
+            if (error || val === null) {
+              // No raster coverage here — prediction not yet exported
+              // for this watershed
               clickOutput.setValue(
                 watershedName +
                   "\n\n" +
-                  "No prediction data available\n" +
-                  "for this watershed yet.",
-              );
-              return;
-            }
-            if (val === null) {
-              clickOutput.setValue(
-                watershedName +
-                  "\n\n" +
-                  "No raster data at this pixel.\n" +
-                  "Predictions may not fully cover\n" +
-                  "this watershed.",
+                  "No prediction data available\nfor this location yet.",
               );
             } else {
               clickOutput.setValue(
@@ -597,9 +627,12 @@ sidebar.add(divider());
 // Rebuilds and replaces the probability layer whenever opacity,
 // threshold, visibility, or palette settings change.
 // Called on init and by all relevant control onChange handlers.
+//
+// Because prob is a mosaic of all assets in the folder, a
+// single updateLayer() covers all watersheds automatically.
 // ============================================================
 
-var currentLayer = null; // Holds reference to the active probability layer
+var currentLayer = null; // Reference to the active probability layer
 
 function updateLayer() {
   var threshold = thresholdSlider.getValue();
@@ -625,41 +658,53 @@ function updateLayer() {
 }
 
 // Wire all controls that affect the probability layer to updateLayer
-opacitySlider.onChange(updateLayer);
-thresholdSlider.onChange(updateLayer);
-toggleCheck.onChange(updateLayer);
+opacitySlider.onChange(function () {
+  updateLayer();
+});
+thresholdSlider.onChange(function () {
+  updateLayer();
+});
+toggleCheck.onChange(function () {
+  updateLayer();
+});
 
 // ============================================================
 // INITIALIZE
-// Run once on app load — sets initial map view, renders the
-// probability layer, and adds the watershed boundary overlay.
+// Run once on app load — centers the map on the full study
+// area, renders the probability layer, and adds the watershed
+// boundary overlay.
 // ============================================================
 
 // Holds reference to the active watershed highlight layer.
 // Initialized as null; set/replaced by the watershed navigator.
 var highlightLayer = null;
 
-// Center the map on the probability raster extent at zoom 10
-map.centerObject(prob, 10);
+// Center the map on the full watershed study area at load
+watershedFC
+  .geometry()
+  .bounds()
+  .evaluate(function (bounds) {
+    map.centerObject(ee.Geometry(bounds), 8);
+  });
 
 // Render the initial probability layer with default settings
 updateLayer();
 
 // Paint watershed borders as a raster image to ensure no fill
 // is rendered. FeatureCollection fillColor is unreliable in GEE
-// UI apps, so this approach is used instead.
+// UI apps, so this raster-paint approach is used instead.
 var watershedOutline = ee.Image().byte().paint({
   featureCollection: watershedFC,
   color: 1,
   width: 2,
 });
 
-// Add watershed boundary layer — rendered on top of probability
-// layer. Referenced by name so the visibility checkbox can
-// toggle it without relying on fragile layer index lookups.
+// Add watershed boundary layer — referenced by name so the
+// visibility checkbox can toggle it without relying on fragile
+// layer index lookups.
 var watershedLayer = ui.Map.Layer(
   watershedOutline,
-  { palette: ["00FFFF"] }, // Cyan outlines for watershed boundaries
+  { palette: ["FF0000"] }, // Cyan outlines for watershed boundaries
   "Watershed Boundary",
   true,
   0.8,
