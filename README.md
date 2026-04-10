@@ -70,8 +70,9 @@ graph LR
     A[DEM<br/>Elevation] --> B[TauDEM<br/>Hydro Features]
     B --> C[Feature Eng<br/>23 Features]
     C --> D[Training Data<br/>OR/CA Wetlands]
-    D --> E[XGBoost<br/>200 trees]
-    E --> F[Prediction<br/>Probability Map]
+    D --> E[Hyperparameter<br/>Tuning]
+    E --> F[XGBoost<br/>Tuned Model]
+    F --> G[Prediction<br/>Probability Map]
 ```
 
 ### Pipeline Steps
@@ -86,8 +87,9 @@ graph LR
 | **4b. Soil** | Soil property rasters cropped to watershed | Depth to restrictive layer, hydraulic connectivity, organic matter |
 | **5. Stacking** | Combine all features | 23-band multi-layer raster |
 | **6. Training Data** | Sample wetland labels from OR/CA geodatabases | 100,000 labeled pixels (1:4 meadow:non-meadow ratio) |
-| **7. Model** | XGBoost classifier | Trained model `.pkl` |
-| **8. Prediction** | Apply model to watershed | Meadow probability map (0–1) |
+| **7. Hyperparameter Tuning** | Per-watershed randomized search (100 combinations, 5-fold CV) | `best_params.json` |
+| **8. Model** | XGBoost classifier with tuned hyperparameters | Trained model `.pkl` |
+| **9. Prediction** | Apply model to watershed | Meadow probability map (0–1) |
 
 ### Features Generated (23 Total)
 
@@ -145,7 +147,7 @@ Lost-Meadows/
     ├── predict_meadows.py       # Inference — applies model to feature stack
     ├── mlflow_config.py         # DagsHub experiment tracking config
     ├── train_random_forest.py   # Comparison model (not in pipeline — see note in file)
-    └── xgboost_gridsearch.py    # Hyperparameter tuning utility (not in pipeline — see note in file)
+    └── xgboost_gridsearch.py    # Per-watershed hyperparameter tuning (runs automatically in pipeline)
 ```
 
 ---
@@ -198,8 +200,11 @@ python stack_features.py Hunter_Creek_1710031205
 cd ../Wetlands
 python prepare_training_data.py Hunter_Creek_1710031205
 
-# Step 7-8: Train and predict
+# Step 7: Hyperparameter tuning (saves best_params.json)
 cd ../ModelTraining
+python xgboost_gridsearch.py Hunter_Creek_1710031205
+
+# Step 8-9: Train and predict (train_xgboost.py loads best_params.json automatically)
 python train_xgboost.py Hunter_Creek_1710031205
 python predict_meadows.py Hunter_Creek_1710031205
 ```
@@ -216,7 +221,7 @@ python predict_meadows.py Hunter_Creek_1710031205
 
 Based on Cummings et al. (2023) with an expanded 23-feature set:
 
-- **Algorithm**: XGBoost (200 trees)
+- **Algorithm**: XGBoost with per-watershed hyperparameter tuning
 - **Features**: 23 hydrogeomorphic and soil variables (expanded from original 9)
 - **Training ratio**: 1:4 (meadow : non-meadow pixels)
 - **Validation**: 75/25 train/test split

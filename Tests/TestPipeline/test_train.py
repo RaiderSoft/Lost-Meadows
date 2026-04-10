@@ -12,6 +12,7 @@ Usage (called automatically by run_test.py):
     python Tests/TestPipeline/test_train.py <watershed_name>
 """
 
+import json
 import sys
 import numpy as np
 import pandas as pd
@@ -48,10 +49,19 @@ def main(watershed_name):
     neg = np.sum(y_train == 0)
     scale_pos_weight = neg / pos if pos > 0 else 1.0
 
+    # Load tuned params from grid search if available
+    params_path = output_dir / "best_params.json"
+    if params_path.exists():
+        with open(params_path) as f:
+            tuned = json.load(f)
+        tuned.pop("scale_pos_weight", None)
+        tuned["n_estimators"] = 10  # Keep fast for test regardless of tuned value
+    else:
+        tuned = {"max_depth": 4, "learning_rate": 0.1}
+
     model = XGBClassifier(
-        n_estimators=10,          # Reduced from 200 — speed only, not accuracy
-        max_depth=4,
-        learning_rate=0.1,
+        n_estimators=10,          # Reduced from tuned value — speed only, not accuracy
+        **{k: v for k, v in tuned.items() if k != "n_estimators"},
         scale_pos_weight=scale_pos_weight,
         random_state=42,
         eval_metric="logloss",

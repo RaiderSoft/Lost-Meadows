@@ -1,23 +1,17 @@
 #!/usr/bin/env python3
 """
 Randomized hyperparameter search for XGBoost meadow detection model
-Uses 10k samples for speed, then reports best parameters to use in train_xgboost.py
 
-NOTE FOR NEW USERS:
-This script is NOT part of the main production pipeline (run_pipeline.py).
-It is a standalone tuning utility used to find the best hyperparameters for XGBoost.
+This script is called automatically by run_pipeline.py before training to find
+the best hyperparameters for each individual watershed. Results are saved to
+best_params.json in the watershed output directory, which train_xgboost.py
+reads automatically.
 
-How to use it:
-    1. Run this script on a watershed to search across many parameter combinations:
-           python xgboost_gridsearch.py <watershed_name>
-    2. It will print the best parameters found.
-    3. Copy those parameters manually into train_xgboost.py to use them in production.
-
-This search runs on a 10k sample subset for speed. Once good parameters are found
-they should be locked into train_xgboost.py — do not run this script on every
-pipeline run, only when you want to re-tune the model.
+Can also be run standalone:
+    python xgboost_gridsearch.py <watershed_name>
 """
 
+import json
 import numpy as np
 import pandas as pd
 from xgboost import XGBClassifier
@@ -93,7 +87,7 @@ def main(watershed_name):
     print("  - 100 random combinations")
     print("  - 5-fold cross-validation")
     print("  - Scoring: AUC")
-    print("  - This may take a few minutes...\n")
+    print("  - This may take ~1 minute...\n")
 
     search = RandomizedSearchCV(
         estimator=base_model,
@@ -146,12 +140,17 @@ def main(watershed_name):
         for k, v in sorted(params.items()):
             print(f"   {k:25s}: {v}")
 
+    # Save best params to JSON for train_xgboost.py to pick up automatically
+    output_dir = get_repo_root() / "GEE" / "TIF_Output" / watershed_name
+    params_path = output_dir / "best_params.json"
+    # Don't save scale_pos_weight — train_xgboost.py computes it dynamically
+    params_to_save = {k: v for k, v in search.best_params_.items() if k != "scale_pos_weight"}
+    with open(params_path, "w") as f:
+        json.dump(params_to_save, f, indent=2)
     print(f"\n{'='*60}")
-    print("Copy these best parameters into train_xgboost.py:")
+    print(f"Best parameters saved to: {params_path}")
+    print("train_xgboost.py will use these automatically.")
     print(f"{'='*60}")
-    for k, v in sorted(search.best_params_.items()):
-        val = f"'{v}'" if isinstance(v, str) else v
-        print(f"  {k}={val},")
 
 
 if __name__ == "__main__":
