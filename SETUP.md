@@ -267,9 +267,9 @@ Lost-Meadows/
 │   ├── TIF_Input/               # Watershed DEMs go here
 │   │   ├── Hunter_Creek_1710031205.tif
 │   │   └── Soil/                # Soil TIFs go here
-│   │       ├── depth_to_restrictive_layer.tif
-│   │       ├── hydraulic_connectivity.tif
-│   │       └── organic_matter_pct.tif
+│   │       ├── soil_depth_restrictive.tif
+│   │       ├── soil_hydraulic_connectivity.tif
+│   │       └── soil_organic_matter.tif
 │   └── TIF_Output/              # Created automatically during pipeline run
 │       └── Hunter_Creek_1710031205/
 │
