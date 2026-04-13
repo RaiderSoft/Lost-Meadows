@@ -52,15 +52,18 @@ def calculate_tpi(elevation, window_size=3):
     TPI = focal elevation - mean elevation in window
     Positive = ridges, Negative = valleys
     """
-    # Handle NaN values using nanmean
-    def nanmean_filter(values):
-        return np.nanmean(values)
+    # uniform_filter uses a cumulative sum internally — NaN in any cell poisons
+    # the entire row/column. Fill NaN (outside-watershed) with the median before
+    # filtering, then restore NaN after so outside pixels stay invalid.
+    mask = np.isnan(elevation)
+    elev = elevation.astype(np.float64)
+    elev_filled = elev.copy()
+    if mask.any():
+        elev_filled[mask] = np.nanmedian(elev)
 
-    # Mean elevation in window (ignoring NaN)
-    mean_elev = generic_filter(elevation, nanmean_filter, size=window_size, mode='reflect')
-
-    # TPI = elevation - mean elevation
-    tpi = elevation - mean_elev
+    mean_elev = uniform_filter(elev_filled, size=window_size, mode='reflect')
+    tpi = elev_filled - mean_elev
+    tpi[mask] = np.nan
 
     return tpi.astype(np.float32)
 
@@ -98,14 +101,28 @@ def fill_boundary_nans(data, watershed_mask):
 
 
 def calculate_std_dev_multiwindow(data, window_sizes=[3, 5, 9]):
-    """Calculate standard deviation at multiple window sizes"""
+    """Calculate standard deviation at multiple window sizes.
+
+    Uses the identity Var(X) = E[X²] - E[X]² so both terms are plain windowed
+    means, computed by uniform_filter entirely in C (~200x faster than
+    generic_filter with a Python std callback).
+
+    NaN (outside-watershed) pixels are filled with the median before filtering
+    to prevent uniform_filter's cumulative sum from poisoning entire rows/cols,
+    then restored after so outside pixels remain NaN in the output.
+    """
     results = {}
+    mask = np.isnan(data)
+    d = data.astype(np.float64)
+    d_filled = d.copy()
+    if mask.any():
+        d_filled[mask] = np.nanmedian(d)
 
     for window in window_sizes:
-        def std_func(values):
-            return np.std(values)
-
-        std_dev = generic_filter(data, std_func, size=window, mode='reflect')
+        mean    = uniform_filter(d_filled,    size=window, mode='reflect')
+        mean_sq = uniform_filter(d_filled**2, size=window, mode='reflect')
+        std_dev = np.sqrt(np.maximum(mean_sq - mean**2, 0))
+        std_dev[mask] = np.nan
         results[f'window_{window}'] = std_dev.astype(np.float32)
 
     return results

@@ -9,7 +9,7 @@ Calculate terrain features using 5x5 moving windows
 
 import rasterio
 import numpy as np
-from scipy.ndimage import uniform_filter, generic_filter
+from scipy.ndimage import uniform_filter
 import sys
 import os
 import glob
@@ -43,22 +43,26 @@ def calculate_relative_elevation(elevation, window_size=5):
     return rel_elev.astype(np.float32)
 
 def calculate_std_dev(data, window_size=5):
-    """Calculate standard deviation in moving window"""
+    """Calculate standard deviation in moving window.
+
+    Uses the identity Var(X) = E[X²] - E[X]² so both terms are plain windowed
+    means, computed by uniform_filter entirely in C (~200x faster than
+    generic_filter with a Python std callback).
+    """
     print(f"Calculating std dev (window size {window_size})...")
-    
-    # Handle NaN values
+
     mask = np.isnan(data)
     data_filled = data.copy()
     data_filled[mask] = np.nanmedian(data)
-    
-    def std_func(values):
-        return np.std(values)
-    
-    std_dev = generic_filter(data_filled, std_func, size=window_size, mode='reflect')
-    
+
+    d = data_filled.astype(np.float64)
+    mean    = uniform_filter(d,    size=window_size, mode='reflect')
+    mean_sq = uniform_filter(d**2, size=window_size, mode='reflect')
+    std_dev = np.sqrt(np.maximum(mean_sq - mean**2, 0))
+
     # Restore NaN where original was NaN
     std_dev[mask] = np.nan
-    
+
     return std_dev
 
 def calculate_slope(dem, profile):
