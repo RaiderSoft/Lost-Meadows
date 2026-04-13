@@ -176,9 +176,9 @@ var watershedNames = [
   "Little Butte Creek",
   "Trail Creek",
   "Upper Cow Creek",
-  "Elk Creek",
+  "Elk Creek (Umpqua)",
   "Jackson Creek",
-  "Elk Creek",
+  "Elk Creek (Rogue)", //Added new names for Elk Creek Watersheds, made the name in change when pulling the data
   "Headwaters Rogue River",
   "South Fork Rogue River",
   "Big Butte Creek",
@@ -247,10 +247,13 @@ var currentPalette = PALETTES["Blue"];
 // UI LAYOUT — Sidebar + Map
 // ============================================================
 
+// Only god knows why the logo won't appear at this point
+// I'm like 95% sure this is a GEE bug when they made a change on MArch 30th
+// Thank you google for taking a day of my life from me
+
 // Grab a reference to GEE's default map widget BEFORE clearing
 // root. The logo configured in App settings is attached to this
 // widget — reusing it in the SplitPanel preserves the logo.
-// honestly I dont know at this point I think the logo issue is a bug with GEE
 var map = ui.root.widgets().get(0);
 map.setOptions("HYBRID");
 
@@ -704,7 +707,7 @@ var watershedOutline = ee.Image().byte().paint({
 // layer index lookups.
 var watershedLayer = ui.Map.Layer(
   watershedOutline,
-  { palette: ["FF0000"] }, // Cyan outlines for watershed boundaries
+  { palette: ["FF0000"] }, // Red outlines for watershed boundaries
   "Watershed Boundary",
   true,
   0.8,
