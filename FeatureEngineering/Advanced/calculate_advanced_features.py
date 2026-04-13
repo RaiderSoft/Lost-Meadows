@@ -13,7 +13,7 @@ Adds 11 new features:
 
 import rasterio
 import numpy as np
-from scipy.ndimage import generic_filter, uniform_filter, distance_transform_edt
+from scipy.ndimage import uniform_filter, distance_transform_edt
 import sys
 from pathlib import Path
 
@@ -46,36 +46,55 @@ def calculate_curvature(dem, pixel_size=10):
     return profile_curv.astype(np.float32), plan_curv.astype(np.float32)
 
 
+def nn_fill_nans(data):
+    """Fill NaN pixels using nearest-neighbor interpolation.
+
+    uniform_filter uses cumulative sums internally — a single NaN poisons every
+    pixel in the same row/column. Pre-filling with the nearest valid value keeps
+    boundary pixels realistic (actual neighboring terrain) rather than pulling
+    them toward an arbitrary global statistic like the median.
+
+    Returns (filled, mask) where mask is True where original data was NaN.
+    """
+    mask = np.isnan(data)
+    filled = data.astype(np.float64)
+    if mask.any():
+        _, nearest = distance_transform_edt(mask, return_distances=True, return_indices=True)
+        filled[mask] = filled[nearest[0][mask], nearest[1][mask]]
+    return filled, mask
+
+
 def calculate_tpi(elevation, window_size=3):
     """Calculate Topographic Position Index
 
     TPI = focal elevation - mean elevation in window
     Positive = ridges, Negative = valleys
     """
-    # Handle NaN values using nanmean
-    def nanmean_filter(values):
-        return np.nanmean(values)
-
-    # Mean elevation in window (ignoring NaN)
-    mean_elev = generic_filter(elevation, nanmean_filter, size=window_size, mode='reflect')
-
-    # TPI = elevation - mean elevation
-    tpi = elevation - mean_elev
-
+    elev_filled, mask = nn_fill_nans(elevation)
+    mean_elev = uniform_filter(elev_filled, size=window_size, mode='reflect')
+    tpi = elev_filled - mean_elev
+    tpi[mask] = np.nan
     return tpi.astype(np.float32)
 
 
 def calculate_tri(elevation):
     """Calculate Terrain Ruggedness Index
 
-    TRI = sum of absolute differences from center cell
-    """
-    def tri_func(values):
-        # Sum of absolute differences from center
-        center = values[len(values)//2]
-        return np.sum(np.abs(values - center))
+    TRI = sum of absolute differences from center cell.
 
-    tri = generic_filter(elevation, tri_func, size=3, mode='reflect')
+    Uses explicit 3x3 stencil with reflect-padded slicing (~100x faster than
+    generic_filter with a Python callback). Benchmark confirms interior pixels
+    match generic_filter exactly; boundary pixels both produce NaN.
+    """
+    elev = elevation.astype(np.float64)
+    padded = np.pad(elev, 1, mode='reflect')
+    tri = np.zeros_like(elev)
+    for di in range(3):
+        for dj in range(3):
+            if di == 1 and dj == 1:
+                continue  # skip center cell
+            neighbor = padded[di:di + elev.shape[0], dj:dj + elev.shape[1]]
+            tri += np.abs(neighbor - elev)
     return tri.astype(np.float32)
 
 
@@ -98,14 +117,24 @@ def fill_boundary_nans(data, watershed_mask):
 
 
 def calculate_std_dev_multiwindow(data, window_sizes=[3, 5, 9]):
-    """Calculate standard deviation at multiple window sizes"""
+    """Calculate standard deviation at multiple window sizes.
+
+    Uses the identity Var(X) = E[X²] - E[X]² so both terms are plain windowed
+    means, computed by uniform_filter entirely in C (~200x faster than
+    generic_filter with a Python std callback).
+
+    NaN pixels are pre-filled with nearest-neighbor values so boundary pixels
+    get std devs computed from realistic neighboring terrain rather than a
+    global median. NaN is restored after so outside-watershed pixels stay invalid.
+    """
     results = {}
+    d_filled, mask = nn_fill_nans(data)
 
     for window in window_sizes:
-        def std_func(values):
-            return np.std(values)
-
-        std_dev = generic_filter(data, std_func, size=window, mode='reflect')
+        mean    = uniform_filter(d_filled,    size=window, mode='reflect')
+        mean_sq = uniform_filter(d_filled**2, size=window, mode='reflect')
+        std_dev = np.sqrt(np.maximum(mean_sq - mean**2, 0))
+        std_dev[mask] = np.nan
         results[f'window_{window}'] = std_dev.astype(np.float32)
 
     return results
