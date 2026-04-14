@@ -225,9 +225,13 @@ def sample_training_points(wetland_raster, features_raster, n_wetland=1000, n_no
         print("ERROR: No valid wetland pixels found!")
         print("Wetlands may not overlap with valid feature data")
         return None, None
-    
-    # Sample
+
+    # Sample — maintain 1:4 ratio if wetland pixels are scarce
     n_wetland_sample = min(n_wetland, len(wetland_pixels))
+    if n_wetland_sample < n_wetland:
+        print(f"\n  WARNING: Only {n_wetland_sample:,} wetland pixels available (target: {n_wetland:,})")
+        print(f"  Scaling non-wetland to maintain 1:4 ratio ({n_wetland_sample * 4:,} non-wetland)")
+        n_non_wetland = n_wetland_sample * 4
     n_non_wetland_sample = min(n_non_wetland, len(non_wetland_pixels))
     
     print(f"\nSampling {n_wetland_sample:,} wetland points...")
