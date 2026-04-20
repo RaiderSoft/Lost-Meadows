@@ -55,11 +55,11 @@ TEST_WATERSHED = "test_watershed"
 OUTPUT_DIR = REPO_ROOT / "GEE" / "TIF_Output" / TEST_WATERSHED
 SOIL_DIR = REPO_ROOT / "GEE" / "TIF_Input" / "Soil"
 
-# Soil file names the pipeline expects (POLARIS 30m, stored in Soil/Soils/)
+# Soil file names the pipeline expects (POLARIS 30m, stored in Soil/)
 SOIL_FILES = {
-    "Soils/polaris_clay_pct_0_5cm.tif":               (5.0, 60.0),
-    "Soils/polaris_organic_matter_0_5cm.tif":         (-2.0, 2.0),
-    "Soils/polaris_saturated_water_content_0_5cm.tif":(0.3, 0.8),
+    "polaris_clay_pct_0_5cm.tif":               (5.0, 60.0),
+    "polaris_organic_matter_0_5cm.tif":         (-2.0, 2.0),
+    "polaris_saturated_water_content_0_5cm.tif":(0.3, 0.8),
 }
 
 FEATURE_NAMES = [
@@ -209,7 +209,6 @@ def make_synthetic_soil_tifs():
     rng = np.random.default_rng(99)
     for filename, (lo, hi) in SOIL_FILES.items():
         dest = SOIL_DIR / filename
-        dest.parent.mkdir(parents=True, exist_ok=True)
         if dest.exists():
             continue  # Real file present — don't overwrite it
         data = rng.uniform(lo, hi, (20, 20)).astype(np.float32)

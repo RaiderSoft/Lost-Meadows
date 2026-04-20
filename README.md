@@ -45,7 +45,7 @@ All required data files are provided as GitHub Releases. Go to the [Releases pag
 
 | Release | Contents | Destination |
 |---------|----------|-------------|
-| **TIFInputFiles** | 3 POLARIS 30m soil TIF files | Extract into `GEE/TIF_Input/Soil/Soils/` |
+| **TIFInputFiles** | 3 POLARIS 30m soil TIF files | Extract into `GEE/TIF_Input/Soil/` |
 | **WetlandGeodatabases** | OR + CA wetland geodatabases (zipped) | Unzip each `.gdb` folder into `Wetlands/` |
 | **GEEInputFiles** | 122 watershed rasters split across two zip files | Unzip both archives, find the desired watershed `.tif`, and place it into `GEE/TIF_Input/` |
 
@@ -119,8 +119,7 @@ Lost-Meadows/
 │   ├── ExportPrecipitation.js      # Export precipitation from GEE (archived)
 │   ├── MeadowVisualization.js      # Visualization helpers
 │   ├── TIF_Input/                  # Place watershed DEM files here
-│   │   └── Soil/                   # Soil TIF files (from TIFInputFiles release)
-│   │       └── Soils/              # POLARIS 30m soil TIFs
+│   │   └── Soil/                   # POLARIS 30m soil TIF files (from TIFInputFiles release)
 │   └── TIF_Output/                 # Pipeline outputs organized by watershed
 │       ├── Hunter_Creek_1710031205/
 │       ├── Bear_Creek_1710030801/
