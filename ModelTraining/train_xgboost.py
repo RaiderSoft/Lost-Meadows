@@ -31,8 +31,8 @@ FEATURE_NAMES = [
     'aspect', 'curvature_profile', 'curvature_plan', 'elevation',
     'tpi_3x3', 'tpi_11x11', 'tpi_21x21', 'tri',
     'elev_std_3x3', 'elev_std_9x9', 'slope_std_9x9',
-    # Soil features (3)
-    'soil_depth_restrictive', 'soil_hydraulic_connectivity', 'soil_organic_matter'
+    # Soil features (3) — POLARIS 30m
+    'soil_clay_pct', 'soil_organic_matter', 'soil_saturated_water_content',
 ]
 
 def get_repo_root():

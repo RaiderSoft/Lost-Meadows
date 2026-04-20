@@ -88,16 +88,17 @@ There are three releases to download. Follow the instructions for each below.
 
 ### Release 1: TIFInputFiles (Soil Data)
 
-This release contains the three soil TIF files required by the pipeline.
+This release contains the three POLARIS 30m soil TIF files required by the pipeline.
 
 1. Download the **TIFInputFiles** release asset.
-2. Extract the files into `GEE/TIF_Input/Soil/`:
+2. Extract the files into `GEE/TIF_Input/Soil/Soils/`:
 
 ```
 GEE/TIF_Input/Soil/
-├── soil_depth_restrictive.tif
-├── soil_hydraulic_connectivity.tif
-└── soil_organic_matter.tif
+└── Soils/
+    ├── polaris_clay_pct_0_5cm.tif
+    ├── polaris_organic_matter_0_5cm.tif
+    └── polaris_saturated_water_content_0_5cm.tif
 ```
 
 These files are already in `.gitignore` — they will not be committed.
@@ -137,9 +138,10 @@ GEE/TIF_Input/
 ├── Hunter_Creek_1710031205.tif      ← example watershed
 ├── Bear_Creek_1710030801.tif        ← another watershed
 └── Soil/
-    ├── soil_depth_restrictive.tif
-    ├── soil_hydraulic_connectivity.tif
-    └── soil_organic_matter.tif
+    └── Soils/
+        ├── polaris_clay_pct_0_5cm.tif
+        ├── polaris_organic_matter_0_5cm.tif
+        └── polaris_saturated_water_content_0_5cm.tif
 ```
 
 You only need to place the watersheds you intend to process — you do not need all 122 at once. All `.tif` files in `GEE/TIF_Input/` are already in `.gitignore`.
@@ -207,9 +209,9 @@ else
 fi
 
 # Check for soil data
-if [ -f "GEE/TIF_Input/Soil/soil_depth_restrictive.tif" ] && \
-   [ -f "GEE/TIF_Input/Soil/soil_hydraulic_connectivity.tif" ] && \
-   [ -f "GEE/TIF_Input/Soil/soil_organic_matter.tif" ]; then
+if [ -f "GEE/TIF_Input/Soil/Soils/polaris_clay_pct_0_5cm.tif" ] && \
+   [ -f "GEE/TIF_Input/Soil/Soils/polaris_organic_matter_0_5cm.tif" ] && \
+   [ -f "GEE/TIF_Input/Soil/Soils/polaris_saturated_water_content_0_5cm.tif" ]; then
     echo "Soil TIF files found!"
 else
     echo "WARNING: Soil TIF files missing — download from TIFInputFiles release"
@@ -267,9 +269,10 @@ Lost-Meadows/
 │   ├── TIF_Input/               # Watershed DEMs go here
 │   │   ├── Hunter_Creek_1710031205.tif
 │   │   └── Soil/                # Soil TIFs go here
-│   │       ├── soil_depth_restrictive.tif
-│   │       ├── soil_hydraulic_connectivity.tif
-│   │       └── soil_organic_matter.tif
+│   │       └── Soils/
+│   │           ├── polaris_clay_pct_0_5cm.tif
+│   │           ├── polaris_organic_matter_0_5cm.tif
+│   │           └── polaris_saturated_water_content_0_5cm.tif
 │   └── TIF_Output/              # Created automatically during pipeline run
 │       └── Hunter_Creek_1710031205/
 │

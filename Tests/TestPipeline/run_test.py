@@ -55,11 +55,11 @@ TEST_WATERSHED = "test_watershed"
 OUTPUT_DIR = REPO_ROOT / "GEE" / "TIF_Output" / TEST_WATERSHED
 SOIL_DIR = REPO_ROOT / "GEE" / "TIF_Input" / "Soil"
 
-# Soil file names the pipeline expects
+# Soil file names the pipeline expects (POLARIS 30m, stored in Soil/Soils/)
 SOIL_FILES = {
-    "soil_depth_restrictive.tif": (10.0, 200.0),
-    "soil_hydraulic_connectivity.tif": (0.1, 100.0),
-    "soil_organic_matter.tif": (0.5, 10.0),
+    "Soils/polaris_clay_pct_0_5cm.tif":               (5.0, 60.0),
+    "Soils/polaris_organic_matter_0_5cm.tif":         (-2.0, 2.0),
+    "Soils/polaris_saturated_water_content_0_5cm.tif":(0.3, 0.8),
 }
 
 FEATURE_NAMES = [
@@ -68,7 +68,8 @@ FEATURE_NAMES = [
     "aspect", "curvature_profile", "curvature_plan", "elevation",
     "tpi_3x3", "tpi_11x11", "tpi_21x21", "tri",
     "elev_std_3x3", "elev_std_9x9", "slope_std_9x9",
-    "soil_depth_restrictive", "soil_hydraulic_connectivity", "soil_organic_matter",
+    # Soil features (3) — POLARIS 30m
+    "soil_clay_pct", "soil_organic_matter", "soil_saturated_water_content",
 ]
 
 # Tracks soil TIFs we created so we can clean them up
@@ -208,6 +209,7 @@ def make_synthetic_soil_tifs():
     rng = np.random.default_rng(99)
     for filename, (lo, hi) in SOIL_FILES.items():
         dest = SOIL_DIR / filename
+        dest.parent.mkdir(parents=True, exist_ok=True)
         if dest.exists():
             continue  # Real file present — don't overwrite it
         data = rng.uniform(lo, hi, (20, 20)).astype(np.float32)

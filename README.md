@@ -45,7 +45,7 @@ All required data files are provided as GitHub Releases. Go to the [Releases pag
 
 | Release | Contents | Destination |
 |---------|----------|-------------|
-| **TIFInputFiles** | 3 soil TIF files | Extract into `GEE/TIF_Input/Soil/` |
+| **TIFInputFiles** | 3 POLARIS 30m soil TIF files | Extract into `GEE/TIF_Input/Soil/Soils/` |
 | **WetlandGeodatabases** | OR + CA wetland geodatabases (zipped) | Unzip each `.gdb` folder into `Wetlands/` |
 | **GEEInputFiles** | 122 watershed rasters split across two zip files | Unzip both archives, find the desired watershed `.tif`, and place it into `GEE/TIF_Input/` |
 
@@ -84,7 +84,7 @@ graph LR
 | **2b. TWI 100m** | TWI at landscape scale, resampled to 10m | `twi_100m.tif` |
 | **3. Terrain** | Slope and elevation variability | Slope, relative elevation, std deviations |
 | **4. Advanced** | Aspect, curvature, TPI, TRI | 11 additional terrain features |
-| **4b. Soil** | Soil property rasters cropped to watershed | Depth to restrictive layer, hydraulic connectivity, organic matter |
+| **4b. Soil** | POLARIS 30m soil property rasters cropped to watershed | Clay %, organic matter, saturated water content |
 | **5. Stacking** | Combine all features | 23-band multi-layer raster |
 | **6. Training Data** | Sample wetland labels from OR/CA geodatabases | 100,000 labeled pixels (1:4 meadow:non-meadow ratio) |
 | **7. Hyperparameter Tuning** | Per-watershed randomized search (100 combinations, 5-fold CV) | `best_params.json` |
@@ -99,7 +99,7 @@ graph LR
 | **Terrain** | Slope, relative elevation, elevation std dev, slope std dev | 4 |
 | **Stream Distance** | Surface distance (dd_s), horizontal distance (dd_h), vertical distance (dd_v) | 3 |
 | **Advanced Terrain** | Aspect, profile curvature, plan curvature, absolute elevation, TPI 3×3, TPI 11×11, TPI 21×21, TRI, elevation std 3×3, elevation std 9×9, slope std 9×9 | 11 |
-| **Soil** | Depth to restrictive layer, hydraulic connectivity, organic matter % | 3 |
+| **Soil** | Clay % (POLARIS 30m), organic matter (POLARIS 30m), saturated water content (POLARIS 30m) | 3 |
 
 > Precipitation features were evaluated and excluded — they did not improve model performance on this dataset.
 
@@ -120,6 +120,7 @@ Lost-Meadows/
 │   ├── MeadowVisualization.js      # Visualization helpers
 │   ├── TIF_Input/                  # Place watershed DEM files here
 │   │   └── Soil/                   # Soil TIF files (from TIFInputFiles release)
+│   │       └── Soils/              # POLARIS 30m soil TIFs
 │   └── TIF_Output/                 # Pipeline outputs organized by watershed
 │       ├── Hunter_Creek_1710031205/
 │       ├── Bear_Creek_1710030801/

@@ -184,7 +184,7 @@ def main(input_dem):
     print(f"\nKey files generated:")
     print(f"  ✓ 23 feature rasters (terrain + soil)")
     print(f"     - dd_h, dd_s, dd_v, slope, TWI, aspect, curvature, TPI, TRI, etc.")
-    print(f"     - soil_depth_restrictive, soil_hydraulic_connectivity, soil_organic_matter")
+    print(f"     - soil_clay_pct, soil_organic_matter, soil_saturated_water_content (POLARIS 30m)")
     print(f"  ✓ features_stacked.tif (23-band multi-band raster)")
     print(f"  ✓ training_data_real.csv")
     print(f"  ✓ xgboost_model.pkl (trained model)")
