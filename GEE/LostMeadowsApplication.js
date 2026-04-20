@@ -28,6 +28,8 @@ var EXCLUDED_WATERSHEDS = [
   'North Cove-Pacific Ocean'
 ];
 
+var WETLANDS = 'projects/lost-meadows/assets/NWI_Wetlands';
+
 // Color palettes for the meadow probability layer (low → high)
 var PALETTES = {
   'Blue':        ['#f7fbff', '#c6dbef', '#6baed6', '#2171b5', '#084594'],
@@ -192,6 +194,12 @@ var nlcdSource = ee.ImageCollection('USGS/NLCD_RELEASES/2021_REL/NLCD')
   .sort('system:time_start', false)
   .first()
   .select('landcover');
+
+// NWI wetlands (OR + CA), filtered to PEM/PSS meadow types
+var wetlandsPEM = ee.FeatureCollection(WETLANDS)
+  .filter(ee.Filter.stringStartsWith('ATTRIBUTE', 'PEM'));
+var wetlandsPSS = ee.FeatureCollection(WETLANDS)
+  .filter(ee.Filter.stringStartsWith('ATTRIBUTE', 'PSS'));
 
 
 // ============================================================
@@ -360,6 +368,8 @@ function getClipTarget() {
 var snowLayer    = null;
 var droughtLayer = null;
 var nlcdLayer    = null;
+var wetlandsLayer = null;
+var wetlandsPSSLayer = null;
 
 /** Removes and re-adds the SNODAS snowpack layer with current clip/vis. */
 function refreshSnow() {
@@ -393,6 +403,24 @@ function refreshNlcd() {
   map.add(nlcdLayer);
 }
 
+/** Removes and re-adds the NWI wetlands overlay, clipped to current watershed. */
+function refreshWetlands() {
+  var clip = getClipTarget();
+  if (wetlandsLayer) map.remove(wetlandsLayer);
+  if (wetlandsPSSLayer) map.remove(wetlandsPSSLayer);
+
+  wetlandsLayer = ui.Map.Layer(
+    wetlandsPEM.filterBounds(clip), { color: '1a9641' },
+    'NWI Wetlands — PEM', true, 0.8
+  );
+  wetlandsPSSLayer = ui.Map.Layer(
+    wetlandsPSS.filterBounds(clip), { color: 'a8d5b5' },
+    'NWI Wetlands — PSS', true, 0.8
+  );
+  map.add(wetlandsLayer);
+  map.add(wetlandsPSSLayer);
+}
+
 /**
  * Re-clips all active overlays to the current watershed selection.
  * Called by selectWatershed() whenever the active watershed changes.
@@ -401,6 +429,7 @@ function refreshActiveOverlays() {
   if (snowCheck.getValue())    refreshSnow();
   if (droughtCheck.getValue()) refreshDrought();
   if (nlcdCheck.getValue())    refreshNlcd();
+  if (wetlandsCheck.getValue()) refreshWetlands();
 }
 
 
@@ -412,11 +441,12 @@ function refreshActiveOverlays() {
 // ============================================================
 
 // Container panels — populated by the update functions below.
-// Both live in the inspector panel (right side), not the sidebar.
+// They live in the inspector panel (right side), not the sidebar.
 var climateInspectorLegendPanel = ui.Panel({ style: { shown: false, margin: '0 0 6px 0' } });
 var nlcdInspectorLegendPanel    = ui.Panel({ style: { shown: false, margin: '0 0 6px 0' } });
+var wetlandsInspectorLegendPanel = ui.Panel({ style: { shown: false, margin: '0 0 6px 0' } });
 
-// Inspector panel headers for climate and NLCD legends (toggled with checkboxes)
+// Inspector panel headers for climate, NLCD, Wetlands legends (toggled with checkboxes)
 var climateInspectorDivider = divider();
 var climateInspectorHeader  = ui.Label('Climate Overlays', {
   fontWeight: 'bold', fontSize: '13px', color: '#2c3e50', margin: '0 0 4px 0'
@@ -425,12 +455,19 @@ var nlcdInspectorDivider = divider();
 var nlcdInspectorHeader  = ui.Label('Land Cover (NLCD)', {
   fontWeight: 'bold', fontSize: '13px', color: '#2c3e50', margin: '0 0 4px 0'
 });
+var wetlandsInspectorDivider = divider();
+var wetlandsInspectorHeader  = ui.Label('NWI Wetlands', {
+  fontWeight: 'bold', fontSize: '13px', color: '#2c3e50', margin: '0 0 4px 0'
+});
+
 
 // Hide inspector legend headers until their overlays are toggled on
 climateInspectorDivider.style().set('shown', false);
 climateInspectorHeader.style().set('shown', false);
 nlcdInspectorDivider.style().set('shown', false);
 nlcdInspectorHeader.style().set('shown', false);
+wetlandsInspectorDivider.style().set('shown', false);
+wetlandsInspectorHeader.style().set('shown', false);
 
 /**
  * Rebuilds the climate legend in the inspector panel (right side). Shows
@@ -483,6 +520,37 @@ function updateNlcdInspectorLegend(visible) {
       ui.Label(c.label, { fontSize: '10px', color: '#333', margin: '2px 0' })
     ], ui.Panel.Layout.flow('horizontal')));
   });
+}
+
+/**
+ * Shows or hides the NWI wetlands swatch legend in the inspector panel.
+ * Displays Cowardin type labels (PEM/PSS) and data source attribution.
+ * @param {boolean} visible - True to build and show; false to clear and hide.
+ */
+function updateWetlandsInspectorLegend(visible) {
+  wetlandsInspectorDivider.style().set('shown', visible);
+  wetlandsInspectorHeader.style().set('shown', visible);
+  wetlandsInspectorLegendPanel.style().set('shown', visible);
+  wetlandsInspectorLegendPanel.clear();
+  if (!visible) return;
+
+  [
+    { color: '1a9641', label: 'PEM — Active wet meadow' },
+    { color: 'a8d5b5', label: 'PSS — Shrub-encroached meadow' }
+  ].forEach(function(c) {
+    wetlandsInspectorLegendPanel.add(ui.Panel([
+      ui.Label('', {
+        backgroundColor: '#' + c.color,
+        padding: '6px', margin: '2px 6px 2px 0'
+      }),
+      ui.Label(c.label, { fontSize: '10px', color: '#333', margin: '2px 0' })
+    ], ui.Panel.Layout.flow('horizontal')));
+  });
+
+  wetlandsInspectorLegendPanel.add(ui.Label(
+    'Source: National Wetlands Inventory (OR/CA)',
+    { fontSize: '9px', color: '#999', margin: '4px 0 0 0' }
+  ));
 }
 
 
@@ -632,6 +700,12 @@ var nlcdCheck = ui.Checkbox({
 });
 sidebar.add(nlcdCheck);
 
+var wetlandsCheck = ui.Checkbox({
+  label: 'NWI Wetlands (PEM/PSS)', value: false,
+  style: { fontSize: '12px', color: '#333333', margin: '2px 0 8px 0' }
+});
+sidebar.add(wetlandsCheck);
+
 sidebar.add(bodyLabel('Explore scenarios — palette shift only, predictions unchanged:'));
 
 sidebar.add(ui.Label('Snowpack offset:', {
@@ -723,6 +797,11 @@ inspectorPanel.add(climateInspectorLegendPanel);
 inspectorPanel.add(nlcdInspectorDivider);
 inspectorPanel.add(nlcdInspectorHeader);
 inspectorPanel.add(nlcdInspectorLegendPanel);
+
+// NWI Wetlands swatch legend — shown/hidden by updateWetlandsInspectorLegend()
+inspectorPanel.add(wetlandsInspectorDivider);
+inspectorPanel.add(wetlandsInspectorHeader);
+inspectorPanel.add(wetlandsInspectorLegendPanel);
 
 
 // ============================================================
@@ -961,6 +1040,16 @@ nlcdCheck.onChange(function(val) {
   updateNlcdInspectorLegend(val);
   // Note: updateClimateLegend() is intentionally not called here —
   // NLCD has its own legend in the inspector panel, not the climate panel.
+});
+
+wetlandsCheck.onChange(function(val) {
+  if (val) {
+    refreshWetlands();
+  } else {
+    if (wetlandsLayer)    { map.remove(wetlandsLayer);    wetlandsLayer    = null; }
+    if (wetlandsPSSLayer) { map.remove(wetlandsPSSLayer); wetlandsPSSLayer = null; }
+  }
+  updateWetlandsInspectorLegend(val);
 });
 
 // ── Scenario Sliders ─────────────────────────────────────────
