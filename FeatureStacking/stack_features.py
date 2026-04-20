@@ -52,10 +52,10 @@ def stack_features(watershed_name):
         f"{output_dir}/elev_std_9x9.tif",                   # 19. Elevation std dev 9x9
         f"{output_dir}/slope_std_9x9.tif",                  # 20. Slope std dev 9x9
 
-        # Soil features (3)
-        f"{output_dir}/soil_depth_restrictive.tif",          # 21. Depth to restrictive layer
-        f"{output_dir}/soil_hydraulic_connectivity.tif",     # 22. Soil hydraulic connectivity
-        f"{output_dir}/soil_organic_matter.tif",             # 23. Soil organic matter
+        # Soil features (3) — POLARIS 30m, 0-5cm depth
+        f"{output_dir}/soil_clay_pct.tif",                   # 21. Clay percentage
+        f"{output_dir}/soil_organic_matter.tif",             # 22. Organic matter
+        f"{output_dir}/soil_saturated_water_content.tif",    # 23. Saturated water content
 
     ]
 
@@ -84,10 +84,10 @@ def stack_features(watershed_name):
         "elev_std_9x9",
         "slope_std_9x9",
 
-        # Soil features (3)
-        "soil_depth_restrictive",
-        "soil_hydraulic_connectivity",
+        # Soil features (3) — POLARIS 30m
+        "soil_clay_pct",
         "soil_organic_matter",
+        "soil_saturated_water_content",
 
     ]
     

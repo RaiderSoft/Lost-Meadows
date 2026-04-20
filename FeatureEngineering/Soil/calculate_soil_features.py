@@ -5,15 +5,15 @@ Process soil features for meadow detection.
 Crops and resamples soil TIF files to match individual watershed
 resolution (10m) and extent.
 
-Expected input files in GEE/TIF_Input/Soil/:
-  - depth_to_restrictive_layer.tif   (depth in cm)
-  - hydraulic_connectivity.tif        (Ksat or similar, mm/hr)
-  - organic_matter_pct.tif            (percent by weight)
+Expected input files in GEE/TIF_Input/Soil/Soils/ (POLARIS 30m, 0-5cm depth):
+  - polaris_clay_pct_0_5cm.tif
+  - polaris_organic_matter_0_5cm.tif
+  - polaris_saturated_water_content_0_5cm.tif
 
 Output files written to GEE/TIF_Output/<watershed_name>/:
-  - soil_depth_restrictive.tif
-  - soil_hydraulic_connectivity.tif
+  - soil_clay_pct.tif
   - soil_organic_matter.tif
+  - soil_saturated_water_content.tif
 
 NOTE: This script is standalone for now. It will be integrated into
       run_pipeline.py once soil TIF inputs are finalized.
@@ -85,23 +85,24 @@ def process_soil_features(watershed_name):
 
     # Define soil layers to process
     # Format: (input_filename, output_name, description, resampling_method)
+    # POLARIS 30m soil properties (0-5cm depth) — 3 selected features
     soil_layers = [
         (
-            "soil_depth_restrictive.tif",
-            "soil_depth_restrictive",
-            "Depth to restrictive layer (cm)",
+            "Soils/polaris_clay_pct_0_5cm.tif",
+            "soil_clay_pct",
+            "Clay percentage (%)",
             Resampling.bilinear,
         ),
         (
-            "soil_hydraulic_connectivity.tif",
-            "soil_hydraulic_connectivity",
-            "Soil hydraulic connectivity (mm/hr)",
-            Resampling.bilinear,
-        ),
-        (
-            "soil_organic_matter.tif",
+            "Soils/polaris_organic_matter_0_5cm.tif",
             "soil_organic_matter",
-            "Soil organic matter (% by weight)",
+            "Organic matter log10(%)",
+            Resampling.bilinear,
+        ),
+        (
+            "Soils/polaris_saturated_water_content_0_5cm.tif",
+            "soil_saturated_water_content",
+            "Saturated volumetric water content (m³/m³)",
             Resampling.bilinear,
         ),
     ]

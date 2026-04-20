@@ -246,7 +246,7 @@ def main(watershed_name):
 
     print(f"\n{'='*60}")
     print("Advanced features complete!")
-    print(f"Added 11 new features → Total: 20 features")
+    print(f"Added 11 new features → 20 terrain features total")
     print(f"{'='*60}")
 
     # Clean up TauDEM intermediate files (now that ALL features are done)
