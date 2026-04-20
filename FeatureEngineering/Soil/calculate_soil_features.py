@@ -5,7 +5,7 @@ Process soil features for meadow detection.
 Crops and resamples soil TIF files to match individual watershed
 resolution (10m) and extent.
 
-Expected input files in GEE/TIF_Input/Soil/Soils/ (POLARIS 30m, 0-5cm depth):
+Expected input files in GEE/TIF_Input/Soil/ (POLARIS 30m, 0-5cm depth):
   - polaris_clay_pct_0_5cm.tif
   - polaris_organic_matter_0_5cm.tif
   - polaris_saturated_water_content_0_5cm.tif
@@ -88,19 +88,19 @@ def process_soil_features(watershed_name):
     # POLARIS 30m soil properties (0-5cm depth) — 3 selected features
     soil_layers = [
         (
-            "Soils/polaris_clay_pct_0_5cm.tif",
+            "polaris_clay_pct_0_5cm.tif",
             "soil_clay_pct",
             "Clay percentage (%)",
             Resampling.bilinear,
         ),
         (
-            "Soils/polaris_organic_matter_0_5cm.tif",
+            "polaris_organic_matter_0_5cm.tif",
             "soil_organic_matter",
             "Organic matter log10(%)",
             Resampling.bilinear,
         ),
         (
-            "Soils/polaris_saturated_water_content_0_5cm.tif",
+            "polaris_saturated_water_content_0_5cm.tif",
             "soil_saturated_water_content",
             "Saturated volumetric water content (m³/m³)",
             Resampling.bilinear,
