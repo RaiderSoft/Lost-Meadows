@@ -28,8 +28,10 @@ FEATURE_NAMES = [
     "aspect", "curvature_profile", "curvature_plan", "elevation",
     "tpi_3x3", "tpi_11x11", "tpi_21x21", "tri",
     "elev_std_3x3", "elev_std_9x9", "slope_std_9x9",
-    # Soil features (3) — POLARIS 30m
-    "soil_clay_pct", "soil_organic_matter", "soil_saturated_water_content",
+    # Soil features (9) — POLARIS 30m, 3 depths
+    "soil_clay_pct_0_5cm", "soil_clay_pct_5_15cm", "soil_clay_pct_15_30cm",
+    "soil_ksat_0_5cm", "soil_ksat_5_15cm", "soil_ksat_15_30cm",
+    "soil_organic_matter_0_5cm", "soil_organic_matter_5_15cm", "soil_organic_matter_15_30cm",
 ]
 
 def main(watershed_name):

@@ -84,7 +84,7 @@ graph LR
 | **2b. TWI 100m** | TWI at landscape scale, resampled to 10m | `twi_100m.tif` |
 | **3. Terrain** | Slope and elevation variability | Slope, relative elevation, std deviations |
 | **4. Advanced** | Aspect, curvature, TPI, TRI | 11 additional terrain features |
-| **4b. Soil** | POLARIS 30m soil property rasters cropped to watershed | Clay %, organic matter, saturated water content |
+| **4b. Soil** | POLARIS 30m soil property rasters cropped to watershed | Clay %, Ksat, organic matter — each at 3 depths (0-5cm, 5-15cm, 15-30cm) |
 | **5. Stacking** | Combine all features | 23-band multi-layer raster |
 | **6. Training Data** | Sample wetland labels from OR/CA geodatabases | 100,000 labeled pixels (1:4 meadow:non-meadow ratio) |
 | **7. Hyperparameter Tuning** | Per-watershed randomized search (100 combinations, 5-fold CV) | `best_params.json` |
@@ -99,7 +99,7 @@ graph LR
 | **Terrain** | Slope, relative elevation, elevation std dev, slope std dev | 4 |
 | **Stream Distance** | Surface distance (dd_s), horizontal distance (dd_h), vertical distance (dd_v) | 3 |
 | **Advanced Terrain** | Aspect, profile curvature, plan curvature, absolute elevation, TPI 3×3, TPI 11×11, TPI 21×21, TRI, elevation std 3×3, elevation std 9×9, slope std 9×9 | 11 |
-| **Soil** | Clay % (POLARIS 30m), organic matter (POLARIS 30m), saturated water content (POLARIS 30m) | 3 |
+| **Soil** | Clay %, Ksat, organic matter — each at 0-5cm, 5-15cm, 15-30cm depth (POLARIS 30m) | 9 |
 
 > Precipitation features were evaluated and excluded — they did not improve model performance on this dataset.
 
