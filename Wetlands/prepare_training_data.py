@@ -7,6 +7,7 @@ Uses ALL wetlands as positive training examples
 import geopandas as gpd
 import rasterio
 from rasterio.features import rasterize
+from rasterio.warp import transform_bounds
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -285,10 +286,10 @@ def main(watershed_name):
         print("Run feature stacking first!")
         sys.exit(1)
     
-    # Get study area bounds from reference raster
+    # Get study area bounds from reference raster — always convert to WGS84
+    # so state detection and spatial filters work regardless of raster CRS
     with rasterio.open(reference_raster) as src:
-        bounds = src.bounds
-        study_bounds = [bounds.left, bounds.bottom, bounds.right, bounds.top]
+        study_bounds = list(transform_bounds(src.crs, 'EPSG:4326', *src.bounds))
     
     # Step 1: Load wetlands (auto-detects OR/CA)
     wetlands = load_wetlands(study_bounds)
