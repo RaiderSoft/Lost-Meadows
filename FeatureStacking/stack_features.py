@@ -14,7 +14,7 @@ def get_repo_root():
     return Path(__file__).resolve().parents[1]
 
 def stack_features(watershed_name):
-    """Stack all 23 features into one multi-band raster"""
+    """Stack all 29 features into one multi-band raster"""
 
     # Use absolute path from home directory
     repo_root = get_repo_root()
@@ -52,10 +52,16 @@ def stack_features(watershed_name):
         f"{output_dir}/elev_std_9x9.tif",                   # 19. Elevation std dev 9x9
         f"{output_dir}/slope_std_9x9.tif",                  # 20. Slope std dev 9x9
 
-        # Soil features (3) — POLARIS 30m, 0-5cm depth
-        f"{output_dir}/soil_clay_pct.tif",                   # 21. Clay percentage
-        f"{output_dir}/soil_organic_matter.tif",             # 22. Organic matter
-        f"{output_dir}/soil_saturated_water_content.tif",    # 23. Saturated water content
+        # Soil features (9) — POLARIS 30m, 3 depths each
+        f"{output_dir}/soil_clay_pct_0_5cm.tif",            # 21. Clay % 0-5cm
+        f"{output_dir}/soil_clay_pct_5_15cm.tif",           # 22. Clay % 5-15cm
+        f"{output_dir}/soil_clay_pct_15_30cm.tif",          # 23. Clay % 15-30cm
+        f"{output_dir}/soil_ksat_0_5cm.tif",                # 24. Ksat 0-5cm
+        f"{output_dir}/soil_ksat_5_15cm.tif",               # 25. Ksat 5-15cm
+        f"{output_dir}/soil_ksat_15_30cm.tif",              # 26. Ksat 15-30cm
+        f"{output_dir}/soil_organic_matter_0_5cm.tif",      # 27. Organic matter 0-5cm
+        f"{output_dir}/soil_organic_matter_5_15cm.tif",     # 28. Organic matter 5-15cm
+        f"{output_dir}/soil_organic_matter_15_30cm.tif",    # 29. Organic matter 15-30cm
 
     ]
 
@@ -84,10 +90,16 @@ def stack_features(watershed_name):
         "elev_std_9x9",
         "slope_std_9x9",
 
-        # Soil features (3) — POLARIS 30m
-        "soil_clay_pct",
-        "soil_organic_matter",
-        "soil_saturated_water_content",
+        # Soil features (9) — POLARIS 30m, 3 depths
+        "soil_clay_pct_0_5cm",
+        "soil_clay_pct_5_15cm",
+        "soil_clay_pct_15_30cm",
+        "soil_ksat_0_5cm",
+        "soil_ksat_5_15cm",
+        "soil_ksat_15_30cm",
+        "soil_organic_matter_0_5cm",
+        "soil_organic_matter_5_15cm",
+        "soil_organic_matter_15_30cm",
 
     ]
     

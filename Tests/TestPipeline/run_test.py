@@ -55,11 +55,12 @@ TEST_WATERSHED = "test_watershed"
 OUTPUT_DIR = REPO_ROOT / "GEE" / "TIF_Output" / TEST_WATERSHED
 SOIL_DIR = REPO_ROOT / "GEE" / "TIF_Input" / "Soil"
 
-# Soil file names the pipeline expects (POLARIS 30m, stored in Soil/)
+# Soil file names the pipeline expects (POLARIS 30m, 3-band, stored in Soil/)
+# Each file has 3 bands: band 1 = 0-5cm, band 2 = 5-15cm, band 3 = 15-30cm
 SOIL_FILES = {
-    "polaris_clay_pct_0_5cm.tif":               (5.0, 60.0),
-    "polaris_organic_matter_0_5cm.tif":         (-2.0, 2.0),
-    "polaris_saturated_water_content_0_5cm.tif":(0.3, 0.8),
+    "polaris_clay_pct_0_30cm.tif":        (5.0, 60.0),
+    "polaris_ksat_0_30cm.tif":            (0.1, 100.0),
+    "polaris_organic_matter_0_30cm.tif":  (-2.0, 2.0),
 }
 
 FEATURE_NAMES = [
@@ -68,8 +69,10 @@ FEATURE_NAMES = [
     "aspect", "curvature_profile", "curvature_plan", "elevation",
     "tpi_3x3", "tpi_11x11", "tpi_21x21", "tri",
     "elev_std_3x3", "elev_std_9x9", "slope_std_9x9",
-    # Soil features (3) — POLARIS 30m
-    "soil_clay_pct", "soil_organic_matter", "soil_saturated_water_content",
+    # Soil features (9) — POLARIS 30m, 3 depths
+    "soil_clay_pct_0_5cm", "soil_clay_pct_5_15cm", "soil_clay_pct_15_30cm",
+    "soil_ksat_0_5cm", "soil_ksat_5_15cm", "soil_ksat_15_30cm",
+    "soil_organic_matter_0_5cm", "soil_organic_matter_5_15cm", "soil_organic_matter_15_30cm",
 ]
 
 # Tracks soil TIFs we created so we can clean them up
@@ -194,13 +197,13 @@ def make_synthetic_soil_tifs():
     from rasterio.transform import from_origin
     from rasterio.crs import CRS
 
-    # Soil TIFs are at 30m resolution, covering the watershed area with margin
+    # Soil TIFs are at 30m resolution with 3 bands (0-5cm, 5-15cm, 15-30cm)
     soil_profile = {
         "driver": "GTiff",
         "dtype": "float32",
         "width": 20,
         "height": 20,
-        "count": 1,
+        "count": 3,
         "crs": CRS.from_epsg(32610),
         "transform": from_origin(west=499800, north=4650500, xsize=30, ysize=30),
         "nodata": -9999.0,
@@ -211,8 +214,10 @@ def make_synthetic_soil_tifs():
         dest = SOIL_DIR / filename
         if dest.exists():
             continue  # Real file present — don't overwrite it
-        data = rng.uniform(lo, hi, (20, 20)).astype(np.float32)
-        write_tif(dest, data, soil_profile)
+        with rasterio.open(dest, "w", **soil_profile) as dst:
+            for band in range(1, 4):
+                data = rng.uniform(lo, hi, (20, 20)).astype(np.float32)
+                dst.write(data, band)
         _temp_soil_files.append(dest)
 
 
