@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-One-time export: filter OR + CA wetland .gdb files to PEM/PSS types,
+One-time export: filter OR + CA wetland .gdb files to PEM/PSS/PFO types,
 clip to the Cascade-Siskiyou bioregion, and save as GeoJSON for
 upload to GEE as a Table asset.
 
@@ -19,7 +19,7 @@ from shapely.geometry import box
 BIOREGION_BOUNDS = (-124.6, 41.0, -120.5, 44.5)  # (min_lon, min_lat, max_lon, max_lat)
 
 WETLANDS_DIR = Path(__file__).resolve().parent
-OUTPUT_PATH  = WETLANDS_DIR / 'wetlands_PEM_PSS_bioregion.geojson'
+OUTPUT_PATH  = WETLANDS_DIR / 'wetlands_PEM_PSS_PFO_bioregion.geojson'
 
 def load_and_filter(gdb_path, layer_name, clip_geom, label):
     print(f'\nLoading {label}...')
@@ -27,9 +27,9 @@ def load_and_filter(gdb_path, layer_name, clip_geom, label):
     print(f'  Raw polygons in bounding box: {len(gdf):,}')
 
     # Filter to meadow-relevant Cowardin types
-    mask = gdf['ATTRIBUTE'].str.startswith(('PEM', 'PSS'), na=False)
+    mask = gdf['ATTRIBUTE'].str.startswith(('PEM', 'PSS', 'PFO'), na=False)
     gdf  = gdf[mask].copy()
-    print(f'  PEM/PSS polygons: {len(gdf):,}')
+    print(f'  PEM/PSS/PFO polygons: {len(gdf):,}')
 
     # Keep only columns needed for the overlay
     keep = ['ATTRIBUTE', 'WETLAND_TYPE', 'ACRES', 'geometry']
@@ -70,12 +70,12 @@ def main():
         crs=parts[0].crs
     ).to_crs('EPSG:4326')
 
-    print(f'\nTotal PEM/PSS polygons for export: {len(merged):,}')
+    print(f'\nTotal PEM/PSS/PFO polygons for export: {len(merged):,}')
     merged.to_file(OUTPUT_PATH, driver='GeoJSON')
     print(f'Saved: {OUTPUT_PATH}')
     print('\nNext: upload to GEE')
     print('  earthengine upload table \\')
-    print('    --asset_id projects/lost-meadows/assets/wetlands_PEM_PSS \\')
+    print('    --asset_id projects/lost-meadows/assets/wetlands_PEM_PSS_PFO \\')
     print(f'   {OUTPUT_PATH}')
 
 if __name__ == '__main__':

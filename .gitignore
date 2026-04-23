@@ -13,11 +13,12 @@ GEE/TIF_Output/**/*.tif
 Wetlands/*.gdb/
 Wetlands/CA_geodatabase_wetlands.gdb/
 Wetlands/OR_geodatabase_wetlands.gdb/
-Wetlands/wetlands_PEM_PSS_bioregion.geojson
-Wetlands/wetlands_PEM_PSS_bioregion.shp
-Wetlands/wetlands_PEM_PSS_bioregion.dbf
-Wetlands/wetlands_PEM_PSS_bioregion.shx
-Wetlands/wetlands_PEM_PSS_bioregion.prj
+Wetlands/*.geojson/
+Wetlands/wetlands_PEM_PSS_PFO_bioregion.dbf
+Wetlands/wetlands_PEM_PSS_PFO_bioregion.geojson
+Wetlands/wetlands_PEM_PSS_PFO_bioregion.shp
+Wetlands/wetlands_PEM_PSS_PFO_bioregion.prj
+Wetlands/wetlands_PEM_PSS_PFO_bioregion.shx
 
 # Output directories with generated data
 GEE/TIF_Output/*/

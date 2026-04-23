@@ -200,6 +200,8 @@ var wetlandsPEM = ee.FeatureCollection(WETLANDS)
   .filter(ee.Filter.stringStartsWith('ATTRIBUTE', 'PEM'));
 var wetlandsPSS = ee.FeatureCollection(WETLANDS)
   .filter(ee.Filter.stringStartsWith('ATTRIBUTE', 'PSS'));
+var wetlandsPFO = ee.FeatureCollection(WETLANDS)
+  .filter(ee.Filter.stringStartsWith('ATTRIBUTE', 'PFO'));
 
 
 // ============================================================
@@ -370,6 +372,7 @@ var droughtLayer = null;
 var nlcdLayer    = null;
 var wetlandsLayer = null;
 var wetlandsPSSLayer = null;
+var wetlandsPFOLayer = null;
 
 /** Removes and re-adds the SNODAS snowpack layer with current clip/vis. */
 function refreshSnow() {
@@ -404,21 +407,28 @@ function refreshNlcd() {
 }
 
 /** Removes and re-adds the NWI wetlands overlay, clipped to current watershed. */
+
 function refreshWetlands() {
   var clip = getClipTarget();
-  if (wetlandsLayer) map.remove(wetlandsLayer);
+  if (wetlandsLayer)    map.remove(wetlandsLayer);
   if (wetlandsPSSLayer) map.remove(wetlandsPSSLayer);
+  if (wetlandsPFOLayer) map.remove(wetlandsPFOLayer);
 
   wetlandsLayer = ui.Map.Layer(
-    wetlandsPEM.filterBounds(clip), { color: '1a9641' },
+    wetlandsPEM.filterBounds(clip), { color: '4c956c' },
     'NWI Wetlands — PEM', true, 0.8
   );
   wetlandsPSSLayer = ui.Map.Layer(
-    wetlandsPSS.filterBounds(clip), { color: 'a8d5b5' },
+    wetlandsPSS.filterBounds(clip), { color: 'e9c46a' },
     'NWI Wetlands — PSS', true, 0.8
+  );
+  wetlandsPFOLayer = ui.Map.Layer(
+    wetlandsPFO.filterBounds(clip), { color: 'e76f51' },
+    'NWI Wetlands — PFO', true, 0.8
   );
   map.add(wetlandsLayer);
   map.add(wetlandsPSSLayer);
+  map.add(wetlandsPFOLayer);
 }
 
 /**
@@ -535,8 +545,9 @@ function updateWetlandsInspectorLegend(visible) {
   if (!visible) return;
 
   [
-    { color: '1a9641', label: 'PEM — Active wet meadow' },
-    { color: 'a8d5b5', label: 'PSS — Shrub-encroached meadow' }
+    { color: '4c956c', label: 'PEM — Active wet meadow' },
+    { color: 'e9c46a', label: 'PSS — Shrub-encroached meadow' },
+    { color: 'e76f51', label: 'PFO — Conifer-encroached meadow' }
   ].forEach(function(c) {
     wetlandsInspectorLegendPanel.add(ui.Panel([
       ui.Label('', {
@@ -701,7 +712,7 @@ var nlcdCheck = ui.Checkbox({
 sidebar.add(nlcdCheck);
 
 var wetlandsCheck = ui.Checkbox({
-  label: 'NWI Wetlands (PEM/PSS)', value: false,
+  label: 'NWI Wetlands (PEM/PSS/PFO)', value: false,
   style: { fontSize: '12px', color: '#333333', margin: '2px 0 8px 0' }
 });
 sidebar.add(wetlandsCheck);
@@ -1048,6 +1059,7 @@ wetlandsCheck.onChange(function(val) {
   } else {
     if (wetlandsLayer)    { map.remove(wetlandsLayer);    wetlandsLayer    = null; }
     if (wetlandsPSSLayer) { map.remove(wetlandsPSSLayer); wetlandsPSSLayer = null; }
+    if (wetlandsPFOLayer) { map.remove(wetlandsPFOLayer); wetlandsPFOLayer = null; }
   }
   updateWetlandsInspectorLegend(val);
 });
