@@ -42,7 +42,7 @@ export LD_PRELOAD=$CONDA_PREFIX/lib/libstdc++.so.6
 set -a && source "${REPO_ROOT}/.env" && set +a
 
 # --- Build watershed list ---
-mapfile -t ALL_TIFS < <(ls "${TIF_DIR}"/*.tif 2>/dev/null | sort)
+mapfile -t ALL_TIFS < <(ls "${TIF_DIR}"/*.tif 2>/dev/null | grep -v '_fixed\.tif' | sort)
 TOTAL=${#ALL_TIFS[@]}
 
 if [ "$TOTAL" -eq 0 ]; then

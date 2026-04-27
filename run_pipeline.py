@@ -71,19 +71,21 @@ def fix_nodata(input_path: str, nodata_value: float = -9999.0) -> str:
     real elevation data (~3e34), causing water to flow uphill out of the raster
     and producing stripe artifacts in all downstream outputs.
 
-    Writes a new file at <stem>_fixed.tif and returns its path.
-    The original file is not modified.
+    Overwrites the original file in place. If the file already has the correct
+    NoData value set, the fix is skipped.
     """
     input_path = str(input_path)
     p = Path(input_path)
-    output_path = str(p.parent / (p.stem + "_fixed.tif"))
-
-    print(f"  Fixing NoData: {p.name} → {Path(output_path).name}")
 
     with rasterio.open(input_path) as src:
+        if src.nodata == nodata_value:
+            print(f"  NoData already set, skipping fix: {p.name}")
+            return input_path
         profile = src.profile.copy()
         data = src.read(1).astype(np.float32)
         existing_nodata = src.nodata
+
+    print(f"  Fixing NoData: {p.name}")
 
     # Mask: old NoData sentinel, NaN, Inf, and extreme border values (~3e34)
     mask = np.zeros(data.shape, dtype=bool)
@@ -97,11 +99,13 @@ def fix_nodata(input_path: str, nodata_value: float = -9999.0) -> str:
     data[mask] = nodata_value
     profile.update(dtype=rasterio.float32, nodata=nodata_value)
 
-    with rasterio.open(output_path, "w", **profile) as dst:
+    temp_path = str(p.parent / (p.stem + "_temp.tif"))
+    with rasterio.open(temp_path, "w", **profile) as dst:
         dst.write(data, 1)
 
-    print(f"  ✓ Fixed raster written: {output_path}")
-    return output_path
+    os.replace(temp_path, input_path)
+    print(f"  ✓ Fixed raster written in place: {p.name}")
+    return input_path
 
 
 def get_repo_root():
@@ -136,19 +140,16 @@ def main(input_dem, ncores):
     print(f"\n{'='*70}")
     print(f"STEP: 0. Fix NoData Value in Input DEM")
     print(f"{'='*70}")
-    fixed_dem = fix_nodata(input_dem_abs)
-    fixed_dem_abs = Path(fixed_dem).absolute()
+    fix_nodata(input_dem_abs)
 
-    # Watershed name is derived from the FIXED DEM stem so all downstream steps
-    # look in the same output folder that TauDEM writes to.
-    watershed_name = fixed_dem_abs.stem
+    watershed_name = input_dem_abs.stem
     print(f"Watershed: {watershed_name}")
     print(f"Output directory: {base_dir}/GEE/TIF_Output/{watershed_name}")
 
     # Step 1: TauDEM workflow
     run_step(
         "1. TauDEM Hydrological Processing",
-        f"python run_taudem_workflow.py {fixed_dem_abs} {ncores}",
+        f"python run_taudem_workflow.py {input_dem_abs} {ncores}",
         cwd=base_dir / "TauDEM"
     )
 
@@ -251,12 +252,6 @@ def main(input_dem, ncores):
     print(f"\nDeleting helper files: {output_dir}")
     shutil.rmtree(output_dir)
     print(f"  ✓ Removed {output_dir.name}/")
-
-    # Delete the _fixed.tif created by fix_nodata in TIF_Input
-    fixed_dem = fixed_dem_abs
-    if fixed_dem.exists():
-        fixed_dem.unlink()
-        print(f"  ✓ Removed {fixed_dem.name}")
 
     print(f"\nFinal outputs in: {final_output_dir}")
     print(f"  ✓ {probability_dst.name}")
