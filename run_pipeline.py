@@ -195,6 +195,16 @@ def main(input_dem, ncores):
         cwd=base_dir / "FeatureStacking"
     )
 
+    # Delete individual feature TIFs now that they're combined into features_stacked.tif
+    output_dir = base_dir / "GEE" / "TIF_Output" / watershed_name
+    keep = {"features_stacked.tif"}
+    deleted = 0
+    for f in output_dir.glob("*.tif"):
+        if f.name not in keep:
+            f.unlink()
+            deleted += 1
+    print(f"  ✓ Deleted {deleted} individual feature TIFs (~{deleted * 50}MB freed)")
+
     # Step 6: Prepare training data
     run_step(
         "6. Prepare Training Data from Wetlands (OR/CA geodatabases)",
