@@ -26,6 +26,7 @@ Steps executed:
 import subprocess
 import sys
 import os
+import shutil
 from pathlib import Path
 import time
 import numpy as np
@@ -227,22 +228,40 @@ def main(input_dem, ncores):
     total_seconds = int(pipeline_elapsed % 60)
 
     output_dir = base_dir / "GEE" / "TIF_Output" / watershed_name
+    final_output_dir = base_dir / "GEE" / "TIF_Output" / "FinalOutput"
 
     print(f"\n{'='*70}")
     print(f"PIPELINE COMPLETE!")
     print(f"{'='*70}")
     print(f"Total time: {total_minutes}m {total_seconds}s")
-    print(f"\nOutputs in: {output_dir}")
-    print(f"\nKey files generated:")
-    print(f"  ✓ 23 feature rasters (terrain + soil)")
-    print(f"     - dd_h, dd_s, dd_v, slope, TWI, aspect, curvature, TPI, TRI, etc.")
-    print(f"     - soil_depth_restrictive, soil_hydraulic_connectivity, soil_organic_matter")
-    print(f"  ✓ features_stacked.tif (23-band multi-band raster)")
-    print(f"  ✓ training_data_real.csv")
-    print(f"  ✓ xgboost_model.pkl (trained model)")
-    print(f"  ✓ {watershed_name}_xgboost_model_probability.tif (FINAL OUTPUT)")
+
+    # Move final outputs to FinalOutput/, then delete the working folder
+    final_output_dir.mkdir(parents=True, exist_ok=True)
+
+    probability_src = output_dir / f"{watershed_name}_xgboost_model_probability.tif"
+    probability_dst = final_output_dir / f"{input_dem_abs.stem}_Probability.tif"
+
+    print(f"\nMoving final outputs to: {final_output_dir}")
+    if probability_src.exists():
+        shutil.move(str(probability_src), str(probability_dst))
+        print(f"  ✓ {probability_dst.name}")
+    else:
+        print(f"  WARNING: expected output not found: {probability_src.name}")
+
+    print(f"\nDeleting helper files: {output_dir}")
+    shutil.rmtree(output_dir)
+    print(f"  ✓ Removed {output_dir.name}/")
+
+    # Delete the _fixed.tif created by fix_nodata in TIF_Input
+    fixed_dem = fixed_dem_abs
+    if fixed_dem.exists():
+        fixed_dem.unlink()
+        print(f"  ✓ Removed {fixed_dem.name}")
+
+    print(f"\nFinal outputs in: {final_output_dir}")
+    print(f"  ✓ {probability_dst.name}")
     print(f"\nNext steps:")
-    print(f"  1. Upload {watershed_name}_xgboost_model_probability.tif to Google Earth Engine")
+    print(f"  1. Upload {probability_dst.name} to Google Earth Engine")
     print(f"  2. Run GEE/MeadowVisualization.js for interactive map")
     print(f"{'='*70}\n")
 
