@@ -113,14 +113,16 @@ def load_wetlands(study_bounds):
     meadow_mask = gdf['ATTRIBUTE'].str.startswith((
         'PEM',   # Palustrine Emergent - active wet meadows
         'PSS',   # Palustrine Scrub-Shrub - shrub-encroached meadows
-        # 'PFO', # Palustrine Forested - conifer-encroached meadows (disabled)
+        'PFO', # Palustrine Forested - conifer-encroached meadows (disabled)
     ))
     gdf = gdf[meadow_mask].copy()
 
     pem_count = gdf['ATTRIBUTE'].str.startswith('PEM').sum()
     pss_count = gdf['ATTRIBUTE'].str.startswith('PSS').sum()
+    pfo_count = gdf['ATTRIBUTE'].str.startswith('PFO').sum()
     print(f"  PEM (active wet meadow):          {pem_count:,}")
     print(f"  PSS (shrub-encroached meadow):    {pss_count:,}")
+    print(f"  PFO (palustrine forested meadow): {pfo_count:,}")
     print(f"  Total lost meadow polygons:       {len(gdf):,}")
 
     if len(gdf) == 0:
