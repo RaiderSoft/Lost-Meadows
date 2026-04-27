@@ -215,14 +215,14 @@ def main(input_dem, ncores):
     # Step 7: Hyperparameter tuning
     run_step(
         "7. Tune XGBoost Hyperparameters (100 combinations, 5-fold CV)",
-        f"python xgboost_gridsearch.py {watershed_name}",
+        f"python xgboost_gridsearch.py {watershed_name} {ncores}",
         cwd=base_dir / "ModelTraining"
     )
 
     # Step 8: Train model
     run_step(
         "8. Train XGBoost Model (tuned hyperparameters, 75/25 split)",
-        f"python train_xgboost.py {watershed_name}",
+        f"python train_xgboost.py {watershed_name} {ncores}",
         cwd=base_dir / "ModelTraining"
     )
 
