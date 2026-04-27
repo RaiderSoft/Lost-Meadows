@@ -113,7 +113,7 @@ def load_wetlands(study_bounds):
     meadow_mask = gdf['ATTRIBUTE'].str.startswith((
         'PEM',   # Palustrine Emergent - active wet meadows
         'PSS',   # Palustrine Scrub-Shrub - shrub-encroached meadows
-        'PFO', # Palustrine Forested - conifer-encroached meadows (disabled)
+        'PFO', # Palustrine Forested - conifer-encroached meadows
     ))
     gdf = gdf[meadow_mask].copy()
 
