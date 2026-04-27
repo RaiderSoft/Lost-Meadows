@@ -105,19 +105,7 @@ def main(input_dem):
     # Get base name without extension (for TauDEM internal files)
     base = Path(input_dem).stem
 
-    # Ask user how many cores to use for MPI parallelism
-    available_cores = os.cpu_count() or 4
-    print(f"\nYour machine has {available_cores} CPU cores available.")
-    print("More cores = faster TauDEM processing.")
-    print("Recommended: leave at least 2 cores free for the OS.")
-    while True:
-        try:
-            ncores = int(input(f"How many cores should TauDEM use? [1-{available_cores}]: "))
-            if 1 <= ncores <= available_cores:
-                break
-            print(f"  Please enter a number between 1 and {available_cores}.")
-        except ValueError:
-            print("  Please enter a valid number.")
+    ncores = int(sys.argv[2]) if len(sys.argv) > 2 else (os.cpu_count() or 4) - 2
 
     print(f"\n{'='*60}")
     print(f"TauDEM Workflow - {watershed_name}")

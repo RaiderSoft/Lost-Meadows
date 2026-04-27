@@ -88,7 +88,7 @@ There are three releases to download. Follow the instructions for each below.
 
 ### Release 1: TIFInputFiles (Soil Data)
 
-This release contains the three POLARIS 30m soil TIF files required by the pipeline. Each file has 3 bands covering depths 0-5cm, 5-15cm, and 15-30cm.
+This release contains the three soil TIF files required by the pipeline.
 
 1. Download the **TIFInputFiles** release asset.
 2. Extract the files into `GEE/TIF_Input/Soil/`:
@@ -134,15 +134,15 @@ This release contains all 122 watershed DEM rasters exported from Google Earth E
 
 ```
 GEE/TIF_Input/
-├── Hunter_Creek_1710031205.tif      ← example watershed
-├── Bear_Creek_1710030801.tif        ← another watershed
+├── Hunter_Creek.tif      ← example watershed
+├── Bear_Creek.tif        ← another watershed
 └── Soil/
     ├── polaris_clay_pct_0_30cm.tif
     ├── polaris_ksat_0_30cm.tif
     └── polaris_organic_matter_0_30cm.tif
 ```
 
-You only need to place the watersheds you intend to process — you do not need all 122 at once. All `.tif` files in `GEE/TIF_Input/` are already in `.gitignore`.
+You only need to place the watersheds you intend to process — you do not need all 119 at once. All `.tif` files in `GEE/TIF_Input/` are already in `.gitignore`.
 
 ---
 
@@ -235,14 +235,31 @@ conda activate meadow
 # Load DagsHub token
 set -a && source .env && set +a
 
-# Run the full pipeline on a watershed (~2-4 hours)
-python run_pipeline.py GEE/TIF_Input/Hunter_Creek_1710031205.tif
+# Run the full pipeline on a single watershed (~1-2 hours)
+python run_pipeline.py GEE/TIF_Input/Hunter_Creek.tif
+
+# Run on multiple specific watersheds sequentially
+python run_pipeline.py GEE/TIF_Input/Hunter_Creek.tif GEE/TIF_Input/Bear_Creek.tif
+
+# Run all watersheds in TIF_Input/ overnight
+python run_pipeline.py --all
+
+# Run all watersheds and continue even if one fails
+python run_pipeline.py --all --keep-going
 ```
 
-The script will prompt you to press Enter before starting. You can watch each step's progress in real time.
+**Flags:**
+
+| Flag | Description |
+|------|-------------|
+| `--all` | Run every `.tif` file found in `GEE/TIF_Input/` sequentially |
+| `--keep-going` | Continue to the next watershed if one fails (default: stop on failure) |
+| `--cores N` | Number of CPU cores for TauDEM MPI processing (default: total cores minus 2) |
+
+You can watch each step's progress in real time. When running multiple watersheds, a summary showing each watershed's status and runtime is printed at the end.
 
 **Outputs** are written to `GEE/TIF_Output/<watershed_name>/`, including:
-- All 23 individual feature rasters
+- All 29 individual feature rasters
 - `features_stacked.tif` (23-band multi-band raster)
 - `training_data_real.csv`
 - `xgboost_model.pkl`
@@ -265,13 +282,13 @@ Lost-Meadows/
 │   ├── TIF_Export.js
 │   ├── MeadowVisualization.js
 │   ├── TIF_Input/               # Watershed DEMs go here
-│   │   ├── Hunter_Creek_1710031205.tif
+│   │   ├── Hunter_Creek.tif
 │   │   └── Soil/                # Soil TIFs go here
 │   │       ├── polaris_clay_pct_0_30cm.tif
 │   │       ├── polaris_ksat_0_30cm.tif
 │   │       └── polaris_organic_matter_0_30cm.tif
 │   └── TIF_Output/              # Created automatically during pipeline run
-│       └── Hunter_Creek_1710031205/
+│       └── Hunter_Creek/
 │
 ├── TauDEM/
 │   └── run_taudem_workflow.py
@@ -311,8 +328,11 @@ conda activate meadow
 conda activate meadow
 set -a && source .env && set +a
 
-# Run pipeline
+# Run pipeline — single watershed
 python run_pipeline.py GEE/TIF_Input/your_watershed.tif
+
+# Run all watersheds overnight (continue past failures, use 10 cores)
+python run_pipeline.py --all --keep-going --cores 10
 
 # Deactivate when done
 conda deactivate
@@ -344,6 +364,10 @@ conda deactivate
 - Check disk space: `df -h`
 - Verify the watershed DEM exists: `ls -lh GEE/TIF_Input/`
 - Scroll up in the terminal for the failed step's error output
+
+### Batch run hangs without doing anything
+- Make sure you are not passing a path to a directory — `--all` reads from `GEE/TIF_Input/` automatically
+- Verify at least one `.tif` file exists there: `ls GEE/TIF_Input/*.tif`
 
 ---
 

@@ -10,6 +10,7 @@ Example:
   python run_pipeline.py GEE/TIF_Input/Bear_Creek_Watershed_10m.tif
 
 Steps executed:
+  0. Preprocess raster to add value to nodata
   1. TauDEM hydrological processing
   2. TWI calculation (10m and 100m scales)
   3. Terrain features calculation
@@ -27,6 +28,8 @@ import sys
 import os
 from pathlib import Path
 import time
+import numpy as np
+import rasterio
 
 def run_step(description, command, cwd=None):
     """Run a pipeline step and handle errors"""
@@ -59,20 +62,58 @@ def run_step(description, command, cwd=None):
 
     return result
 
+def fix_nodata(input_path: str, nodata_value: float = -9999.0) -> str:
+    """
+    Re-write a raster with an explicit NoData value before TauDEM processing.
+
+    Without a defined NoData value, TauDEM treats the empty border region as
+    real elevation data (~3e34), causing water to flow uphill out of the raster
+    and producing stripe artifacts in all downstream outputs.
+
+    Writes a new file at <stem>_fixed.tif and returns its path.
+    The original file is not modified.
+    """
+    input_path = str(input_path)
+    p = Path(input_path)
+    output_path = str(p.parent / (p.stem + "_fixed.tif"))
+
+    print(f"  Fixing NoData: {p.name} → {Path(output_path).name}")
+
+    with rasterio.open(input_path) as src:
+        profile = src.profile.copy()
+        data = src.read(1).astype(np.float32)
+        existing_nodata = src.nodata
+
+    # Mask: old NoData sentinel, NaN, Inf, and extreme border values (~3e34)
+    mask = np.zeros(data.shape, dtype=bool)
+    if existing_nodata is not None:
+        mask |= (data == existing_nodata)
+    mask |= np.isnan(data) | np.isinf(data) | (data > 1e10) | (data < -1e10)
+
+    n_masked = int(mask.sum())
+    print(f"  {n_masked:,} border/sentinel pixels masked as NoData ({nodata_value})")
+
+    data[mask] = nodata_value
+    profile.update(dtype=rasterio.float32, nodata=nodata_value)
+
+    with rasterio.open(output_path, "w", **profile) as dst:
+        dst.write(data, 1)
+
+    print(f"  ✓ Fixed raster written: {output_path}")
+    return output_path
+
+
 def get_repo_root():
     # run_pipeline.py is at the repo root
     return Path(__file__).resolve().parent
 
-def main(input_dem):
+def main(input_dem, ncores):
     """Run the complete pipeline"""
 
     # Check if input DEM exists
     if not os.path.exists(input_dem):
         print(f"ERROR: Input DEM not found: {input_dem}")
         sys.exit(1)
-
-    # Extract watershed name from filename
-    watershed_name = Path(input_dem).stem
 
     # Get absolute paths
     base_dir = get_repo_root()
@@ -82,20 +123,31 @@ def main(input_dem):
     print(f"LOST MEADOWS DETECTION PIPELINE")
     print(f"{'='*70}")
     print(f"Input DEM: {input_dem}")
-    print(f"Watershed: {watershed_name}")
-    print(f"Output directory: {base_dir}/GEE/TIF_Output/{watershed_name}")
-    print(f"\nThis will execute 9 major steps and may take 2-4 hours.")
-    print(f"  (Includes per-watershed hyperparameter tuning — adds ~1 minute)")
+    print(f"\nThis will execute 10 major steps and may take 2-4 hours.")
+    print(f"  (Includes NoData fix, per-watershed hyperparameter tuning — adds ~1 minute)")
     print(f"{'='*70}")
 
-    input(f"\nPress Enter to start the pipeline...")
-
     pipeline_start = time.time()
+
+    # Step 0: Fix NoData — must run before TauDEM
+    # Without an explicit NoData value, TauDEM treats the raster border as real
+    # elevation data, causing stripe artifacts throughout all downstream outputs.
+    print(f"\n{'='*70}")
+    print(f"STEP: 0. Fix NoData Value in Input DEM")
+    print(f"{'='*70}")
+    fixed_dem = fix_nodata(input_dem_abs)
+    fixed_dem_abs = Path(fixed_dem).absolute()
+
+    # Watershed name is derived from the FIXED DEM stem so all downstream steps
+    # look in the same output folder that TauDEM writes to.
+    watershed_name = fixed_dem_abs.stem
+    print(f"Watershed: {watershed_name}")
+    print(f"Output directory: {base_dir}/GEE/TIF_Output/{watershed_name}")
 
     # Step 1: TauDEM workflow
     run_step(
         "1. TauDEM Hydrological Processing",
-        f"python run_taudem_workflow.py {input_dem_abs}",
+        f"python run_taudem_workflow.py {fixed_dem_abs} {ncores}",
         cwd=base_dir / "TauDEM"
     )
 
@@ -182,10 +234,10 @@ def main(input_dem):
     print(f"Total time: {total_minutes}m {total_seconds}s")
     print(f"\nOutputs in: {output_dir}")
     print(f"\nKey files generated:")
-    print(f"  ✓ 29 feature rasters (terrain + soil)")
+    print(f"  ✓ 23 feature rasters (terrain + soil)")
     print(f"     - dd_h, dd_s, dd_v, slope, TWI, aspect, curvature, TPI, TRI, etc.")
-    print(f"     - soil_clay_pct, soil_ksat, soil_organic_matter (POLARIS 30m, 3 depths each = 9 features)")
-    print(f"  ✓ features_stacked.tif (29-band multi-band raster)")
+    print(f"     - soil_depth_restrictive, soil_hydraulic_connectivity, soil_organic_matter")
+    print(f"  ✓ features_stacked.tif (23-band multi-band raster)")
     print(f"  ✓ training_data_real.csv")
     print(f"  ✓ xgboost_model.pkl (trained model)")
     print(f"  ✓ {watershed_name}_xgboost_model_probability.tif (FINAL OUTPUT)")
@@ -195,25 +247,87 @@ def main(input_dem):
     print(f"{'='*70}\n")
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python run_pipeline.py <input_dem.tif>")
-        print("\nExample:")
-        print("  python run_pipeline.py GEE/TIF_Input/Bear_Creek_Watershed_10m.tif")
-        print("\nAvailable DEMs in TIF_Input:")
-        
-        # Adjustment for file pathing
-        repo_root = get_repo_root()
+    args = sys.argv[1:]
+    base_dir = Path(__file__).resolve().parent
+    keep_going = "--keep-going" in args
+    use_all = "--all" in args
 
-        tif_input = repo_root / "GEE" / "TIF_Input"
-        if tif_input.exists():
-            tif_files = sorted(tif_input.glob("*.tif"))
-            if tif_files:
-                for tif in tif_files:
-                    print(f"  - {tif.name}")
-            else:
-                print("  (No TIF files found)")
+    # Parse --cores
+    if "--cores" in args:
+        idx = args.index("--cores")
+        try:
+            ncores = int(args[idx + 1])
+        except (IndexError, ValueError):
+            print("ERROR: --cores requires a number (e.g. --cores 8)")
+            sys.exit(1)
+    else:
+        ncores = (os.cpu_count() or 4) - 2
 
+    # Parse DEM paths (strip flags and flag values)
+    skip_next = False
+    paths = []
+    for a in args:
+        if skip_next:
+            skip_next = False
+            continue
+        if a == "--cores":
+            skip_next = True
+        elif not a.startswith("--"):
+            paths.append(a)
+
+    tif_input = base_dir / "GEE" / "TIF_Input"
+
+    if use_all:
+        dems = sorted(tif_input.glob("*.tif"))
+    elif paths:
+        dems = [Path(p) for p in paths]
+    else:
+        print("Usage:")
+        print("  python run_pipeline.py GEE/TIF_Input/Bear_Creek_Watershed_10m.tif [--cores N]")
+        print("  python run_pipeline.py --all [--keep-going] [--cores N]")
         sys.exit(1)
 
-    input_dem = sys.argv[1]
-    main(input_dem)
+    if len(dems) == 1:
+        main(dems[0], ncores)
+    else:
+        results = []
+        batch_start = time.time()
+
+        for dem in dems:
+            print(f"\n{'#'*70}")
+            print(f"# Starting: {dem.name}")
+            print(f"{'#'*70}")
+            start = time.time()
+
+            result = subprocess.run(
+                [sys.executable, __file__, str(dem), "--cores", str(ncores)],
+                cwd=base_dir
+            )
+
+            elapsed = int(time.time() - start)
+            success = result.returncode == 0
+            status = "✓ SUCCESS" if success else "✗ FAILED"
+            results.append((dem.name, status, elapsed))
+            print(f"\n{status}: {dem.name} ({elapsed // 60}m {elapsed % 60}s)")
+
+            if not success and not keep_going:
+                print("\nStopping batch. Use --keep-going to continue past failures.")
+                break
+
+        total_elapsed = int(time.time() - batch_start)
+        n_success = sum(1 for _, s, _ in results if "SUCCESS" in s)
+        n_failed = len(results) - n_success
+        n_skipped = len(dems) - len(results)
+
+        print(f"\n{'='*70}")
+        print(f"BATCH COMPLETE — {n_success} succeeded, {n_failed} failed, {n_skipped} skipped")
+        print(f"Total time: {total_elapsed // 60}m {total_elapsed % 60}s")
+        print(f"{'='*70}")
+        for name, status, elapsed in results:
+            print(f"  {status}  {name}  ({elapsed // 60}m {elapsed % 60}s)")
+        if n_skipped:
+            for d in dems[len(results):]:
+                print(f"  - SKIPPED  {d.name}")
+        print()
+
+        sys.exit(0 if n_failed == 0 else 1)
