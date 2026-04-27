@@ -32,11 +32,11 @@
 WATERSHEDS_PER_NODE=16
 CORES_PER_WATERSHED=4
 CONDA_ENV=meadow
-REPO_ROOT=$(dirname "$(dirname "$(realpath "$0")")")
+REPO_ROOT=$SLURM_SUBMIT_DIR
 TIF_DIR="${REPO_ROOT}/GEE/TIF_Input"
 
 # --- Activate conda ---
-source ~/.bashrc
+source /home/lm1/miniconda3/etc/profile.d/conda.sh
 conda activate "${CONDA_ENV}"
 export LD_PRELOAD=$CONDA_PREFIX/lib/libstdc++.so.6
 set -a && source "${REPO_ROOT}/.env" && set +a
