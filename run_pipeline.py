@@ -10,7 +10,7 @@ Example:
   python run_pipeline.py GEE/TIF_Input/Bear_Creek_Watershed_10m.tif
 
 Steps executed:
-  0. Fix no data in raster
+  0. Preprocess raster to add value to nodata
   1. TauDEM hydrological processing
   2. TWI calculation (10m and 100m scales)
   3. Terrain features calculation
@@ -107,7 +107,7 @@ def get_repo_root():
     # run_pipeline.py is at the repo root
     return Path(__file__).resolve().parent
 
-def main(input_dem):
+def main(input_dem, ncores):
     """Run the complete pipeline"""
 
     # Check if input DEM exists
@@ -126,8 +126,6 @@ def main(input_dem):
     print(f"\nThis will execute 10 major steps and may take 2-4 hours.")
     print(f"  (Includes NoData fix, per-watershed hyperparameter tuning — adds ~1 minute)")
     print(f"{'='*70}")
-
-    input(f"\nPress Enter to start the pipeline...")
 
     pipeline_start = time.time()
 
@@ -149,7 +147,7 @@ def main(input_dem):
     # Step 1: TauDEM workflow
     run_step(
         "1. TauDEM Hydrological Processing",
-        f"python run_taudem_workflow.py {fixed_dem_abs}",
+        f"python run_taudem_workflow.py {fixed_dem_abs} {ncores}",
         cwd=base_dir / "TauDEM"
     )
 
@@ -249,25 +247,87 @@ def main(input_dem):
     print(f"{'='*70}\n")
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python run_pipeline.py <input_dem.tif>")
-        print("\nExample:")
-        print("  python run_pipeline.py GEE/TIF_Input/Bear_Creek_Watershed_10m.tif")
-        print("\nAvailable DEMs in TIF_Input:")
-        
-        # Adjustment for file pathing
-        repo_root = get_repo_root()
+    args = sys.argv[1:]
+    base_dir = Path(__file__).resolve().parent
+    keep_going = "--keep-going" in args
+    use_all = "--all" in args
 
-        tif_input = repo_root / "GEE" / "TIF_Input"
-        if tif_input.exists():
-            tif_files = sorted(tif_input.glob("*.tif"))
-            if tif_files:
-                for tif in tif_files:
-                    print(f"  - {tif.name}")
-            else:
-                print("  (No TIF files found)")
+    # Parse --cores
+    if "--cores" in args:
+        idx = args.index("--cores")
+        try:
+            ncores = int(args[idx + 1])
+        except (IndexError, ValueError):
+            print("ERROR: --cores requires a number (e.g. --cores 8)")
+            sys.exit(1)
+    else:
+        ncores = (os.cpu_count() or 4) - 2
 
+    # Parse DEM paths (strip flags and flag values)
+    skip_next = False
+    paths = []
+    for a in args:
+        if skip_next:
+            skip_next = False
+            continue
+        if a == "--cores":
+            skip_next = True
+        elif not a.startswith("--"):
+            paths.append(a)
+
+    tif_input = base_dir / "GEE" / "TIF_Input"
+
+    if use_all:
+        dems = sorted(tif_input.glob("*.tif"))
+    elif paths:
+        dems = [Path(p) for p in paths]
+    else:
+        print("Usage:")
+        print("  python run_pipeline.py GEE/TIF_Input/Bear_Creek_Watershed_10m.tif [--cores N]")
+        print("  python run_pipeline.py --all [--keep-going] [--cores N]")
         sys.exit(1)
 
-    input_dem = sys.argv[1]
-    main(input_dem)
+    if len(dems) == 1:
+        main(dems[0], ncores)
+    else:
+        results = []
+        batch_start = time.time()
+
+        for dem in dems:
+            print(f"\n{'#'*70}")
+            print(f"# Starting: {dem.name}")
+            print(f"{'#'*70}")
+            start = time.time()
+
+            result = subprocess.run(
+                [sys.executable, __file__, str(dem), "--cores", str(ncores)],
+                cwd=base_dir
+            )
+
+            elapsed = int(time.time() - start)
+            success = result.returncode == 0
+            status = "✓ SUCCESS" if success else "✗ FAILED"
+            results.append((dem.name, status, elapsed))
+            print(f"\n{status}: {dem.name} ({elapsed // 60}m {elapsed % 60}s)")
+
+            if not success and not keep_going:
+                print("\nStopping batch. Use --keep-going to continue past failures.")
+                break
+
+        total_elapsed = int(time.time() - batch_start)
+        n_success = sum(1 for _, s, _ in results if "SUCCESS" in s)
+        n_failed = len(results) - n_success
+        n_skipped = len(dems) - len(results)
+
+        print(f"\n{'='*70}")
+        print(f"BATCH COMPLETE — {n_success} succeeded, {n_failed} failed, {n_skipped} skipped")
+        print(f"Total time: {total_elapsed // 60}m {total_elapsed % 60}s")
+        print(f"{'='*70}")
+        for name, status, elapsed in results:
+            print(f"  {status}  {name}  ({elapsed // 60}m {elapsed % 60}s)")
+        if n_skipped:
+            for d in dems[len(results):]:
+                print(f"  - SKIPPED  {d.name}")
+        print()
+
+        sys.exit(0 if n_failed == 0 else 1)
