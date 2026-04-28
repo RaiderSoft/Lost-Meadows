@@ -23,7 +23,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=64       # 16 watersheds × 4 cores = all 64 cores
 #SBATCH --mem=200G               # 576GB available, 200G is plenty of headroom
-#SBATCH --time=00:30:00
+#SBATCH --time=01:00:00
 #SBATCH --partition=normal
 #SBATCH --output=SLURM/logs/%A_%a.out
 #SBATCH --error=SLURM/logs/%A_%a.err
