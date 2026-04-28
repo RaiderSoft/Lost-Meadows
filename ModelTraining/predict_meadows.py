@@ -9,6 +9,7 @@ import numpy as np
 import joblib
 import sys
 from pathlib import Path
+from scipy.ndimage import label, distance_transform_edt
 
 def get_repo_root():
     # ModelTraining/train_random_forest.py
@@ -77,7 +78,24 @@ def predict_probabilities(features_path, model_path, output_path, chunk_size=100
                 print(f"  Chunk {chunk_idx + 1}/{n_chunks} ({pct:.1f}%)")
         
         print("\n✓ Prediction complete!")
-        
+
+        # Fill internal NoData holes with nearest-neighbor prediction.
+        # "Internal" = nodata regions fully surrounded by valid predictions (not touching the raster edge).
+        nodata_mask = probabilities == -9999.0
+        labeled, _ = label(nodata_mask)
+        exterior_labels = set()
+        for edge in (labeled[0, :], labeled[-1, :], labeled[:, 0], labeled[:, -1]):
+            exterior_labels.update(edge.tolist())
+        exterior_labels.discard(0)
+        interior_holes = nodata_mask.copy()
+        for lbl in exterior_labels:
+            interior_holes[labeled == lbl] = False
+        n_filled = int(interior_holes.sum())
+        if n_filled > 0:
+            indices = distance_transform_edt(nodata_mask, return_distances=False, return_indices=True)
+            probabilities[interior_holes] = probabilities[indices[0][interior_holes], indices[1][interior_holes]]
+            print(f"  Filled {n_filled:,} internal NoData pixels with nearest-neighbor prediction")
+
         # Calculate statistics
         valid_probs = probabilities[probabilities > -9999]
         print(f"\nPrediction Statistics:")
