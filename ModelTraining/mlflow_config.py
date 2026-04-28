@@ -26,11 +26,18 @@ DAGSHUB_REPO_NAME  = "Lost-Meadows"
 
 
 def init_mlflow(experiment_name: str) -> None:
-    """Initialise DagsHub remote tracking and set the experiment.
+    """Initialise MLflow tracking.
 
-    Falls back to local MLflow tracking if DagsHub is unavailable (e.g.
-    rate-limited during large parallel runs on a cluster).
+    Uses local tracking when running inside a SLURM job to avoid rate-limiting
+    DagsHub with hundreds of concurrent API calls. Uses DagsHub remote tracking
+    for local/interactive runs.
     """
+    if os.environ.get("SLURM_JOB_ID"):
+        print("SLURM environment detected — using local MLflow tracking.")
+        mlflow.set_tracking_uri("mlruns")
+        mlflow.set_experiment(experiment_name)
+        return
+
     token = os.environ.get("DAGSHUB_USER_TOKEN")
     if token:
         os.environ["MLFLOW_TRACKING_USERNAME"] = DAGSHUB_REPO_OWNER
