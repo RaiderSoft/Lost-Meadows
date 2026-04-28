@@ -119,10 +119,14 @@ def main(watershed_name):
     with rasterio.open(dem_file) as src:
         elevation = src.read(1)
         profile = src.profile
-    
+        file_nodata = src.nodata
+
     # CRITICAL: Replace TauDEM NoData values with NaN
     print("Cleaning TauDEM NoData values...")
     nodata_mask = elevation > 1e10  # Any huge value is NoData
+    nodata_mask |= elevation < -1e10
+    if file_nodata is not None:
+        nodata_mask |= (elevation == file_nodata)
     print(f"  Found {np.sum(nodata_mask):,} NoData pixels")
     elevation[nodata_mask] = np.nan
     

@@ -14,15 +14,26 @@ def calculate_twi(sca_file, slope_file, output_file):
     
     print(f"Reading {sca_file}...")
     with rasterio.open(sca_file) as src:
-        sca = src.read(1)
+        sca = src.read(1).astype(np.float64)
         profile = src.profile
-    
+        sca_nodata = src.nodata
+
     print(f"Reading {slope_file}...")
     with rasterio.open(slope_file) as src:
-        slope = src.read(1)
-    
+        slope = src.read(1).astype(np.float64)
+        slope_nodata = src.nodata
+
+    # Mask nodata pixels so they don't corrupt edge calculations
+    nodata_mask = np.isnan(sca) | np.isnan(slope) | (sca > 1e10) | (slope > 1e10) | (sca < -1e10) | (slope < -1e10)
+    if sca_nodata is not None:
+        nodata_mask |= (sca == sca_nodata)
+    if slope_nodata is not None:
+        nodata_mask |= (slope == slope_nodata)
+    sca[nodata_mask] = np.nan
+    slope[nodata_mask] = np.nan
+
     print("Calculating TWI...")
-    
+
     # Convert slope from degrees to radians
     slope_rad = np.radians(slope)
     
@@ -33,12 +44,13 @@ def calculate_twi(sca_file, slope_file, output_file):
     # Calculate TWI = ln(sca / tan(slope))
     twi = np.log(sca / tan_slope)
     
-    # Handle invalid values
-    twi[~np.isfinite(twi)] = 0
-    
+    # Handle invalid values — set nodata pixels to -9999
+    twi[nodata_mask | ~np.isfinite(twi)] = -9999
+    profile.update(nodata=-9999)
+
     print(f"Writing {output_file}...")
     with rasterio.open(output_file, 'w', **profile) as dst:
-        dst.write(twi, 1)
+        dst.write(twi.astype(np.float32), 1)
     
     print(f"✓ TWI saved to {output_file}")
     

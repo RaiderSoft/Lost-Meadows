@@ -162,11 +162,14 @@ def main(watershed_name):
     with rasterio.open(dem_file) as src:
         dem = src.read(1).astype(np.float64)
         profile = src.profile
+        file_nodata = src.nodata
 
     # Outside-watershed pixels may be encoded as NaN, large positive, or large
     # negative depending on GEE export settings and TauDEM version. Normalize
     # all nodata to NaN so gradient/filter operations propagate correctly.
     dem_nodata = np.isnan(dem) | (dem > 1e10) | (dem < -1e10)
+    if file_nodata is not None:
+        dem_nodata |= (dem == file_nodata)
     dem[dem_nodata] = np.nan
 
     # Mask of pixels inside the watershed (used for boundary NaN filling)
