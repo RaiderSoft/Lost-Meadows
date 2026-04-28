@@ -195,6 +195,16 @@ def main(input_dem, ncores):
         cwd=base_dir / "FeatureStacking"
     )
 
+    # Delete individual feature TIFs now that they're combined into features_stacked.tif
+    output_dir = base_dir / "GEE" / "TIF_Output" / watershed_name
+    keep = {"features_stacked.tif"}
+    deleted = 0
+    for f in output_dir.glob("*.tif"):
+        if f.name not in keep:
+            f.unlink()
+            deleted += 1
+    print(f"  ✓ Deleted {deleted} individual feature TIFs (~{deleted * 50}MB freed)")
+
     # Step 6: Prepare training data
     run_step(
         "6. Prepare Training Data from Wetlands (OR/CA geodatabases)",
@@ -205,14 +215,14 @@ def main(input_dem, ncores):
     # Step 7: Hyperparameter tuning
     run_step(
         "7. Tune XGBoost Hyperparameters (100 combinations, 5-fold CV)",
-        f"python xgboost_gridsearch.py {watershed_name}",
+        f"python xgboost_gridsearch.py {watershed_name} {ncores}",
         cwd=base_dir / "ModelTraining"
     )
 
     # Step 8: Train model
     run_step(
         "8. Train XGBoost Model (tuned hyperparameters, 75/25 split)",
-        f"python train_xgboost.py {watershed_name}",
+        f"python train_xgboost.py {watershed_name} {ncores}",
         cwd=base_dir / "ModelTraining"
     )
 

@@ -38,7 +38,7 @@ FEATURE_NAMES = [
     'soil_organic_matter_0_5cm', 'soil_organic_matter_5_15cm', 'soil_organic_matter_15_30cm',
 ]
 
-def main(watershed_name):
+def main(watershed_name, ncores=1):
 
     # Load training data
     csv = get_repo_root() / "GEE" / "TIF_Output" / watershed_name / "training_data_real.csv"
@@ -76,7 +76,7 @@ def main(watershed_name):
 
     base_model = XGBClassifier(
         random_state=42,
-        n_jobs=-1,
+        n_jobs=1,
         eval_metric='logloss',
         verbosity=0
     )
@@ -98,7 +98,7 @@ def main(watershed_name):
         scoring='roc_auc',
         cv=cv,
         random_state=42,
-        n_jobs=-1,
+        n_jobs=ncores,
         verbose=1
     )
 
@@ -157,9 +157,9 @@ def main(watershed_name):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python xgboost_gridsearch.py <watershed_name>")
+        print("Usage: python xgboost_gridsearch.py <watershed_name> [ncores]")
         print("\nExample:")
-        print("  python xgboost_gridsearch.py Bear_Creek_1710030801")
+        print("  python xgboost_gridsearch.py Bear_Creek_1710030801 4")
         base_dir = get_repo_root() / "GEE" / "TIF_Output"
         watersheds = [d.name for d in base_dir.iterdir() if d.is_dir() and not d.name.startswith('.')]
         if len(watersheds) == 1:
@@ -169,4 +169,5 @@ if __name__ == "__main__":
             print(f"\nAvailable watersheds: {', '.join(watersheds)}")
             sys.exit(1)
     else:
-        main(sys.argv[1])
+        ncores = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+        main(sys.argv[1], ncores)

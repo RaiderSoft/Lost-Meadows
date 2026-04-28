@@ -66,7 +66,7 @@ def load_training_data(watershed_name):
     return features, labels
 
 
-def train_model(features, labels, watershed_name):
+def train_model(features, labels, watershed_name, ncores=1):
     """Train XGBoost classifier and log everything to MLflow / DagsHub."""
 
     print(f"\n{'='*60}")
@@ -149,7 +149,7 @@ def train_model(features, labels, watershed_name):
 
         xgb = XGBClassifier(
             **xgb_params,
-            n_jobs=-1,
+            n_jobs=ncores,
             eval_metric='logloss',
             verbosity=0,
         )
@@ -227,10 +227,10 @@ def train_model(features, labels, watershed_name):
     return xgb
 
 
-def main(watershed_name):
+def main(watershed_name, ncores=1):
     init_mlflow(MLFLOW_EXPERIMENT)
     features, labels = load_training_data(watershed_name)
-    train_model(features, labels, watershed_name)
+    train_model(features, labels, watershed_name, ncores)
 
     print(f"\n{'='*60}")
     print("Training Complete!")
@@ -255,4 +255,5 @@ if __name__ == "__main__":
     else:
         watershed_name = sys.argv[1]
 
-    main(watershed_name)
+    ncores = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+    main(watershed_name, ncores)

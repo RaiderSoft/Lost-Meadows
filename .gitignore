@@ -72,6 +72,11 @@ Desktop.ini
 
 # Logs
 *.log
+SLURM/logs/*.out
+SLURM/logs/*.err
+
+# Claude Code local settings
+.claude/
 
 # Compressed files
 *.zip
