@@ -147,6 +147,7 @@ def main(watershed_name, ncores=1):
     params_path = output_dir / "best_params.json"
     # Don't save scale_pos_weight — train_xgboost.py computes it dynamically
     params_to_save = {k: v for k, v in search.best_params_.items() if k != "scale_pos_weight"}
+    params_to_save["best_cv_auc"] = round(float(search.best_score_), 4)
     with open(params_path, "w") as f:
         json.dump(params_to_save, f, indent=2)
     print(f"\n{'='*60}")

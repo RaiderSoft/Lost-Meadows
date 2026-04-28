@@ -246,12 +246,59 @@ def main(input_dem, ncores):
     print(f"{'='*70}")
     print(f"Total time: {total_minutes}m {total_seconds}s")
 
-    # Move final outputs to FinalOutput/, then delete the working folder
+    # Create output directories
     final_output_dir.mkdir(parents=True, exist_ok=True)
+    logs_dir = base_dir / "GEE" / "TIF_Output" / "Logs"
+    training_data_dir = base_dir / "GEE" / "TIF_Output" / "TrainingData"
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    training_data_dir.mkdir(parents=True, exist_ok=True)
 
     probability_src = output_dir / f"{watershed_name}_xgboost_model_probability.tif"
     probability_dst = final_output_dir / f"{input_dem_abs.stem}_Probability.tif"
 
+    # Read prediction statistics from probability TIF before moving it
+    meadow_pixels = total_pixels = 0
+    meadow_ha = coverage_pct = 0.0
+    if probability_src.exists():
+        with rasterio.open(probability_src) as src:
+            prob = src.read(1).astype(np.float32)
+            nodata = src.nodata
+            valid = np.isfinite(prob)
+            if nodata is not None:
+                valid &= (prob != nodata)
+            total_pixels = int(valid.sum())
+            meadow_pixels = int((prob[valid] > 0.5).sum())
+            meadow_ha = meadow_pixels * 0.01  # 10m × 10m = 100 m² = 0.01 ha
+            coverage_pct = 100 * meadow_pixels / max(total_pixels, 1)
+
+    # Append prediction stats and runtime to the metrics log
+    log_src = output_dir / f"{watershed_name}_log.txt"
+    log_dst = logs_dir / f"{watershed_name}_log.txt"
+    if log_src.exists():
+        with open(log_src, "a") as lf:
+            lf.write("PREDICTION STATISTICS\n")
+            lf.write(f"  Meadow pixels (prob > 0.5):  {meadow_pixels:,}\n")
+            lf.write(f"  Estimated meadow area:        {meadow_ha:,.2f} ha\n")
+            lf.write(f"  Total valid pixels:           {total_pixels:,}\n")
+            lf.write(f"  Meadow coverage:              {coverage_pct:.2f}%\n")
+            lf.write("\n")
+            lf.write("PIPELINE RUNTIME\n")
+            lf.write(f"  Total time: {total_minutes}m {total_seconds}s\n")
+            lf.write("\n" + "=" * 80 + "\n")
+
+    # Copy training CSV to TrainingData/
+    training_csv_src = output_dir / "training_data_real.csv"
+    training_csv_dst = training_data_dir / f"{watershed_name}_training_data.csv"
+    if training_csv_src.exists():
+        shutil.copy2(str(training_csv_src), str(training_csv_dst))
+        print(f"  ✓ Training data saved to: TrainingData/{training_csv_dst.name}")
+
+    # Move log to Logs/
+    if log_src.exists():
+        shutil.move(str(log_src), str(log_dst))
+        print(f"  ✓ Log saved to: Logs/{log_dst.name}")
+
+    # Move probability TIF to FinalOutput/
     print(f"\nMoving final outputs to: {final_output_dir}")
     if probability_src.exists():
         shutil.move(str(probability_src), str(probability_dst))
@@ -265,6 +312,8 @@ def main(input_dem, ncores):
 
     print(f"\nFinal outputs in: {final_output_dir}")
     print(f"  ✓ {probability_dst.name}")
+    print(f"  ✓ Logs/{watershed_name}_log.txt")
+    print(f"  ✓ TrainingData/{watershed_name}_training_data.csv")
     print(f"\nNext steps:")
     print(f"  1. Upload {probability_dst.name} to Google Earth Engine")
     print(f"  2. Run GEE/MeadowVisualization.js for interactive map")

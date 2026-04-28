@@ -4,6 +4,7 @@ Train XGBoost model for meadow detection
 Mirrors train_random_forest.py for direct comparison
 """
 
+import datetime
 import json
 import numpy as np
 import pandas as pd
@@ -103,10 +104,12 @@ def train_model(features, labels, watershed_name, ncores=1):
     if params_path.exists():
         with open(params_path) as f:
             tuned_params = json.load(f)
+        best_cv_auc = tuned_params.pop("best_cv_auc", None)
         print(f"\nLoading tuned hyperparameters from: {params_path}")
         xgb_params = {**default_params, **tuned_params}
         params_source = "tuned (per-watershed)"
     else:
+        best_cv_auc = None
         print(f"\nNo tuned hyperparameters found — using Bear Creek defaults.")
         xgb_params = default_params.copy()
         params_source = "default (Bear Creek)"
@@ -223,6 +226,62 @@ def train_model(features, labels, watershed_name, ncores=1):
 
         print("Model saved and logged to MLflow!")
         print(f"Run URL: {mlflow.get_tracking_uri()}")
+
+        # ---- write metrics log ------------------------------------------
+        log_path = output_dir / f"{watershed_name}_log.txt"
+        indices = np.argsort(importances)[::-1]
+        lines = [
+            "=" * 80,
+            f"WATERSHED: {watershed_name}",
+            f"Date/Time: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            "=" * 80,
+            "",
+            "DATA SUMMARY",
+            f"  Total samples:           {len(labels):,}",
+            f"  Wetland (1):             {n_wetland:,}  ({100*n_wetland/max(len(labels),1):.1f}%)",
+            f"  Non-wetland (0):         {n_non_wetland:,}  ({100*n_non_wetland/max(len(labels),1):.1f}%)",
+            f"  Class ratio (neg/pos):   {n_non_wetland/max(n_wetland,1):.2f}",
+            f"  Training set:            {X_train.shape[0]:,}",
+            f"  Test set:                {X_test.shape[0]:,}",
+            "",
+            f"HYPERPARAMETERS ({params_source})",
+        ]
+        if best_cv_auc is not None:
+            lines.append(f"  {'best_cv_auc':<25s} {best_cv_auc:.4f}")
+        for k, v in sorted(xgb_params.items()):
+            lines.append(f"  {k:<25s} {v}")
+        lines += [
+            "",
+            "TEST SET PERFORMANCE",
+            f"  AUC:                     {auc:.4f}",
+            f"  Accuracy:                {report['accuracy']:.4f}",
+            "",
+            "  Wetland:",
+            f"    Precision:             {report['wetland']['precision']:.4f}",
+            f"    Recall:                {report['wetland']['recall']:.4f}",
+            f"    F1-score:              {report['wetland']['f1-score']:.4f}",
+            f"    Support:               {int(report['wetland']['support']):,}",
+            "",
+            "  Non-Wetland:",
+            f"    Precision:             {report['non_wetland']['precision']:.4f}",
+            f"    Recall:                {report['non_wetland']['recall']:.4f}",
+            f"    F1-score:              {report['non_wetland']['f1-score']:.4f}",
+            f"    Support:               {int(report['non_wetland']['support']):,}",
+            "",
+            "CONFUSION MATRIX",
+            f"                       Predicted Non-W  Predicted Wetland",
+            f"  Actual Non-W              {cm[0,0]:8,}          {cm[0,1]:8,}",
+            f"  Actual Wetland            {cm[1,0]:8,}          {cm[1,1]:8,}",
+            "",
+            "FEATURE IMPORTANCES (ranked)",
+        ]
+        for i, idx in enumerate(indices, 1):
+            lines.append(f"  {i:2d}. {FEATURE_NAMES[idx]:<35s} {importances[idx]:.4f}")
+        lines.append("")
+
+        with open(log_path, "w") as lf:
+            lf.write("\n".join(lines))
+        print(f"\n  ✓ Metrics log written: {log_path.name}")
 
     return xgb
 
