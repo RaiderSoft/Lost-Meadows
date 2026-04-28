@@ -36,6 +36,9 @@ twi_*_temp.tif
 *.pkl
 *.joblib
 
+# Local MLflow tracking (used as DagsHub fallback on SLURM)
+mlruns/
+
 # Training data CSVs (can be large)
 *training_data*.csv
 Wetlands/training_data_*.csv
