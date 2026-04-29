@@ -197,12 +197,6 @@ def main(watershed_name):
         dst.write(curv_plan, 1)
     print("✓ curvature_profile.tif, curvature_plan.tif")
 
-    # 3. Elevation (copy DEM as feature)
-    print("Saving elevation as feature...")
-    with rasterio.open(output_dir / "elevation.tif", 'w', **profile) as dst:
-        dst.write(dem.astype(np.float32), 1)
-    print("✓ elevation.tif")
-
     # 4. TPI at multiple scales
     print("Calculating TPI at multiple scales...")
     for window in [3, 11, 21]:

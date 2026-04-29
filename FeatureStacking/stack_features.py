@@ -43,25 +43,24 @@ def stack_features(watershed_name):
         f"{output_dir}/aspect.tif",                         # 10. Aspect (slope direction)
         f"{output_dir}/curvature_profile.tif",              # 11. Profile curvature
         f"{output_dir}/curvature_plan.tif",                 # 12. Plan curvature
-        f"{output_dir}/elevation.tif",                      # 13. Elevation (absolute)
-        f"{output_dir}/tpi_3x3.tif",                        # 14. TPI 3x3
-        f"{output_dir}/tpi_11x11.tif",                      # 15. TPI 11x11
-        f"{output_dir}/tpi_21x21.tif",                      # 16. TPI 21x21
-        f"{output_dir}/tri.tif",                            # 17. TRI
-        f"{output_dir}/elev_std_3x3.tif",                   # 18. Elevation std dev 3x3
-        f"{output_dir}/elev_std_9x9.tif",                   # 19. Elevation std dev 9x9
-        f"{output_dir}/slope_std_9x9.tif",                  # 20. Slope std dev 9x9
+        f"{output_dir}/tpi_3x3.tif",                        # 13. TPI 3x3
+        f"{output_dir}/tpi_11x11.tif",                      # 14. TPI 11x11
+        f"{output_dir}/tpi_21x21.tif",                      # 15. TPI 21x21
+        f"{output_dir}/tri.tif",                            # 16. TRI
+        f"{output_dir}/elev_std_3x3.tif",                   # 17. Elevation std dev 3x3
+        f"{output_dir}/elev_std_9x9.tif",                   # 18. Elevation std dev 9x9
+        f"{output_dir}/slope_std_9x9.tif",                  # 19. Slope std dev 9x9
 
         # Soil features (9) — POLARIS 30m, 3 depths each
-        f"{output_dir}/soil_clay_pct_0_5cm.tif",            # 21. Clay % 0-5cm
-        f"{output_dir}/soil_clay_pct_5_15cm.tif",           # 22. Clay % 5-15cm
-        f"{output_dir}/soil_clay_pct_15_30cm.tif",          # 23. Clay % 15-30cm
-        f"{output_dir}/soil_ksat_0_5cm.tif",                # 24. Ksat 0-5cm
-        f"{output_dir}/soil_ksat_5_15cm.tif",               # 25. Ksat 5-15cm
-        f"{output_dir}/soil_ksat_15_30cm.tif",              # 26. Ksat 15-30cm
-        f"{output_dir}/soil_organic_matter_0_5cm.tif",      # 27. Organic matter 0-5cm
-        f"{output_dir}/soil_organic_matter_5_15cm.tif",     # 28. Organic matter 5-15cm
-        f"{output_dir}/soil_organic_matter_15_30cm.tif",    # 29. Organic matter 15-30cm
+        f"{output_dir}/soil_clay_pct_0_5cm.tif",            # 20. Clay % 0-5cm
+        f"{output_dir}/soil_clay_pct_5_15cm.tif",           # 21. Clay % 5-15cm
+        f"{output_dir}/soil_clay_pct_15_30cm.tif",          # 22. Clay % 15-30cm
+        f"{output_dir}/soil_ksat_0_5cm.tif",                # 23. Ksat 0-5cm
+        f"{output_dir}/soil_ksat_5_15cm.tif",               # 24. Ksat 5-15cm
+        f"{output_dir}/soil_ksat_15_30cm.tif",              # 25. Ksat 15-30cm
+        f"{output_dir}/soil_organic_matter_0_5cm.tif",      # 26. Organic matter 0-5cm
+        f"{output_dir}/soil_organic_matter_5_15cm.tif",     # 27. Organic matter 5-15cm
+        f"{output_dir}/soil_organic_matter_15_30cm.tif",    # 28. Organic matter 15-30cm
 
     ]
 
@@ -81,7 +80,6 @@ def stack_features(watershed_name):
         "aspect",
         "curvature_profile",
         "curvature_plan",
-        "elevation",
         "tpi_3x3",
         "tpi_11x11",
         "tpi_21x21",
