@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Fourmile_Creek
+Date/Time: 2026-04-29 16:39:05
+================================================================================
+
+DATA SUMMARY
+  Total samples:           100,000
+  Wetland (1):             20,000  (20.0%)
+  Non-wetland (0):         80,000  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            75,000
+  Test set:                25,000
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9889
+  colsample_bytree          1.0
+  gamma                     0
+  learning_rate             0.2
+  max_depth                 8
+  min_child_weight          3
+  n_estimators              300
+  random_state              42
+  reg_alpha                 0.5
+  reg_lambda                2.0
+  scale_pos_weight          4.0
+  subsample                 1.0
+
+TEST SET PERFORMANCE
+  AUC:                     0.9957
+  Accuracy:                0.9740
+
+  Wetland:
+    Precision:             0.9101
+    Recall:                0.9656
+    F1-score:              0.9370
+    Support:               5,000
+
+  Non-Wetland:
+    Precision:             0.9913
+    Recall:                0.9761
+    F1-score:              0.9837
+    Support:               20,000
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                19,523               477
+  Actual Wetland                 172             4,828
+
+FEATURE IMPORTANCES (ranked)
+   1. elev_std_9x9                        0.6266
+   2. dd_v                                0.0522
+   3. soil_ksat_15_30cm                   0.0292
+   4. tpi_21x21                           0.0227
+   5. soil_organic_matter_0_5cm           0.0215
+   6. dd_h                                0.0210
+   7. soil_clay_pct_15_30cm               0.0174
+   8. soil_ksat_0_5cm                     0.0158
+   9. soil_ksat_5_15cm                    0.0154
+  10. dd_s                                0.0153
+  11. soil_clay_pct_5_15cm                0.0129
+  12. soil_clay_pct_0_5cm                 0.0129
+  13. soil_organic_matter_15_30cm         0.0126
+  14. aspect                              0.0123
+  15. twi_100m                            0.0116
+  16. curvature_plan                      0.0115
+  17. tri                                 0.0110
+  18. slope_std_9x9                       0.0095
+  19. tpi_11x11                           0.0093
+  20. slope_5x5_std_dev                   0.0083
+  21. twi_10m                             0.0079
+  22. soil_organic_matter_5_15cm          0.0078
+  23. slope                               0.0072
+  24. elev_5x5_std_dev                    0.0070
+  25. elev_std_3x3                        0.0065
+  26. elev_5x5_rel                        0.0057
+  27. curvature_profile                   0.0049
+  28. tpi_3x3                             0.0041
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  117,170
+  Estimated meadow area:        1,171.70 ha
+  Total valid pixels:           2,997,252
+  Meadow coverage:              3.91%
+
+PIPELINE RUNTIME
+  Total time: 11m 24s
+
+================================================================================

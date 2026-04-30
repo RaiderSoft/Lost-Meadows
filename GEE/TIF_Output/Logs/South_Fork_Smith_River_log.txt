@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: South_Fork_Smith_River
+Date/Time: 2026-04-29 16:39:49
+================================================================================
+
+DATA SUMMARY
+  Total samples:           66,905
+  Wetland (1):             13,381  (20.0%)
+  Non-wetland (0):         53,524  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            50,178
+  Test set:                16,727
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9454
+  colsample_bytree          0.6
+  gamma                     0.5
+  learning_rate             0.05
+  max_depth                 8
+  min_child_weight          1
+  n_estimators              200
+  random_state              42
+  reg_alpha                 0
+  reg_lambda                2.0
+  scale_pos_weight          3.9998
+  subsample                 0.8
+
+TEST SET PERFORMANCE
+  AUC:                     0.9614
+  Accuracy:                0.9043
+
+  Wetland:
+    Precision:             0.7027
+    Recall:                0.9037
+    F1-score:              0.7906
+    Support:               3,345
+
+  Non-Wetland:
+    Precision:             0.9741
+    Recall:                0.9044
+    F1-score:              0.9380
+    Support:               13,382
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                12,103             1,279
+  Actual Wetland                 322             3,023
+
+FEATURE IMPORTANCES (ranked)
+   1. tpi_21x21                           0.2206
+   2. twi_100m                            0.1134
+   3. dd_v                                0.0958
+   4. dd_s                                0.0454
+   5. elev_std_9x9                        0.0410
+   6. dd_h                                0.0395
+   7. aspect                              0.0297
+   8. elev_5x5_std_dev                    0.0295
+   9. tpi_11x11                           0.0263
+  10. slope_5x5_std_dev                   0.0258
+  11. twi_10m                             0.0243
+  12. soil_clay_pct_5_15cm                0.0207
+  13. curvature_profile                   0.0206
+  14. elev_std_3x3                        0.0205
+  15. slope_std_9x9                       0.0201
+  16. elev_5x5_rel                        0.0199
+  17. tri                                 0.0198
+  18. soil_clay_pct_15_30cm               0.0197
+  19. soil_organic_matter_15_30cm         0.0193
+  20. soil_clay_pct_0_5cm                 0.0188
+  21. curvature_plan                      0.0184
+  22. soil_ksat_0_5cm                     0.0171
+  23. soil_organic_matter_0_5cm           0.0168
+  24. tpi_3x3                             0.0162
+  25. soil_ksat_15_30cm                   0.0159
+  26. soil_organic_matter_5_15cm          0.0156
+  27. slope                               0.0148
+  28. soil_ksat_5_15cm                    0.0144
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  750,341
+  Estimated meadow area:        7,503.41 ha
+  Total valid pixels:           7,575,368
+  Meadow coverage:              9.91%
+
+PIPELINE RUNTIME
+  Total time: 12m 6s
+
+================================================================================

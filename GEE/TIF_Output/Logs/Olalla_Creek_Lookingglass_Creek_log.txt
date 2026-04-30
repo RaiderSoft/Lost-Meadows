@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Olalla_Creek_Lookingglass_Creek
+Date/Time: 2026-04-29 16:39:02
+================================================================================
+
+DATA SUMMARY
+  Total samples:           100,000
+  Wetland (1):             20,000  (20.0%)
+  Non-wetland (0):         80,000  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            75,000
+  Test set:                25,000
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9707
+  colsample_bytree          0.8
+  gamma                     0
+  learning_rate             0.05
+  max_depth                 6
+  min_child_weight          1
+  n_estimators              200
+  random_state              42
+  reg_alpha                 0
+  reg_lambda                1
+  scale_pos_weight          4.0
+  subsample                 0.6
+
+TEST SET PERFORMANCE
+  AUC:                     0.9761
+  Accuracy:                0.9085
+
+  Wetland:
+    Precision:             0.7006
+    Recall:                0.9472
+    F1-score:              0.8054
+    Support:               5,000
+
+  Non-Wetland:
+    Precision:             0.9855
+    Recall:                0.8988
+    F1-score:              0.9402
+    Support:               20,000
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                17,976             2,024
+  Actual Wetland                 264             4,736
+
+FEATURE IMPORTANCES (ranked)
+   1. elev_5x5_std_dev                    0.3298
+   2. elev_std_9x9                        0.2976
+   3. tri                                 0.0524
+   4. soil_ksat_0_5cm                     0.0341
+   5. soil_ksat_5_15cm                    0.0286
+   6. soil_ksat_15_30cm                   0.0234
+   7. tpi_21x21                           0.0189
+   8. dd_v                                0.0187
+   9. soil_clay_pct_0_5cm                 0.0162
+  10. soil_organic_matter_15_30cm         0.0157
+  11. soil_organic_matter_5_15cm          0.0141
+  12. soil_clay_pct_5_15cm                0.0128
+  13. soil_organic_matter_0_5cm           0.0119
+  14. aspect                              0.0117
+  15. soil_clay_pct_15_30cm               0.0111
+  16. elev_std_3x3                        0.0105
+  17. dd_h                                0.0098
+  18. dd_s                                0.0091
+  19. twi_100m                            0.0091
+  20. slope                               0.0086
+  21. tpi_11x11                           0.0084
+  22. slope_std_9x9                       0.0084
+  23. elev_5x5_rel                        0.0075
+  24. twi_10m                             0.0073
+  25. slope_5x5_std_dev                   0.0066
+  26. tpi_3x3                             0.0061
+  27. curvature_plan                      0.0060
+  28. curvature_profile                   0.0056
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  503,334
+  Estimated meadow area:        5,033.34 ha
+  Total valid pixels:           4,182,570
+  Meadow coverage:              12.03%
+
+PIPELINE RUNTIME
+  Total time: 11m 17s
+
+================================================================================

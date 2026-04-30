@@ -22,6 +22,8 @@ Wetlands/wetlands_PEM_PSS_PFO_bioregion.shx
 
 # Output directories with generated data
 GEE/TIF_Output/*/
+!GEE/TIF_Output/Logs/
+!GEE/TIF_Output/Logs/**
 GEE/TIF_Output/1/
 GEE/TIF_Output/2/
 

@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Headwaters_Applegate_River
+Date/Time: 2026-04-29 16:39:44
+================================================================================
+
+DATA SUMMARY
+  Total samples:           100,000
+  Wetland (1):             20,000  (20.0%)
+  Non-wetland (0):         80,000  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            75,000
+  Test set:                25,000
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9507
+  colsample_bytree          1.0
+  gamma                     0
+  learning_rate             0.2
+  max_depth                 8
+  min_child_weight          3
+  n_estimators              300
+  random_state              42
+  reg_alpha                 0.5
+  reg_lambda                2.0
+  scale_pos_weight          4.0
+  subsample                 1.0
+
+TEST SET PERFORMANCE
+  AUC:                     0.9815
+  Accuracy:                0.9410
+
+  Wetland:
+    Precision:             0.8199
+    Recall:                0.9034
+    F1-score:              0.8596
+    Support:               5,000
+
+  Non-Wetland:
+    Precision:             0.9752
+    Recall:                0.9504
+    F1-score:              0.9626
+    Support:               20,000
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                19,008               992
+  Actual Wetland                 483             4,517
+
+FEATURE IMPORTANCES (ranked)
+   1. elev_std_9x9                        0.1732
+   2. tpi_21x21                           0.1256
+   3. dd_h                                0.0640
+   4. soil_organic_matter_15_30cm         0.0479
+   5. aspect                              0.0426
+   6. twi_10m                             0.0392
+   7. dd_s                                0.0371
+   8. soil_clay_pct_0_5cm                 0.0366
+   9. twi_100m                            0.0362
+  10. dd_v                                0.0348
+  11. soil_ksat_15_30cm                   0.0345
+  12. soil_clay_pct_15_30cm               0.0317
+  13. soil_clay_pct_5_15cm                0.0313
+  14. slope_std_9x9                       0.0294
+  15. tri                                 0.0274
+  16. elev_5x5_std_dev                    0.0262
+  17. slope_5x5_std_dev                   0.0232
+  18. soil_organic_matter_5_15cm          0.0214
+  19. soil_ksat_5_15cm                    0.0192
+  20. soil_ksat_0_5cm                     0.0171
+  21. soil_organic_matter_0_5cm           0.0151
+  22. elev_std_3x3                        0.0145
+  23. tpi_11x11                           0.0143
+  24. curvature_plan                      0.0132
+  25. elev_5x5_rel                        0.0120
+  26. slope                               0.0118
+  27. curvature_profile                   0.0110
+  28. tpi_3x3                             0.0098
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  313,618
+  Estimated meadow area:        3,136.18 ha
+  Total valid pixels:           5,765,142
+  Meadow coverage:              5.44%
+
+PIPELINE RUNTIME
+  Total time: 12m 3s
+
+================================================================================

@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Calapooya_Creek
+Date/Time: 2026-04-29 16:39:18
+================================================================================
+
+DATA SUMMARY
+  Total samples:           100,000
+  Wetland (1):             20,000  (20.0%)
+  Non-wetland (0):         80,000  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            75,000
+  Test set:                25,000
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9592
+  colsample_bytree          0.6
+  gamma                     0.5
+  learning_rate             0.05
+  max_depth                 8
+  min_child_weight          1
+  n_estimators              200
+  random_state              42
+  reg_alpha                 0
+  reg_lambda                2.0
+  scale_pos_weight          4.0
+  subsample                 0.8
+
+TEST SET PERFORMANCE
+  AUC:                     0.9678
+  Accuracy:                0.9046
+
+  Wetland:
+    Precision:             0.6983
+    Recall:                0.9212
+    F1-score:              0.7944
+    Support:               5,000
+
+  Non-Wetland:
+    Precision:             0.9786
+    Recall:                0.9005
+    F1-score:              0.9379
+    Support:               20,000
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                18,010             1,990
+  Actual Wetland                 394             4,606
+
+FEATURE IMPORTANCES (ranked)
+   1. elev_5x5_std_dev                    0.2847
+   2. elev_std_9x9                        0.1785
+   3. tri                                 0.0738
+   4. dd_v                                0.0717
+   5. elev_std_3x3                        0.0499
+   6. tpi_21x21                           0.0331
+   7. slope                               0.0320
+   8. soil_clay_pct_0_5cm                 0.0276
+   9. soil_clay_pct_15_30cm               0.0199
+  10. soil_clay_pct_5_15cm                0.0192
+  11. twi_100m                            0.0163
+  12. soil_organic_matter_15_30cm         0.0156
+  13. soil_ksat_0_5cm                     0.0141
+  14. soil_ksat_5_15cm                    0.0140
+  15. soil_organic_matter_0_5cm           0.0138
+  16. dd_h                                0.0135
+  17. soil_organic_matter_5_15cm          0.0134
+  18. tpi_11x11                           0.0116
+  19. dd_s                                0.0113
+  20. slope_std_9x9                       0.0110
+  21. slope_5x5_std_dev                   0.0109
+  22. soil_ksat_15_30cm                   0.0107
+  23. twi_10m                             0.0104
+  24. elev_5x5_rel                        0.0096
+  25. curvature_plan                      0.0092
+  26. aspect                              0.0091
+  27. curvature_profile                   0.0077
+  28. tpi_3x3                             0.0074
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  797,318
+  Estimated meadow area:        7,973.18 ha
+  Total valid pixels:           6,381,795
+  Meadow coverage:              12.49%
+
+PIPELINE RUNTIME
+  Total time: 11m 34s
+
+================================================================================

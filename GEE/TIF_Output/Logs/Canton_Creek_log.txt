@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Canton_Creek
+Date/Time: 2026-04-29 16:38:11
+================================================================================
+
+DATA SUMMARY
+  Total samples:           7,830
+  Wetland (1):             1,566  (20.0%)
+  Non-wetland (0):         6,264  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            5,872
+  Test set:                1,958
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9881
+  colsample_bytree          1.0
+  gamma                     0
+  learning_rate             0.2
+  max_depth                 8
+  min_child_weight          3
+  n_estimators              300
+  random_state              42
+  reg_alpha                 0.5
+  reg_lambda                2.0
+  scale_pos_weight          4.0017
+  subsample                 1.0
+
+TEST SET PERFORMANCE
+  AUC:                     0.9878
+  Accuracy:                0.9586
+
+  Wetland:
+    Precision:             0.8783
+    Recall:                0.9209
+    F1-score:              0.8991
+    Support:               392
+
+  Non-Wetland:
+    Precision:             0.9800
+    Recall:                0.9681
+    F1-score:              0.9740
+    Support:               1,566
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                 1,516                50
+  Actual Wetland                  31               361
+
+FEATURE IMPORTANCES (ranked)
+   1. tpi_21x21                           0.2804
+   2. elev_std_9x9                        0.0911
+   3. soil_clay_pct_0_5cm                 0.0449
+   4. dd_v                                0.0419
+   5. twi_100m                            0.0367
+   6. aspect                              0.0363
+   7. dd_h                                0.0362
+   8. soil_organic_matter_15_30cm         0.0353
+   9. dd_s                                0.0348
+  10. elev_std_3x3                        0.0330
+  11. tri                                 0.0309
+  12. elev_5x5_std_dev                    0.0302
+  13. twi_10m                             0.0208
+  14. soil_clay_pct_5_15cm                0.0207
+  15. soil_ksat_15_30cm                   0.0193
+  16. soil_clay_pct_15_30cm               0.0187
+  17. slope_std_9x9                       0.0187
+  18. curvature_plan                      0.0184
+  19. slope_5x5_std_dev                   0.0183
+  20. curvature_profile                   0.0181
+  21. soil_organic_matter_5_15cm          0.0174
+  22. elev_5x5_rel                        0.0172
+  23. soil_ksat_5_15cm                    0.0168
+  24. tpi_11x11                           0.0167
+  25. slope                               0.0156
+  26. tpi_3x3                             0.0113
+  27. soil_ksat_0_5cm                     0.0108
+  28. soil_organic_matter_0_5cm           0.0094
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  62,446
+  Estimated meadow area:        624.46 ha
+  Total valid pixels:           1,647,212
+  Meadow coverage:              3.79%
+
+PIPELINE RUNTIME
+  Total time: 10m 25s
+
+================================================================================

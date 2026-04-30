@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Butte_Valley
+Date/Time: 2026-04-29 16:46:41
+================================================================================
+
+DATA SUMMARY
+  Total samples:           100,000
+  Wetland (1):             20,000  (20.0%)
+  Non-wetland (0):         80,000  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            75,000
+  Test set:                25,000
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9486
+  colsample_bytree          0.6
+  gamma                     0.5
+  learning_rate             0.05
+  max_depth                 8
+  min_child_weight          1
+  n_estimators              200
+  random_state              42
+  reg_alpha                 0
+  reg_lambda                2.0
+  scale_pos_weight          4.0
+  subsample                 0.8
+
+TEST SET PERFORMANCE
+  AUC:                     0.9722
+  Accuracy:                0.9158
+
+  Wetland:
+    Precision:             0.7315
+    Recall:                0.9150
+    F1-score:              0.8130
+    Support:               5,000
+
+  Non-Wetland:
+    Precision:             0.9773
+    Recall:                0.9161
+    F1-score:              0.9457
+    Support:               20,000
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                18,321             1,679
+  Actual Wetland                 425             4,575
+
+FEATURE IMPORTANCES (ranked)
+   1. dd_v                                0.2145
+   2. soil_ksat_0_5cm                     0.0695
+   3. tri                                 0.0614
+   4. elev_std_3x3                        0.0584
+   5. elev_5x5_std_dev                    0.0475
+   6. soil_clay_pct_0_5cm                 0.0431
+   7. soil_clay_pct_5_15cm                0.0362
+   8. slope                               0.0343
+   9. twi_10m                             0.0311
+  10. soil_organic_matter_5_15cm          0.0310
+  11. soil_ksat_5_15cm                    0.0302
+  12. dd_h                                0.0298
+  13. dd_s                                0.0297
+  14. soil_organic_matter_0_5cm           0.0297
+  15. soil_organic_matter_15_30cm         0.0293
+  16. soil_clay_pct_15_30cm               0.0272
+  17. soil_ksat_15_30cm                   0.0254
+  18. aspect                              0.0243
+  19. twi_100m                            0.0233
+  20. tpi_21x21                           0.0222
+  21. slope_std_9x9                       0.0218
+  22. elev_std_9x9                        0.0196
+  23. slope_5x5_std_dev                   0.0131
+  24. tpi_11x11                           0.0114
+  25. elev_5x5_rel                        0.0112
+  26. tpi_3x3                             0.0097
+  27. curvature_plan                      0.0077
+  28. curvature_profile                   0.0073
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  660,453
+  Estimated meadow area:        6,604.53 ha
+  Total valid pixels:           6,536,024
+  Meadow coverage:              10.10%
+
+PIPELINE RUNTIME
+  Total time: 18m 56s
+
+================================================================================

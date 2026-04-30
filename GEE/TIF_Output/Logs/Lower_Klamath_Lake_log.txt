@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Lower_Klamath_Lake
+Date/Time: 2026-04-29 16:49:14
+================================================================================
+
+DATA SUMMARY
+  Total samples:           100,000
+  Wetland (1):             20,000  (20.0%)
+  Non-wetland (0):         80,000  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            75,000
+  Test set:                25,000
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9349
+  colsample_bytree          0.6
+  gamma                     0.5
+  learning_rate             0.05
+  max_depth                 8
+  min_child_weight          1
+  n_estimators              200
+  random_state              42
+  reg_alpha                 0
+  reg_lambda                2.0
+  scale_pos_weight          4.0
+  subsample                 0.8
+
+TEST SET PERFORMANCE
+  AUC:                     0.9482
+  Accuracy:                0.8743
+
+  Wetland:
+    Precision:             0.6273
+    Recall:                0.9154
+    F1-score:              0.7445
+    Support:               5,000
+
+  Non-Wetland:
+    Precision:             0.9761
+    Recall:                0.8640
+    F1-score:              0.9167
+    Support:               20,000
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                17,281             2,719
+  Actual Wetland                 423             4,577
+
+FEATURE IMPORTANCES (ranked)
+   1. elev_std_9x9                        0.2028
+   2. elev_5x5_std_dev                    0.1649
+   3. soil_ksat_5_15cm                    0.0850
+   4. slope                               0.0493
+   5. tri                                 0.0485
+   6. soil_organic_matter_15_30cm         0.0453
+   7. elev_std_3x3                        0.0433
+   8. soil_ksat_0_5cm                     0.0337
+   9. dd_v                                0.0329
+  10. soil_organic_matter_5_15cm          0.0315
+  11. soil_clay_pct_0_5cm                 0.0298
+  12. soil_organic_matter_0_5cm           0.0235
+  13. soil_clay_pct_5_15cm                0.0230
+  14. soil_clay_pct_15_30cm               0.0187
+  15. slope_5x5_std_dev                   0.0173
+  16. slope_std_9x9                       0.0167
+  17. soil_ksat_15_30cm                   0.0149
+  18. dd_s                                0.0142
+  19. dd_h                                0.0140
+  20. tpi_21x21                           0.0135
+  21. aspect                              0.0126
+  22. twi_100m                            0.0125
+  23. twi_10m                             0.0113
+  24. curvature_plan                      0.0105
+  25. tpi_11x11                           0.0104
+  26. elev_5x5_rel                        0.0070
+  27. tpi_3x3                             0.0067
+  28. curvature_profile                   0.0065
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  2,074,607
+  Estimated meadow area:        20,746.07 ha
+  Total valid pixels:           8,080,557
+  Meadow coverage:              25.67%
+
+PIPELINE RUNTIME
+  Total time: 21m 33s
+
+================================================================================

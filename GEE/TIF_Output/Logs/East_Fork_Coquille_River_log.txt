@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: East_Fork_Coquille_River
+Date/Time: 2026-04-29 16:38:59
+================================================================================
+
+DATA SUMMARY
+  Total samples:           42,325
+  Wetland (1):             8,465  (20.0%)
+  Non-wetland (0):         33,860  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            31,743
+  Test set:                10,582
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9907
+  colsample_bytree          1.0
+  gamma                     0
+  learning_rate             0.2
+  max_depth                 8
+  min_child_weight          3
+  n_estimators              300
+  random_state              42
+  reg_alpha                 0.5
+  reg_lambda                2.0
+  scale_pos_weight          3.9997
+  subsample                 1.0
+
+TEST SET PERFORMANCE
+  AUC:                     0.9964
+  Accuracy:                0.9785
+
+  Wetland:
+    Precision:             0.9094
+    Recall:                0.9910
+    F1-score:              0.9484
+    Support:               2,116
+
+  Non-Wetland:
+    Precision:             0.9977
+    Recall:                0.9753
+    F1-score:              0.9864
+    Support:               8,466
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                 8,257               209
+  Actual Wetland                  19             2,097
+
+FEATURE IMPORTANCES (ranked)
+   1. elev_std_9x9                        0.5679
+   2. dd_v                                0.1075
+   3. dd_h                                0.0527
+   4. tri                                 0.0260
+   5. soil_ksat_5_15cm                    0.0241
+   6. slope_std_9x9                       0.0230
+   7. soil_organic_matter_15_30cm         0.0174
+   8. soil_ksat_0_5cm                     0.0158
+   9. soil_organic_matter_5_15cm          0.0148
+  10. tpi_21x21                           0.0147
+  11. soil_ksat_15_30cm                   0.0146
+  12. soil_clay_pct_0_5cm                 0.0133
+  13. soil_clay_pct_15_30cm               0.0120
+  14. twi_100m                            0.0107
+  15. soil_clay_pct_5_15cm                0.0101
+  16. dd_s                                0.0083
+  17. elev_5x5_std_dev                    0.0080
+  18. aspect                              0.0071
+  19. soil_organic_matter_0_5cm           0.0070
+  20. tpi_11x11                           0.0066
+  21. elev_std_3x3                        0.0065
+  22. slope_5x5_std_dev                   0.0064
+  23. elev_5x5_rel                        0.0049
+  24. curvature_plan                      0.0046
+  25. twi_10m                             0.0043
+  26. slope                               0.0041
+  27. curvature_profile                   0.0039
+  28. tpi_3x3                             0.0038
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  93,780
+  Estimated meadow area:        937.80 ha
+  Total valid pixels:           3,485,729
+  Meadow coverage:              2.69%
+
+PIPELINE RUNTIME
+  Total time: 11m 9s
+
+================================================================================

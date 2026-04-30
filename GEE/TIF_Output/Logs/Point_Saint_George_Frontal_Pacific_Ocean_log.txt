@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Point_Saint_George_Frontal_Pacific_Ocean
+Date/Time: 2026-04-29 16:41:38
+================================================================================
+
+DATA SUMMARY
+  Total samples:           100,000
+  Wetland (1):             20,000  (20.0%)
+  Non-wetland (0):         80,000  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            75,000
+  Test set:                25,000
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9123
+  colsample_bytree          0.6
+  gamma                     0.5
+  learning_rate             0.05
+  max_depth                 8
+  min_child_weight          1
+  n_estimators              200
+  random_state              42
+  reg_alpha                 0
+  reg_lambda                2.0
+  scale_pos_weight          4.0
+  subsample                 0.8
+
+TEST SET PERFORMANCE
+  AUC:                     0.9386
+  Accuracy:                0.8493
+
+  Wetland:
+    Precision:             0.5807
+    Recall:                0.8874
+    F1-score:              0.7020
+    Support:               5,000
+
+  Non-Wetland:
+    Precision:             0.9676
+    Recall:                0.8398
+    F1-score:              0.8992
+    Support:               20,000
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                16,796             3,204
+  Actual Wetland                 563             4,437
+
+FEATURE IMPORTANCES (ranked)
+   1. elev_5x5_std_dev                    0.2096
+   2. elev_std_9x9                        0.1447
+   3. tri                                 0.0717
+   4. dd_v                                0.0520
+   5. slope                               0.0463
+   6. elev_std_3x3                        0.0334
+   7. tpi_21x21                           0.0324
+   8. twi_100m                            0.0318
+   9. soil_clay_pct_15_30cm               0.0272
+  10. soil_clay_pct_5_15cm                0.0264
+  11. slope_std_9x9                       0.0257
+  12. soil_organic_matter_15_30cm         0.0253
+  13. soil_ksat_5_15cm                    0.0250
+  14. soil_organic_matter_0_5cm           0.0231
+  15. dd_h                                0.0216
+  16. soil_clay_pct_0_5cm                 0.0207
+  17. soil_organic_matter_5_15cm          0.0203
+  18. aspect                              0.0197
+  19. dd_s                                0.0190
+  20. soil_ksat_15_30cm                   0.0188
+  21. slope_5x5_std_dev                   0.0185
+  22. soil_ksat_0_5cm                     0.0170
+  23. curvature_plan                      0.0147
+  24. twi_10m                             0.0137
+  25. tpi_11x11                           0.0125
+  26. elev_5x5_rel                        0.0108
+  27. curvature_profile                   0.0093
+  28. tpi_3x3                             0.0092
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  528,261
+  Estimated meadow area:        5,282.61 ha
+  Total valid pixels:           1,865,442
+  Meadow coverage:              28.32%
+
+PIPELINE RUNTIME
+  Total time: 13m 49s
+
+================================================================================

@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Big_Springs_Creek_Klamath_Marsh
+Date/Time: 2026-04-29 16:38:30
+================================================================================
+
+DATA SUMMARY
+  Total samples:           100,000
+  Wetland (1):             20,000  (20.0%)
+  Non-wetland (0):         80,000  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            75,000
+  Test set:                25,000
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9960
+  colsample_bytree          0.6
+  gamma                     0.5
+  learning_rate             0.05
+  max_depth                 8
+  min_child_weight          1
+  n_estimators              200
+  random_state              42
+  reg_alpha                 0
+  reg_lambda                2.0
+  scale_pos_weight          4.0
+  subsample                 0.8
+
+TEST SET PERFORMANCE
+  AUC:                     0.9975
+  Accuracy:                0.9802
+
+  Wetland:
+    Precision:             0.9171
+    Recall:                0.9906
+    F1-score:              0.9524
+    Support:               5,000
+
+  Non-Wetland:
+    Precision:             0.9976
+    Recall:                0.9776
+    F1-score:              0.9875
+    Support:               20,000
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                19,552               448
+  Actual Wetland                  47             4,953
+
+FEATURE IMPORTANCES (ranked)
+   1. soil_clay_pct_5_15cm                0.5591
+   2. soil_clay_pct_15_30cm               0.2226
+   3. soil_clay_pct_0_5cm                 0.1153
+   4. soil_ksat_15_30cm                   0.0191
+   5. soil_organic_matter_15_30cm         0.0140
+   6. soil_organic_matter_0_5cm           0.0062
+   7. soil_ksat_5_15cm                    0.0052
+   8. dd_v                                0.0048
+   9. slope_5x5_std_dev                   0.0046
+  10. slope_std_9x9                       0.0040
+  11. dd_s                                0.0038
+  12. soil_ksat_0_5cm                     0.0038
+  13. soil_organic_matter_5_15cm          0.0038
+  14. twi_100m                            0.0038
+  15. dd_h                                0.0036
+  16. elev_std_9x9                        0.0032
+  17. tpi_21x21                           0.0027
+  18. elev_5x5_std_dev                    0.0026
+  19. aspect                              0.0021
+  20. elev_std_3x3                        0.0020
+  21. twi_10m                             0.0020
+  22. tri                                 0.0020
+  23. tpi_11x11                           0.0017
+  24. curvature_plan                      0.0017
+  25. slope                               0.0017
+  26. elev_5x5_rel                        0.0016
+  27. curvature_profile                   0.0015
+  28. tpi_3x3                             0.0014
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  274,679
+  Estimated meadow area:        2,746.79 ha
+  Total valid pixels:           2,598,538
+  Meadow coverage:              10.57%
+
+PIPELINE RUNTIME
+  Total time: 10m 44s
+
+================================================================================

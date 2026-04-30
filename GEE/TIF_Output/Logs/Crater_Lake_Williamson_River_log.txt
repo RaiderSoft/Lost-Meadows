@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Crater_Lake_Williamson_River
+Date/Time: 2026-04-29 16:39:10
+================================================================================
+
+DATA SUMMARY
+  Total samples:           100,000
+  Wetland (1):             20,000  (20.0%)
+  Non-wetland (0):         80,000  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            75,000
+  Test set:                25,000
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9942
+  colsample_bytree          0.6
+  gamma                     0.5
+  learning_rate             0.05
+  max_depth                 8
+  min_child_weight          1
+  n_estimators              200
+  random_state              42
+  reg_alpha                 0
+  reg_lambda                2.0
+  scale_pos_weight          4.0
+  subsample                 0.8
+
+TEST SET PERFORMANCE
+  AUC:                     0.9968
+  Accuracy:                0.9757
+
+  Wetland:
+    Precision:             0.9131
+    Recall:                0.9708
+    F1-score:              0.9411
+    Support:               5,000
+
+  Non-Wetland:
+    Precision:             0.9926
+    Recall:                0.9769
+    F1-score:              0.9847
+    Support:               20,000
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                19,538               462
+  Actual Wetland                 146             4,854
+
+FEATURE IMPORTANCES (ranked)
+   1. soil_clay_pct_0_5cm                 0.4439
+   2. soil_clay_pct_5_15cm                0.2420
+   3. soil_clay_pct_15_30cm               0.1024
+   4. soil_ksat_15_30cm                   0.0320
+   5. dd_v                                0.0183
+   6. soil_ksat_5_15cm                    0.0125
+   7. tri                                 0.0118
+   8. slope_5x5_std_dev                   0.0112
+   9. elev_5x5_std_dev                    0.0106
+  10. slope_std_9x9                       0.0097
+  11. elev_std_9x9                        0.0097
+  12. elev_std_3x3                        0.0096
+  13. slope                               0.0084
+  14. soil_ksat_0_5cm                     0.0082
+  15. twi_100m                            0.0080
+  16. soil_organic_matter_15_30cm         0.0074
+  17. soil_organic_matter_0_5cm           0.0070
+  18. aspect                              0.0063
+  19. tpi_21x21                           0.0062
+  20. dd_s                                0.0051
+  21. dd_h                                0.0050
+  22. soil_organic_matter_5_15cm          0.0048
+  23. curvature_plan                      0.0040
+  24. tpi_11x11                           0.0037
+  25. elev_5x5_rel                        0.0032
+  26. curvature_profile                   0.0031
+  27. twi_10m                             0.0030
+  28. tpi_3x3                             0.0028
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  922,285
+  Estimated meadow area:        9,222.85 ha
+  Total valid pixels:           4,268,302
+  Meadow coverage:              21.61%
+
+PIPELINE RUNTIME
+  Total time: 11m 28s
+
+================================================================================
