@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lost Meadows - Pipeline Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="stylesheet" href="styles.css?v=2" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+      .dashboard-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+      }
+      .upload-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 18px;
+        font-size: 14px;
+        font-family: inherit;
+        cursor: pointer;
+        border-radius: 6px;
+        border: none;
+        background: var(--accent-color, #2d6a4f);
+        color: #fff;
+        white-space: nowrap;
+        transition: opacity 0.15s;
+      }
+      .upload-label:hover { opacity: 0.88; }
+      .ws-select {
+        font-size: 14px;
+        padding: 10px 14px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background: #fff;
+        color: #333;
+        min-width: 220px;
+        cursor: pointer;
+      }
+      .status-bar {
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .status-bar.loading { background: rgba(45,106,79,0.08); color: #2d6a4f; border: 1px solid rgba(45,106,79,0.2); }
+      .status-bar.error   { background: rgba(184,92,92,0.08); color: #b85c5c; border: 1px solid rgba(184,92,92,0.2); }
+      .spinner { width:16px; height:16px; border:2px solid rgba(45,106,79,0.3); border-top-color:#2d6a4f; border-radius:50%; animation:spin 0.8s linear infinite; flex-shrink:0; }
+      @keyframes spin { to { transform:rotate(360deg); } }
+
+      /* Metric cards */
+      .metric-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:1.5rem; }
+      .metric-card { background:#fff; border:1px solid #e0e0e0; border-radius:10px; padding:16px 18px; }
+      .metric-card.accent { background:#1b4332; border-color:#1b4332; }
+      .metric-card.accent .m-label { color:rgba(168,213,181,0.75); }
+      .metric-card.accent .m-value { color:#a8d5b5; }
+      .metric-card.accent .m-sub   { color:rgba(168,213,181,0.5); }
+      .m-label { font-size:11px; text-transform:uppercase; letter-spacing:0.07em; color:#777; margin-bottom:5px; }
+      .m-value { font-size:26px; font-weight:600; color:#222; line-height:1.1; }
+      .m-sub   { font-size:12px; color:#aaa; margin-top:3px; }
+
+      /* Section label */
+      .dash-section-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:#2d6a4f; margin:2rem 0 0.75rem; display:flex; align-items:center; gap:10px; }
+      .dash-section-label::after { content:''; flex:1; height:1px; background:#e0e0e0; }
+
+      /* Perf cards */
+      .perf-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+      @media(max-width:600px){ .perf-grid{ grid-template-columns:1fr; } }
+      .perf-card { background:#fff; border:1px solid #e0e0e0; border-radius:10px; padding:16px 18px; }
+      .perf-title { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; color:#888; margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid #f0f0f0; }
+      .perf-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f5f5f5; font-size:14px; }
+      .perf-row:last-child { border-bottom:none; }
+      .perf-key { color:#555; }
+      .perf-val { font-weight:600; font-family:monospace; }
+
+      /* Confusion matrix */
+      .conf-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; max-width:360px; margin-bottom:0.5rem; }
+      .conf-cell { border-radius:8px; padding:12px 14px; text-align:center; }
+      .conf-val { font-size:22px; font-weight:700; line-height:1; }
+      .conf-lbl { font-size:11px; margin-top:3px; opacity:0.75; }
+      .conf-tp { background:#e8f5ee; } .conf-tp .conf-val,.conf-tp .conf-lbl { color:#2d6a4f; }
+      .conf-fp { background:#fef3e2; } .conf-fp .conf-val,.conf-fp .conf-lbl { color:#c8842a; }
+      .conf-fn { background:#fdeaea; } .conf-fn .conf-val,.conf-fn .conf-lbl { color:#b85c5c; }
+      .conf-tn { background:#e8f0f7; } .conf-tn .conf-val,.conf-tn .conf-lbl { color:#4a7c99; }
+
+      /* Feature bars */
+      .feat-list { display:flex; flex-direction:column; gap:8px; }
+      .feat-row { display:grid; grid-template-columns:200px 1fr 48px; align-items:center; gap:12px; }
+      @media(max-width:600px){ .feat-row{ grid-template-columns:120px 1fr 40px; } }
+      .feat-name { font-size:12px; color:#555; font-family:monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .feat-track { height:8px; background:#f0f0f0; border-radius:99px; overflow:hidden; }
+      .feat-fill  { height:100%; border-radius:99px; background:linear-gradient(90deg,#2d6a4f,#74c69d); }
+      .feat-pct   { font-size:12px; color:#888; text-align:right; font-family:monospace; }
+
+      .ws-run-meta { font-size:13px; color:#888; margin-top:4px; display:flex; gap:16px; flex-wrap:wrap; }
+      .placeholder-dash { text-align:center; padding:60px 24px; color:#aaa; }
+      .placeholder-dash p { font-size:14px; margin-top:8px; }
+      .conf-note { font-size:12px; color:#888; margin-top:8px; }
+      .fade-in { animation:fadeIn 0.3s ease; }
+      @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+      /* Ensure nav active link never inherits button styles */
+      .nav-menu li a.active {
+        background: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        color: inherit !important;
+        box-shadow: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="nav-container">
+          <div class="logo-container">
+            <img src="favicon.svg" class="logo-icon" alt="Lost Meadows Icon" />
+            <h1 class="logo">Lost Meadows</h1>
+          </div>
+          <ul class="nav-menu">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="client.html">Client &amp; Problem</a></li>
+            <li><a href="team.html">Team</a></li>
+            <li><a href="tools.html">Tools &amp; Tech</a></li>
+            <li><a href="video.html">Video</a></li>
+            <li><a href="dashboard.html" class="active">Dashboard</a></li>
+          </ul>
+          <a
+            href="https://lost-meadows.projects.earthengine.app/view/lostmeadows"
+            class="launch-app-btn"
+            target="_blank"
+            rel="noopener noreferrer"
+            >&#x2197; Launch App</a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container">
+          <h1>Pipeline Dashboard</h1>
+          <p class="hero-subtitle">Watershed Run Results &amp; Model Performance</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+
+          <div class="dashboard-controls">
+            <select id="ws-select" class="ws-select" disabled>
+              <option value="">Loading watersheds…</option>
+            </select>
+            <span id="ws-count" style="font-size:12px;color:#aaa;"></span>
+          </div>
+
+          <div id="status-area"></div>
+
+          <div id="dashboard-area">
+            <div class="placeholder-dash">
+              <div style="font-size:40px;opacity:0.3;">🌿</div>
+              <h2 style="color:#888;font-size:20px;margin-top:12px;">Upload watershed logs to get started</h2>
+              <p>Click <strong>Upload logs</strong> and select your <code>.txt</code> or <code>.zip</code> pipeline log files.</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">
+        <p>Built with care for nature</p>
+      </div>
+    </footer>
+
+    <script src="nav.js"></script>
+    <script src="scroll-animate.js"></script>
+    <script src="leaves.js"></script>
+    <script src="logo-animate.js"></script>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const RAW_BASE = 'https://raw.githubusercontent.com/RaiderSoft/Lost-Meadows/main/GEE/TIF_Output/Logs';
+// ─────────────────────────────────────────────────────────────────────────────
+
+const store = {};
+
+// Normalise line endings — handles \r\n (Windows) and \r (old Mac)
+function normalise(text) { return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n'); }
+
+// Fetch index.json to get list of log filenames
+async function fetchIndex() {
+  const res = await fetch(`${RAW_BASE}/index.json`);
+  if (!res.ok) throw new Error(`Could not load index.json (${res.status}). Is the repo public and does docs/logs/index.json exist?`);
+  return await res.json(); // array of filenames e.g. ["Althouse_Creek_log.txt", ...]
+}
+
+// Fetch a single log file by filename
+async function fetchLogFile(filename) {
+  const res = await fetch(`${RAW_BASE}/${encodeURIComponent(filename)}`);
+  if (!res.ok) throw new Error(`Failed to fetch ${filename} (${res.status})`);
+  return normalise(await res.text());
+}
+
+function parseLog(text) {
+  const get  = (re, g=1) => { const m = text.match(re); return m ? m[g].trim() : null; };
+  const num  = (re, g=1) => { const v = get(re, g); return v ? parseFloat(v.replace(/,/g,'')) : null; };
+
+  const features = [];
+  const fsec = text.match(/FEATURE IMPORTANCES[\s\S]+?\n([\s\S]+?)(?:\nPREDICTION|\n={5,})/);
+  if (fsec) {
+    for (const line of fsec[1].trim().split('\n')) {
+      const m = line.match(/\d+\.\s+(\S+)\s+([\d.]+)/);
+      if (m) features.push({ name: m[1], score: parseFloat(m[2]) });
+    }
+  }
+
+  return {
+    watershed:   get(/WATERSHED:\s*(.+)/),
+    datetime:    get(/Date\/Time:\s*(.+)/),
+    runtime:     get(/Total time:\s*(.+)/),
+    totalSamples:num(/Total samples:\s*([\d,]+)/),
+    wetlandPct:  num(/Wetland \(1\):\s*[\d,]+\s*\(([\d.]+)%\)/),
+    auc:         num(/AUC:\s*([\d.]+)/),
+    bestCvAuc:   num(/best_cv_auc\s+([\d.]+)/),
+    accuracy:    num(/Accuracy:\s*([\d.]+)/),
+    wPrec:       num(/Wetland:\s*\n\s*Precision:\s*([\d.]+)/),
+    wRec:        num(/Wetland:\s*\n\s*Precision:.*\n\s*Recall:\s*([\d.]+)/),
+    wF1:         num(/Wetland:\s*\n\s*Precision:.*\n\s*Recall:.*\n\s*F1-score:\s*([\d.]+)/),
+    nwPrec:      num(/Non-Wetland:\s*\n\s*Precision:\s*([\d.]+)/),
+    nwRec:       num(/Non-Wetland:\s*\n\s*Precision:.*\n\s*Recall:\s*([\d.]+)/),
+    nwF1:        num(/Non-Wetland:\s*\n\s*Precision:.*\n\s*Recall:.*\n\s*F1-score:\s*([\d.]+)/),
+    meadowHa:    num(/Estimated meadow area:\s*([\d,.]+)\s*ha/),
+    meadowPct:   num(/Meadow coverage:\s*([\d.]+)%/),
+    totalPx:     num(/Total valid pixels:\s*([\d,]+)/),
+    meadowPx:    num(/Meadow pixels.*:\s*([\d,]+)/),
+    tn:          num(/Actual Non-W\s+([\d,]+)\s+([\d,]+)/, 1),
+    fp:          num(/Actual Non-W\s+([\d,]+)\s+([\d,]+)/, 2),
+    fn:          num(/Actual Wetland\s+([\d,]+)\s+([\d,]+)/, 1),
+    tp:          num(/Actual Wetland\s+([\d,]+)\s+([\d,]+)/, 2),
+    features,
+  };
+}
+
+function f4(n)   { return n != null ? n.toFixed(4) : '—'; }
+function fpct(n) { return n != null ? n.toFixed(1) + '%' : '—'; }
+function fnum(n) { return n != null ? n.toLocaleString() : '—'; }
+function fname(s){ return s ? s.replace(/_/g, ' ') : '—'; }
+
+function renderDashboard(d) {
+  const top10   = d.features.slice(0, 10);
+  const maxFeat = top10.length ? top10[0].score : 1;
+
+  const confNote = `<p style="font-size:12px;color:var(--ink-muted);margin-top:10px;">
+    High recall (${d.wRec != null ? (d.wRec*100).toFixed(1) : '—'}%) prioritised over precision —
+    missing a real meadow costs more than investigating a false alarm.
+  </p>`;
+
+  document.getElementById('dashboard-area').innerHTML = `
+  <div class="fade-in">
+    <div class="ws-header">
+      <h2 class="ws-name">${fname(d.watershed)}</h2>
+      <div class="ws-meta">
+        <span>📅 ${d.datetime || '—'}</span>
+        <span>⏱ ${d.runtime || '—'}</span>
+        <span>📊 ${fnum(d.totalSamples)} samples</span>
+      </div>
+    </div>
+
+    <p class="dash-section-label">Prediction summary</p>
+    <div class="metric-grid">
+      <div class="metric-card accent">
+        <div class="m-label">Estimated meadow area</div>
+        <div class="m-value">${d.meadowHa != null ? Number(d.meadowHa.toFixed(0)).toLocaleString() : '—'} ha</div>
+        <div class="m-sub">${fpct(d.meadowPct)} of watershed</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-label">Meadow pixels</div>
+        <div class="m-value">${fnum(d.meadowPx)}</div>
+        <div class="m-sub">of ${fnum(d.totalPx)} valid pixels</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-label">Test AUC</div>
+        <div class="m-value">${f4(d.auc)}</div>
+        <div class="m-sub">CV AUC: ${f4(d.bestCvAuc)}</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-label">Accuracy</div>
+        <div class="m-value">${d.accuracy != null ? (d.accuracy*100).toFixed(1) : '—'}%</div>
+        <div class="m-sub">${fpct(d.wetlandPct)} wetland samples</div>
+      </div>
+    </div>
+
+    <p class="dash-section-label">Model performance</p>
+    <div class="perf-grid">
+      <div class="perf-card">
+        <div class="perf-title">Wetland class</div>
+        <div class="perf-row"><span class="perf-key">Precision</span><span class="perf-val">${f4(d.wPrec)}</span></div>
+        <div class="perf-row"><span class="perf-key">Recall</span><span class="perf-val">${f4(d.wRec)}</span></div>
+        <div class="perf-row"><span class="perf-key">F1-score</span><span class="perf-val">${f4(d.wF1)}</span></div>
+      </div>
+      <div class="perf-card">
+        <div class="perf-title">Non-wetland class</div>
+        <div class="perf-row"><span class="perf-key">Precision</span><span class="perf-val">${f4(d.nwPrec)}</span></div>
+        <div class="perf-row"><span class="perf-key">Recall</span><span class="perf-val">${f4(d.nwRec)}</span></div>
+        <div class="perf-row"><span class="perf-key">F1-score</span><span class="perf-val">${f4(d.nwF1)}</span></div>
+      </div>
+    </div>
+
+    <p class="dash-section-label">Confusion matrix</p>
+    <div class="conf-grid">
+      <div class="conf-cell conf-tp">
+        <div class="conf-val">${fnum(d.tp)}</div>
+        <div class="conf-lbl">True positives</div>
+      </div>
+      <div class="conf-cell conf-fp">
+        <div class="conf-val">${fnum(d.fp)}</div>
+        <div class="conf-lbl">False positives</div>
+      </div>
+      <div class="conf-cell conf-fn">
+        <div class="conf-val">${fnum(d.fn)}</div>
+        <div class="conf-lbl">False negatives</div>
+      </div>
+      <div class="conf-cell conf-tn">
+        <div class="conf-val">${fnum(d.tn)}</div>
+        <div class="conf-lbl">True negatives</div>
+      </div>
+    </div>
+    ${confNote}
+
+    <p class="dash-section-label">Top 10 feature importances</p>
+    <div class="feat-list">
+      ${top10.map(f => `
+        <div class="feat-row">
+          <span class="feat-name" title="${f.name}">${f.name.replace(/_/g,' ')}</span>
+          <div class="feat-track">
+            <div class="feat-fill" style="width:${(f.score/maxFeat*100).toFixed(1)}%"></div>
+          </div>
+          <span class="feat-pct">${(f.score*100).toFixed(1)}%</span>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+}
+
+function setStatus(type, msg) {
+  const el = document.getElementById('status-area');
+  if (!type) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="status-bar ${type}">
+    ${type==='loading' ? '<div class="spinner"></div>' : '⚠'}
+    <span>${msg}</span>
+  </div>`;
+}
+
+// Handle files (txt or zip) from upload input
+function populateSelector() {
+  const keys = Object.keys(store).sort();
+  const sel = document.getElementById('ws-select');
+  if (!keys.length) {
+    setStatus('error', 'No watersheds could be parsed. Check the file format.');
+    return;
+  }
+  sel.innerHTML = keys.map(k => `<option value="${k}">${k.replace(/_/g,' ')}</option>`).join('');
+  sel.disabled = false;
+  setStatus(null);
+  document.getElementById('ws-count').textContent = `${keys.length} watershed${keys.length>1?'s':''} loaded`;
+  renderDashboard(store[keys[0]]);
+  sel.onchange = () => { if (store[sel.value]) renderDashboard(store[sel.value]); };
+}
+
+async function init() {
+  setStatus('loading', 'Loading watershed index…');
+
+  let filenames;
+  try {
+    filenames = await fetchIndex();
+  } catch(err) {
+    setStatus('error', err.message);
+    document.getElementById('dashboard-area').innerHTML = '';
+    return;
+  }
+
+  setStatus('loading', `Found ${filenames.length} watersheds — loading logs…`);
+
+  const results = await Promise.allSettled(filenames.map(async filename => {
+    const text = await fetchLogFile(filename);
+    const data = parseLog(text);
+    const key = data.watershed || filename.replace('_log.txt','');
+    if (!key) throw new Error('No watershed name');
+    store[key] = data;
+  }));
+
+  const failed = results.filter(r => r.status === 'rejected').length;
+  if (failed > 0) console.warn(`${failed} log(s) failed to load`);
+
+  populateSelector();
+}
+
+init();
+</script>
+  </body>
+</html>
