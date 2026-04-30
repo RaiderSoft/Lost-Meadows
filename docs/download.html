@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lost Meadows - Download</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="stylesheet" href="styles.css?v=3" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="nav-container">
+          <div class="logo-container">
+            <img src="favicon.svg" class="logo-icon" alt="Lost Meadows Icon" />
+            <h1 class="logo">Lost Meadows</h1>
+          </div>
+          <ul class="nav-menu">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="client.html">Client &amp; Problem</a></li>
+            <li><a href="team.html">Team</a></li>
+            <li><a href="tools.html">Tools &amp; Tech</a></li>
+            <li><a href="video.html">Video</a></li>
+            <li><a href="download.html" class="active">Download</a></li>
+          </ul>
+          <a
+            href="https://lost-meadows.projects.earthengine.app/view/lostmeadows"
+            class="launch-app-btn"
+            target="_blank"
+            rel="noopener noreferrer"
+            >&#x2197; Launch App</a
+          >
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container">
+          <h1>Download</h1>
+          <p class="hero-subtitle">Access the Data Downloads</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div
+            id="auth-loading"
+            class="content"
+            style="text-align: center; padding: 3rem 0"
+          >
+            <p>Loading&hellip;</p>
+          </div>
+
+          <div id="auth-required" style="display: none">
+            <div
+              class="content"
+              style="text-align: center; margin-bottom: 2rem"
+            >
+              <h2>Sign In to Download</h2>
+              <p>
+                Sign in with your <strong>@sou.edu</strong> Google account to
+                access the download.
+              </p>
+            </div>
+            <div
+              id="google-sign-in-btn"
+              style="width: fit-content; margin: 0 auto"
+            ></div>
+            <p
+              id="auth-error"
+              style="
+                display: none;
+                color: #c0392b;
+                text-align: center;
+                margin-top: 1rem;
+              "
+            ></p>
+          </div>
+
+          <div id="protected-content" style="display: none">
+            <div class="content">
+              <h2>Data Downloads</h2>
+              <p style="text-align: center;">You're signed in. Downloads will be added later.</p>
+              <div class="feature-grid">
+                <div class="feature-card">
+                  <h3>Data Downloads</h3>
+                  <p>Downloads for prediction and csv data.</p>
+                  <a
+                    href="#"
+                    class="launch-app-btn"
+                    style="display: inline-block; margin-top: 1rem"
+                    >&#x21E9; Download</a
+                  >
+                </div>
+              </div>
+              <div style="margin-top: 2rem; text-align: center">
+                <button
+                  id="sign-out-btn"
+                  style="
+                    background: none;
+                    border: 1px solid var(--primary-green);
+                    color: var(--primary-green);
+                    padding: 0.5rem 1.25rem;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                  "
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">
+        <p>Built with care for nature</p>
+      </div>
+    </footer>
+
+    <script src="nav.js"></script>
+    <script src="scroll-animate.js"></script>
+    <script src="leaves.js"></script>
+    <script src="logo-animate.js"></script>
+
+    <script src="https://accounts.google.com/gsi/client" async></script>
+    <script>
+      var CLIENT_ID =
+        "668442428218-i3ns1alh58qf0ac71iajdad3or02j3i9.apps.googleusercontent.com";
+      var ALLOWED_DOMAIN = "sou.edu";
+      var SESSION_KEY = "lm_authed";
+
+      function parseJwtPayload(token) {
+        var base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+        return JSON.parse(atob(base64));
+      }
+
+      function showError(msg) {
+        document.getElementById("auth-loading").style.display = "none";
+        document.getElementById("auth-required").style.display = "block";
+        var err = document.getElementById("auth-error");
+        err.textContent = msg;
+        err.style.display = "block";
+        google.accounts.id.disableAutoSelect();
+      }
+
+      function showProtected() {
+        document.getElementById("auth-loading").style.display = "none";
+        document.getElementById("auth-required").style.display = "none";
+        document.getElementById("protected-content").style.display = "block";
+        document
+          .getElementById("sign-out-btn")
+          .addEventListener("click", function () {
+            sessionStorage.removeItem(SESSION_KEY);
+            if (window.google) google.accounts.id.disableAutoSelect();
+            window.location.reload();
+          });
+      }
+
+      function initSignIn() {
+        document.getElementById("auth-loading").style.display = "none";
+        document.getElementById("auth-required").style.display = "block";
+        google.accounts.id.initialize({
+          client_id: CLIENT_ID,
+          hd: ALLOWED_DOMAIN,
+          callback: function (response) {
+            var payload = parseJwtPayload(response.credential);
+            if (payload.hd !== ALLOWED_DOMAIN) {
+              showError(
+                "Access is restricted to @" + ALLOWED_DOMAIN + " accounts.",
+              );
+              return;
+            }
+            sessionStorage.setItem(SESSION_KEY, "1");
+            showProtected();
+          },
+          auto_select: true,
+        });
+        google.accounts.id.renderButton(
+          document.getElementById("google-sign-in-btn"),
+          { theme: "outline", size: "large", text: "signin_with" },
+        );
+        google.accounts.id.prompt();
+      }
+
+      if (sessionStorage.getItem(SESSION_KEY)) {
+        showProtected();
+      } else {
+        var gsiCheck = setInterval(function () {
+          if (window.google && window.google.accounts) {
+            clearInterval(gsiCheck);
+            initSignIn();
+          }
+        }, 50);
+      }
+    </script>
+  </body>
+</html>
