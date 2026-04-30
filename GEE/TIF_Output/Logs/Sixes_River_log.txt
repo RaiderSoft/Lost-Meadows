@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Sixes_River
+Date/Time: 2026-04-29 16:39:02
+================================================================================
+
+DATA SUMMARY
+  Total samples:           100,000
+  Wetland (1):             20,000  (20.0%)
+  Non-wetland (0):         80,000  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            75,000
+  Test set:                25,000
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9831
+  colsample_bytree          0.6
+  gamma                     0.5
+  learning_rate             0.05
+  max_depth                 8
+  min_child_weight          1
+  n_estimators              200
+  random_state              42
+  reg_alpha                 0
+  reg_lambda                2.0
+  scale_pos_weight          4.0
+  subsample                 0.8
+
+TEST SET PERFORMANCE
+  AUC:                     0.9900
+  Accuracy:                0.9512
+
+  Wetland:
+    Precision:             0.8355
+    Recall:                0.9416
+    F1-score:              0.8854
+    Support:               5,000
+
+  Non-Wetland:
+    Precision:             0.9849
+    Recall:                0.9536
+    F1-score:              0.9690
+    Support:               20,000
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                19,073               927
+  Actual Wetland                 292             4,708
+
+FEATURE IMPORTANCES (ranked)
+   1. elev_5x5_std_dev                    0.3776
+   2. tri                                 0.2276
+   3. elev_std_9x9                        0.0483
+   4. dd_v                                0.0360
+   5. curvature_plan                      0.0309
+   6. elev_std_3x3                        0.0290
+   7. soil_ksat_0_5cm                     0.0250
+   8. tpi_21x21                           0.0229
+   9. slope                               0.0180
+  10. twi_100m                            0.0159
+  11. soil_clay_pct_15_30cm               0.0150
+  12. soil_ksat_5_15cm                    0.0129
+  13. slope_5x5_std_dev                   0.0120
+  14. tpi_11x11                           0.0114
+  15. soil_clay_pct_5_15cm                0.0113
+  16. dd_h                                0.0109
+  17. soil_organic_matter_15_30cm         0.0103
+  18. dd_s                                0.0099
+  19. soil_ksat_15_30cm                   0.0096
+  20. slope_std_9x9                       0.0092
+  21. soil_clay_pct_0_5cm                 0.0090
+  22. soil_organic_matter_0_5cm           0.0083
+  23. twi_10m                             0.0079
+  24. aspect                              0.0072
+  25. elev_5x5_rel                        0.0068
+  26. soil_organic_matter_5_15cm          0.0067
+  27. tpi_3x3                             0.0052
+  28. curvature_profile                   0.0051
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  206,531
+  Estimated meadow area:        2,065.31 ha
+  Total valid pixels:           3,497,485
+  Meadow coverage:              5.91%
+
+PIPELINE RUNTIME
+  Total time: 11m 17s
+
+================================================================================

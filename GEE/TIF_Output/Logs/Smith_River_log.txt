@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Smith_River
+Date/Time: 2026-04-29 16:39:02
+================================================================================
+
+DATA SUMMARY
+  Total samples:           99,335
+  Wetland (1):             19,867  (20.0%)
+  Non-wetland (0):         79,468  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            74,501
+  Test set:                24,834
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9828
+  colsample_bytree          1.0
+  gamma                     0.1
+  learning_rate             0.2
+  max_depth                 8
+  min_child_weight          1
+  n_estimators              100
+  random_state              42
+  reg_alpha                 0
+  reg_lambda                1
+  scale_pos_weight          4.0001
+  subsample                 0.8
+
+TEST SET PERFORMANCE
+  AUC:                     0.9943
+  Accuracy:                0.9669
+
+  Wetland:
+    Precision:             0.8770
+    Recall:                0.9708
+    F1-score:              0.9215
+    Support:               4,967
+
+  Non-Wetland:
+    Precision:             0.9925
+    Recall:                0.9660
+    F1-score:              0.9791
+    Support:               19,867
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                19,191               676
+  Actual Wetland                 145             4,822
+
+FEATURE IMPORTANCES (ranked)
+   1. slope                               0.5181
+   2. dd_v                                0.0897
+   3. elev_std_9x9                        0.0539
+   4. curvature_plan                      0.0502
+   5. twi_100m                            0.0187
+   6. tpi_21x21                           0.0181
+   7. tpi_11x11                           0.0181
+   8. soil_clay_pct_15_30cm               0.0174
+   9. aspect                              0.0139
+  10. soil_organic_matter_5_15cm          0.0136
+  11. soil_organic_matter_15_30cm         0.0135
+  12. slope_5x5_std_dev                   0.0131
+  13. slope_std_9x9                       0.0130
+  14. dd_h                                0.0126
+  15. dd_s                                0.0123
+  16. soil_ksat_0_5cm                     0.0115
+  17. soil_organic_matter_0_5cm           0.0107
+  18. elev_5x5_std_dev                    0.0103
+  19. soil_ksat_15_30cm                   0.0101
+  20. twi_10m                             0.0100
+  21. soil_clay_pct_0_5cm                 0.0098
+  22. soil_ksat_5_15cm                    0.0095
+  23. curvature_profile                   0.0093
+  24. soil_clay_pct_5_15cm                0.0092
+  25. elev_5x5_rel                        0.0088
+  26. tri                                 0.0086
+  27. elev_std_3x3                        0.0080
+  28. tpi_3x3                             0.0079
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  150,684
+  Estimated meadow area:        1,506.84 ha
+  Total valid pixels:           3,560,959
+  Meadow coverage:              4.23%
+
+PIPELINE RUNTIME
+  Total time: 11m 16s
+
+================================================================================

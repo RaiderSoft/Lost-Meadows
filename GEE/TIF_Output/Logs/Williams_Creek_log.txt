@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Williams_Creek
+Date/Time: 2026-04-29 16:37:21
+================================================================================
+
+DATA SUMMARY
+  Total samples:           44,620
+  Wetland (1):             8,924  (20.0%)
+  Non-wetland (0):         35,696  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            33,465
+  Test set:                11,155
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9695
+  colsample_bytree          0.8
+  gamma                     1.0
+  learning_rate             0.1
+  max_depth                 8
+  min_child_weight          3
+  n_estimators              300
+  random_state              42
+  reg_alpha                 0.1
+  reg_lambda                1.5
+  scale_pos_weight          4.0
+  subsample                 0.8
+
+TEST SET PERFORMANCE
+  AUC:                     0.9838
+  Accuracy:                0.9451
+
+  Wetland:
+    Precision:             0.8173
+    Recall:                0.9346
+    F1-score:              0.8720
+    Support:               2,231
+
+  Non-Wetland:
+    Precision:             0.9830
+    Recall:                0.9478
+    F1-score:              0.9651
+    Support:               8,924
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                 8,458               466
+  Actual Wetland                 146             2,085
+
+FEATURE IMPORTANCES (ranked)
+   1. dd_v                                0.2962
+   2. tpi_21x21                           0.0812
+   3. elev_5x5_std_dev                    0.0639
+   4. elev_std_9x9                        0.0419
+   5. twi_100m                            0.0323
+   6. soil_clay_pct_0_5cm                 0.0285
+   7. aspect                              0.0275
+   8. soil_clay_pct_15_30cm               0.0258
+   9. tpi_11x11                           0.0258
+  10. slope_std_9x9                       0.0255
+  11. slope_5x5_std_dev                   0.0253
+  12. soil_organic_matter_5_15cm          0.0252
+  13. soil_organic_matter_15_30cm         0.0241
+  14. soil_clay_pct_5_15cm                0.0232
+  15. twi_10m                             0.0228
+  16. soil_ksat_0_5cm                     0.0218
+  17. soil_ksat_5_15cm                    0.0217
+  18. soil_organic_matter_0_5cm           0.0216
+  19. dd_h                                0.0211
+  20. soil_ksat_15_30cm                   0.0204
+  21. curvature_plan                      0.0183
+  22. dd_s                                0.0177
+  23. tri                                 0.0176
+  24. slope                               0.0172
+  25. elev_std_3x3                        0.0157
+  26. elev_5x5_rel                        0.0139
+  27. curvature_profile                   0.0123
+  28. tpi_3x3                             0.0113
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  122,729
+  Estimated meadow area:        1,227.29 ha
+  Total valid pixels:           2,147,013
+  Meadow coverage:              5.72%
+
+PIPELINE RUNTIME
+  Total time: 9m 30s
+
+================================================================================

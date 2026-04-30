@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Myrtle_Creek
+Date/Time: 2026-04-29 16:38:59
+================================================================================
+
+DATA SUMMARY
+  Total samples:           78,530
+  Wetland (1):             15,706  (20.0%)
+  Non-wetland (0):         62,824  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            58,897
+  Test set:                19,633
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9824
+  colsample_bytree          1.0
+  gamma                     0
+  learning_rate             0.2
+  max_depth                 8
+  min_child_weight          3
+  n_estimators              300
+  random_state              42
+  reg_alpha                 0.5
+  reg_lambda                2.0
+  scale_pos_weight          4.0002
+  subsample                 1.0
+
+TEST SET PERFORMANCE
+  AUC:                     0.9940
+  Accuracy:                0.9706
+
+  Wetland:
+    Precision:             0.8838
+    Recall:                0.9819
+    F1-score:              0.9303
+    Support:               3,927
+
+  Non-Wetland:
+    Precision:             0.9954
+    Recall:                0.9677
+    F1-score:              0.9813
+    Support:               15,706
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                15,199               507
+  Actual Wetland                  71             3,856
+
+FEATURE IMPORTANCES (ranked)
+   1. elev_std_9x9                        0.2896
+   2. elev_5x5_std_dev                    0.2072
+   3. soil_organic_matter_0_5cm           0.0997
+   4. dd_v                                0.0551
+   5. soil_ksat_0_5cm                     0.0290
+   6. soil_organic_matter_15_30cm         0.0285
+   7. twi_100m                            0.0265
+   8. slope_std_9x9                       0.0234
+   9. tpi_21x21                           0.0233
+  10. soil_clay_pct_5_15cm                0.0211
+  11. dd_h                                0.0182
+  12. aspect                              0.0161
+  13. soil_ksat_15_30cm                   0.0152
+  14. soil_clay_pct_15_30cm               0.0145
+  15. soil_ksat_5_15cm                    0.0137
+  16. dd_s                                0.0122
+  17. soil_organic_matter_5_15cm          0.0122
+  18. slope_5x5_std_dev                   0.0116
+  19. slope                               0.0111
+  20. soil_clay_pct_0_5cm                 0.0108
+  21. tri                                 0.0101
+  22. elev_std_3x3                        0.0094
+  23. tpi_11x11                           0.0093
+  24. twi_10m                             0.0089
+  25. curvature_plan                      0.0074
+  26. elev_5x5_rel                        0.0055
+  27. tpi_3x3                             0.0054
+  28. curvature_profile                   0.0051
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  111,632
+  Estimated meadow area:        1,116.32 ha
+  Total valid pixels:           3,091,793
+  Meadow coverage:              3.61%
+
+PIPELINE RUNTIME
+  Total time: 11m 10s
+
+================================================================================

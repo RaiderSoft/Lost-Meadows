@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Winchuck_River
+Date/Time: 2026-04-29 16:37:21
+================================================================================
+
+DATA SUMMARY
+  Total samples:           14,140
+  Wetland (1):             2,828  (20.0%)
+  Non-wetland (0):         11,312  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            10,605
+  Test set:                3,535
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9983
+  colsample_bytree          1.0
+  gamma                     0
+  learning_rate             0.2
+  max_depth                 8
+  min_child_weight          3
+  n_estimators              300
+  random_state              42
+  reg_alpha                 0.5
+  reg_lambda                2.0
+  scale_pos_weight          4.0
+  subsample                 1.0
+
+TEST SET PERFORMANCE
+  AUC:                     0.9979
+  Accuracy:                0.9881
+
+  Wetland:
+    Precision:             0.9624
+    Recall:                0.9788
+    F1-score:              0.9705
+    Support:               707
+
+  Non-Wetland:
+    Precision:             0.9947
+    Recall:                0.9905
+    F1-score:              0.9926
+    Support:               2,828
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                 2,801                27
+  Actual Wetland                  15               692
+
+FEATURE IMPORTANCES (ranked)
+   1. tri                                 0.6353
+   2. elev_std_9x9                        0.1853
+   3. dd_v                                0.0330
+   4. elev_std_3x3                        0.0125
+   5. dd_s                                0.0125
+   6. twi_100m                            0.0106
+   7. tpi_21x21                           0.0101
+   8. tpi_11x11                           0.0095
+   9. curvature_plan                      0.0095
+  10. soil_clay_pct_15_30cm               0.0090
+  11. soil_ksat_15_30cm                   0.0073
+  12. slope_5x5_std_dev                   0.0071
+  13. soil_clay_pct_5_15cm                0.0063
+  14. soil_ksat_0_5cm                     0.0058
+  15. elev_5x5_std_dev                    0.0054
+  16. soil_organic_matter_15_30cm         0.0047
+  17. soil_organic_matter_0_5cm           0.0040
+  18. soil_ksat_5_15cm                    0.0039
+  19. soil_organic_matter_5_15cm          0.0038
+  20. slope_std_9x9                       0.0037
+  21. aspect                              0.0036
+  22. elev_5x5_rel                        0.0033
+  23. soil_clay_pct_0_5cm                 0.0031
+  24. tpi_3x3                             0.0028
+  25. dd_h                                0.0024
+  26. twi_10m                             0.0022
+  27. slope                               0.0016
+  28. curvature_profile                   0.0016
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  28,262
+  Estimated meadow area:        282.62 ha
+  Total valid pixels:           1,849,948
+  Meadow coverage:              1.53%
+
+PIPELINE RUNTIME
+  Total time: 9m 29s
+
+================================================================================

@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Pistol_River
+Date/Time: 2026-04-29 16:39:02
+================================================================================
+
+DATA SUMMARY
+  Total samples:           39,170
+  Wetland (1):             7,834  (20.0%)
+  Non-wetland (0):         31,336  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            29,377
+  Test set:                9,793
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9888
+  colsample_bytree          0.6
+  gamma                     0.5
+  learning_rate             0.05
+  max_depth                 8
+  min_child_weight          1
+  n_estimators              200
+  random_state              42
+  reg_alpha                 0
+  reg_lambda                2.0
+  scale_pos_weight          4.0003
+  subsample                 0.8
+
+TEST SET PERFORMANCE
+  AUC:                     0.9920
+  Accuracy:                0.9669
+
+  Wetland:
+    Precision:             0.8928
+    Recall:                0.9484
+    F1-score:              0.9198
+    Support:               1,959
+
+  Non-Wetland:
+    Precision:             0.9869
+    Recall:                0.9715
+    F1-score:              0.9792
+    Support:               7,834
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                 7,611               223
+  Actual Wetland                 101             1,858
+
+FEATURE IMPORTANCES (ranked)
+   1. elev_5x5_std_dev                    0.3282
+   2. elev_std_9x9                        0.1388
+   3. tri                                 0.1241
+   4. tpi_21x21                           0.0636
+   5. elev_std_3x3                        0.0345
+   6. dd_v                                0.0318
+   7. slope_5x5_std_dev                   0.0216
+   8. curvature_plan                      0.0208
+   9. slope                               0.0202
+  10. aspect                              0.0150
+  11. tpi_11x11                           0.0150
+  12. twi_100m                            0.0139
+  13. soil_ksat_15_30cm                   0.0134
+  14. slope_std_9x9                       0.0123
+  15. soil_organic_matter_0_5cm           0.0120
+  16. elev_5x5_rel                        0.0117
+  17. soil_clay_pct_5_15cm                0.0116
+  18. soil_clay_pct_0_5cm                 0.0114
+  19. soil_organic_matter_15_30cm         0.0114
+  20. soil_clay_pct_15_30cm               0.0108
+  21. dd_s                                0.0104
+  22. soil_organic_matter_5_15cm          0.0103
+  23. soil_ksat_5_15cm                    0.0101
+  24. soil_ksat_0_5cm                     0.0098
+  25. dd_h                                0.0097
+  26. twi_10m                             0.0094
+  27. tpi_3x3                             0.0091
+  28. curvature_profile                   0.0091
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  71,784
+  Estimated meadow area:        717.84 ha
+  Total valid pixels:           2,726,670
+  Meadow coverage:              2.63%
+
+PIPELINE RUNTIME
+  Total time: 11m 16s
+
+================================================================================

@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Badger_Basin_Willow_Creek
+Date/Time: 2026-04-29 16:38:31
+================================================================================
+
+DATA SUMMARY
+  Total samples:           100,000
+  Wetland (1):             20,000  (20.0%)
+  Non-wetland (0):         80,000  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            75,000
+  Test set:                25,000
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9935
+  colsample_bytree          0.6
+  gamma                     0.5
+  learning_rate             0.05
+  max_depth                 8
+  min_child_weight          1
+  n_estimators              200
+  random_state              42
+  reg_alpha                 0
+  reg_lambda                2.0
+  scale_pos_weight          4.0
+  subsample                 0.8
+
+TEST SET PERFORMANCE
+  AUC:                     0.9961
+  Accuracy:                0.9738
+
+  Wetland:
+    Precision:             0.9000
+    Recall:                0.9774
+    F1-score:              0.9371
+    Support:               5,000
+
+  Non-Wetland:
+    Precision:             0.9942
+    Recall:                0.9728
+    F1-score:              0.9834
+    Support:               20,000
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                19,457               543
+  Actual Wetland                 113             4,887
+
+FEATURE IMPORTANCES (ranked)
+   1. elev_std_9x9                        0.2553
+   2. elev_5x5_std_dev                    0.1252
+   3. soil_ksat_0_5cm                     0.1242
+   4. tri                                 0.1070
+   5. soil_organic_matter_15_30cm         0.0446
+   6. soil_ksat_5_15cm                    0.0418
+   7. soil_clay_pct_15_30cm               0.0415
+   8. slope                               0.0240
+   9. soil_clay_pct_0_5cm                 0.0228
+  10. soil_organic_matter_5_15cm          0.0223
+  11. soil_clay_pct_5_15cm                0.0201
+  12. slope_std_9x9                       0.0201
+  13. soil_ksat_15_30cm                   0.0189
+  14. slope_5x5_std_dev                   0.0186
+  15. dd_v                                0.0175
+  16. elev_std_3x3                        0.0164
+  17. soil_organic_matter_0_5cm           0.0150
+  18. aspect                              0.0099
+  19. tpi_21x21                           0.0095
+  20. twi_100m                            0.0078
+  21. dd_h                                0.0076
+  22. dd_s                                0.0064
+  23. twi_10m                             0.0056
+  24. tpi_11x11                           0.0049
+  25. curvature_plan                      0.0042
+  26. elev_5x5_rel                        0.0035
+  27. tpi_3x3                             0.0027
+  28. curvature_profile                   0.0026
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  164,844
+  Estimated meadow area:        1,648.44 ha
+  Total valid pixels:           3,480,975
+  Meadow coverage:              4.74%
+
+PIPELINE RUNTIME
+  Total time: 10m 47s
+
+================================================================================

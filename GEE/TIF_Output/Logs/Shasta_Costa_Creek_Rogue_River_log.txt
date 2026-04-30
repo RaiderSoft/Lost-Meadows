@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Shasta_Costa_Creek_Rogue_River
+Date/Time: 2026-04-29 16:39:02
+================================================================================
+
+DATA SUMMARY
+  Total samples:           7,260
+  Wetland (1):             1,452  (20.0%)
+  Non-wetland (0):         5,808  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            5,445
+  Test set:                1,815
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9930
+  colsample_bytree          1.0
+  gamma                     0.1
+  learning_rate             0.2
+  max_depth                 8
+  min_child_weight          1
+  n_estimators              100
+  random_state              42
+  reg_alpha                 0
+  reg_lambda                1
+  scale_pos_weight          4.0
+  subsample                 0.8
+
+TEST SET PERFORMANCE
+  AUC:                     0.9939
+  Accuracy:                0.9664
+
+  Wetland:
+    Precision:             0.8756
+    Recall:                0.9697
+    F1-score:              0.9203
+    Support:               363
+
+  Non-Wetland:
+    Precision:             0.9922
+    Recall:                0.9656
+    F1-score:              0.9787
+    Support:               1,452
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                 1,402                50
+  Actual Wetland                  11               352
+
+FEATURE IMPORTANCES (ranked)
+   1. dd_v                                0.2804
+   2. elev_std_9x9                        0.1008
+   3. tpi_21x21                           0.0670
+   4. twi_100m                            0.0611
+   5. soil_clay_pct_5_15cm                0.0603
+   6. soil_clay_pct_0_5cm                 0.0372
+   7. elev_5x5_std_dev                    0.0328
+   8. slope                               0.0299
+   9. dd_s                                0.0278
+  10. curvature_plan                      0.0270
+  11. soil_ksat_5_15cm                    0.0248
+  12. soil_ksat_0_5cm                     0.0232
+  13. slope_std_9x9                       0.0229
+  14. aspect                              0.0210
+  15. twi_10m                             0.0174
+  16. tpi_11x11                           0.0174
+  17. soil_ksat_15_30cm                   0.0155
+  18. soil_organic_matter_5_15cm          0.0154
+  19. tri                                 0.0148
+  20. dd_h                                0.0139
+  21. slope_5x5_std_dev                   0.0138
+  22. soil_clay_pct_15_30cm               0.0131
+  23. soil_organic_matter_15_30cm         0.0131
+  24. curvature_profile                   0.0119
+  25. elev_5x5_rel                        0.0116
+  26. soil_organic_matter_0_5cm           0.0105
+  27. elev_std_3x3                        0.0095
+  28. tpi_3x3                             0.0059
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  55,416
+  Estimated meadow area:        554.16 ha
+  Total valid pixels:           1,826,902
+  Meadow coverage:              3.03%
+
+PIPELINE RUNTIME
+  Total time: 11m 14s
+
+================================================================================

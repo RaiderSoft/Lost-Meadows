@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Clark_Branch_South_Umpqua_River
+Date/Time: 2026-04-29 16:38:43
+================================================================================
+
+DATA SUMMARY
+  Total samples:           79,200
+  Wetland (1):             15,840  (20.0%)
+  Non-wetland (0):         63,360  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            59,400
+  Test set:                19,800
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9713
+  colsample_bytree          1.0
+  gamma                     0
+  learning_rate             0.2
+  max_depth                 8
+  min_child_weight          3
+  n_estimators              300
+  random_state              42
+  reg_alpha                 0.5
+  reg_lambda                2.0
+  scale_pos_weight          4.0
+  subsample                 1.0
+
+TEST SET PERFORMANCE
+  AUC:                     0.9942
+  Accuracy:                0.9686
+
+  Wetland:
+    Precision:             0.8947
+    Recall:                0.9553
+    F1-score:              0.9240
+    Support:               3,960
+
+  Non-Wetland:
+    Precision:             0.9886
+    Recall:                0.9719
+    F1-score:              0.9802
+    Support:               15,840
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                15,395               445
+  Actual Wetland                 177             3,783
+
+FEATURE IMPORTANCES (ranked)
+   1. elev_std_9x9                        0.3456
+   2. dd_v                                0.0596
+   3. soil_ksat_15_30cm                   0.0420
+   4. twi_100m                            0.0372
+   5. soil_organic_matter_5_15cm          0.0337
+   6. tpi_21x21                           0.0324
+   7. dd_s                                0.0312
+   8. dd_h                                0.0286
+   9. twi_10m                             0.0283
+  10. soil_organic_matter_0_5cm           0.0265
+  11. soil_ksat_5_15cm                    0.0261
+  12. slope_std_9x9                       0.0257
+  13. tpi_11x11                           0.0251
+  14. soil_clay_pct_15_30cm               0.0251
+  15. soil_organic_matter_15_30cm         0.0247
+  16. soil_clay_pct_0_5cm                 0.0235
+  17. soil_ksat_0_5cm                     0.0235
+  18. aspect                              0.0223
+  19. soil_clay_pct_5_15cm                0.0198
+  20. tri                                 0.0168
+  21. slope                               0.0162
+  22. elev_std_3x3                        0.0162
+  23. elev_5x5_std_dev                    0.0155
+  24. slope_5x5_std_dev                   0.0150
+  25. elev_5x5_rel                        0.0131
+  26. curvature_profile                   0.0095
+  27. curvature_plan                      0.0094
+  28. tpi_3x3                             0.0073
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  81,842
+  Estimated meadow area:        818.42 ha
+  Total valid pixels:           2,416,419
+  Meadow coverage:              3.39%
+
+PIPELINE RUNTIME
+  Total time: 10m 55s
+
+================================================================================

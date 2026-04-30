@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Coos_Bay_Frontal_Pacific_Ocean
+Date/Time: 2026-04-29 16:39:29
+================================================================================
+
+DATA SUMMARY
+  Total samples:           100,000
+  Wetland (1):             20,000  (20.0%)
+  Non-wetland (0):         80,000  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            75,000
+  Test set:                25,000
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9655
+  colsample_bytree          0.6
+  gamma                     0.5
+  learning_rate             0.05
+  max_depth                 8
+  min_child_weight          1
+  n_estimators              200
+  random_state              42
+  reg_alpha                 0
+  reg_lambda                2.0
+  scale_pos_weight          4.0
+  subsample                 0.8
+
+TEST SET PERFORMANCE
+  AUC:                     0.9754
+  Accuracy:                0.9204
+
+  Wetland:
+    Precision:             0.7415
+    Recall:                0.9242
+    F1-score:              0.8228
+    Support:               5,000
+
+  Non-Wetland:
+    Precision:             0.9798
+    Recall:                0.9194
+    F1-score:              0.9487
+    Support:               20,000
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                18,389             1,611
+  Actual Wetland                 379             4,621
+
+FEATURE IMPORTANCES (ranked)
+   1. dd_v                                0.2800
+   2. slope                               0.1233
+   3. tri                                 0.1191
+   4. soil_ksat_0_5cm                     0.0708
+   5. soil_clay_pct_15_30cm               0.0389
+   6. elev_std_3x3                        0.0389
+   7. tpi_21x21                           0.0301
+   8. soil_clay_pct_5_15cm                0.0300
+   9. soil_ksat_5_15cm                    0.0299
+  10. twi_100m                            0.0226
+  11. soil_organic_matter_15_30cm         0.0192
+  12. soil_organic_matter_0_5cm           0.0183
+  13. elev_5x5_std_dev                    0.0173
+  14. soil_clay_pct_0_5cm                 0.0150
+  15. soil_ksat_15_30cm                   0.0147
+  16. dd_s                                0.0146
+  17. curvature_plan                      0.0146
+  18. soil_organic_matter_5_15cm          0.0131
+  19. elev_std_9x9                        0.0117
+  20. dd_h                                0.0114
+  21. tpi_11x11                           0.0104
+  22. slope_std_9x9                       0.0093
+  23. aspect                              0.0089
+  24. twi_10m                             0.0086
+  25. slope_5x5_std_dev                   0.0084
+  26. elev_5x5_rel                        0.0076
+  27. curvature_profile                   0.0069
+  28. tpi_3x3                             0.0067
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  815,909
+  Estimated meadow area:        8,159.09 ha
+  Total valid pixels:           5,687,392
+  Meadow coverage:              14.35%
+
+PIPELINE RUNTIME
+  Total time: 11m 56s
+
+================================================================================

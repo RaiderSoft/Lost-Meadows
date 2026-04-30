@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Grants_Pass_Rogue_River
+Date/Time: 2026-04-29 16:39:05
+================================================================================
+
+DATA SUMMARY
+  Total samples:           43,395
+  Wetland (1):             8,679  (20.0%)
+  Non-wetland (0):         34,716  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            32,546
+  Test set:                10,849
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9665
+  colsample_bytree          1.0
+  gamma                     0
+  learning_rate             0.2
+  max_depth                 8
+  min_child_weight          3
+  n_estimators              300
+  random_state              42
+  reg_alpha                 0.5
+  reg_lambda                2.0
+  scale_pos_weight          4.0002
+  subsample                 1.0
+
+TEST SET PERFORMANCE
+  AUC:                     0.9876
+  Accuracy:                0.9547
+
+  Wetland:
+    Precision:             0.8574
+    Recall:                0.9281
+    F1-score:              0.8913
+    Support:               2,170
+
+  Non-Wetland:
+    Precision:             0.9816
+    Recall:                0.9614
+    F1-score:              0.9714
+    Support:               8,679
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                 8,344               335
+  Actual Wetland                 156             2,014
+
+FEATURE IMPORTANCES (ranked)
+   1. twi_100m                            0.1858
+   2. soil_ksat_0_5cm                     0.0849
+   3. elev_std_9x9                        0.0594
+   4. soil_clay_pct_15_30cm               0.0503
+   5. dd_v                                0.0496
+   6. soil_ksat_15_30cm                   0.0408
+   7. slope_std_9x9                       0.0405
+   8. dd_h                                0.0340
+   9. tpi_21x21                           0.0329
+  10. soil_clay_pct_0_5cm                 0.0326
+  11. soil_organic_matter_15_30cm         0.0322
+  12. slope                               0.0306
+  13. soil_organic_matter_0_5cm           0.0288
+  14. soil_organic_matter_5_15cm          0.0285
+  15. soil_ksat_5_15cm                    0.0279
+  16. soil_clay_pct_5_15cm                0.0263
+  17. slope_5x5_std_dev                   0.0242
+  18. elev_5x5_std_dev                    0.0241
+  19. dd_s                                0.0241
+  20. aspect                              0.0216
+  21. elev_std_3x3                        0.0210
+  22. tri                                 0.0194
+  23. curvature_plan                      0.0183
+  24. twi_10m                             0.0170
+  25. tpi_11x11                           0.0139
+  26. elev_5x5_rel                        0.0127
+  27. tpi_3x3                             0.0103
+  28. curvature_profile                   0.0086
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  95,909
+  Estimated meadow area:        959.09 ha
+  Total valid pixels:           2,182,136
+  Meadow coverage:              4.40%
+
+PIPELINE RUNTIME
+  Total time: 11m 23s
+
+================================================================================

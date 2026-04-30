@@ -1,0 +1,87 @@
+================================================================================
+WATERSHED: Little_Shasta_River
+Date/Time: 2026-04-29 16:38:59
+================================================================================
+
+DATA SUMMARY
+  Total samples:           100,000
+  Wetland (1):             20,000  (20.0%)
+  Non-wetland (0):         80,000  (80.0%)
+  Class ratio (neg/pos):   4.00
+  Training set:            75,000
+  Test set:                25,000
+
+HYPERPARAMETERS (tuned (per-watershed))
+  best_cv_auc               0.9619
+  colsample_bytree          0.6
+  gamma                     0.5
+  learning_rate             0.05
+  max_depth                 8
+  min_child_weight          1
+  n_estimators              200
+  random_state              42
+  reg_alpha                 0
+  reg_lambda                2.0
+  scale_pos_weight          4.0
+  subsample                 0.8
+
+TEST SET PERFORMANCE
+  AUC:                     0.9735
+  Accuracy:                0.9174
+
+  Wetland:
+    Precision:             0.7267
+    Recall:                0.9406
+    F1-score:              0.8199
+    Support:               5,000
+
+  Non-Wetland:
+    Precision:             0.9840
+    Recall:                0.9115
+    F1-score:              0.9464
+    Support:               20,000
+
+CONFUSION MATRIX
+                       Predicted Non-W  Predicted Wetland
+  Actual Non-W                18,231             1,769
+  Actual Wetland                 297             4,703
+
+FEATURE IMPORTANCES (ranked)
+   1. elev_std_9x9                        0.1972
+   2. elev_5x5_std_dev                    0.1793
+   3. tri                                 0.1198
+   4. soil_clay_pct_0_5cm                 0.0479
+   5. soil_ksat_15_30cm                   0.0388
+   6. elev_std_3x3                        0.0360
+   7. soil_clay_pct_5_15cm                0.0348
+   8. tpi_21x21                           0.0344
+   9. dd_v                                0.0331
+  10. soil_organic_matter_15_30cm         0.0258
+  11. soil_organic_matter_5_15cm          0.0258
+  12. soil_ksat_5_15cm                    0.0256
+  13. soil_clay_pct_15_30cm               0.0246
+  14. slope                               0.0205
+  15. soil_organic_matter_0_5cm           0.0169
+  16. twi_100m                            0.0158
+  17. soil_ksat_0_5cm                     0.0157
+  18. dd_h                                0.0138
+  19. slope_std_9x9                       0.0131
+  20. dd_s                                0.0122
+  21. aspect                              0.0118
+  22. slope_5x5_std_dev                   0.0115
+  23. twi_10m                             0.0108
+  24. tpi_11x11                           0.0098
+  25. elev_5x5_rel                        0.0071
+  26. curvature_plan                      0.0069
+  27. curvature_profile                   0.0059
+  28. tpi_3x3                             0.0052
+PREDICTION STATISTICS
+  Meadow pixels (prob > 0.5):  361,698
+  Estimated meadow area:        3,616.98 ha
+  Total valid pixels:           3,305,323
+  Meadow coverage:              10.94%
+
+PIPELINE RUNTIME
+  Total time: 11m 8s
+
+================================================================================
