@@ -97,7 +97,7 @@ header.scrolled {
 .nav-menu {
   display: flex;
   list-style: none;
-  gap: 2rem;
+  gap: 0.25rem;
 }
 
 .nav-menu a {
@@ -105,11 +105,12 @@ header.scrolled {
   color: var(--text-dark);
   font-weight: 500;
   transition: all 0.3s ease;
-  padding: 0.6rem 1.2rem;
+  padding: 0.5rem 0.75rem;
   border-radius: 8px;
   position: relative;
   overflow: hidden;
   white-space: nowrap;
+  font-size: 0.95rem;
 }
 
 .nav-menu a::before {
@@ -858,23 +859,23 @@ footer p {
 /* Responsive design */
 @media (max-width: 1100px) {
   .nav-menu {
-    gap: 1.5rem;
+    gap: 0.15rem;
   }
 
   .nav-menu a {
-    padding: 0.5rem 1rem;
-    font-size: 0.95rem;
+    padding: 0.45rem 0.6rem;
+    font-size: 0.9rem;
   }
 }
 
 @media (max-width: 950px) {
   .nav-menu {
-    gap: 0.5rem;
+    gap: 0.1rem;
   }
 
   .nav-menu a {
-    padding: 0.4rem 0.6rem;
-    font-size: 0.85rem;
+    padding: 0.4rem 0.45rem;
+    font-size: 0.82rem;
   }
 
   .logo {
@@ -882,19 +883,19 @@ footer p {
   }
 
   .launch-app-btn {
-    padding: 0.4rem 0.75rem;
-    font-size: 0.85rem;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.82rem;
   }
 }
 
 @media (max-width: 900px) {
   .nav-menu {
-    gap: 0.35rem;
+    gap: 0.05rem;
   }
 
   .nav-menu a {
-    padding: 0.35rem 0.5rem;
-    font-size: 0.8rem;
+    padding: 0.35rem 0.35rem;
+    font-size: 0.78rem;
   }
 
   .logo {
@@ -907,8 +908,8 @@ footer p {
   }
 
   .launch-app-btn {
-    padding: 0.35rem 0.6rem;
-    font-size: 0.8rem;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.78rem;
   }
 }
 
