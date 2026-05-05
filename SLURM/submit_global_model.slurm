@@ -33,12 +33,16 @@ echo "REPO_ROOT: ${REPO_ROOT}"
 echo "NCORES: ${NCORES}"
 echo "Started: $(date)"
 
-# Step 1: Train global model (gridsearch + training)
-python "${REPO_ROOT}/GlobalModel/train_global_model.py" "${NCORES}"
-
-if [ $? -ne 0 ]; then
-    echo "ERROR: Training failed"
-    exit 1
+# Step 1: Train global model (gridsearch + training) — skip if model already exists
+MODEL="${REPO_ROOT}/GlobalModel/global_xgboost_model.pkl"
+if [ -f "$MODEL" ]; then
+    echo "Global model already exists, skipping training."
+else
+    python "${REPO_ROOT}/GlobalModel/train_global_model.py" "${NCORES}"
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Training failed"
+        exit 1
+    fi
 fi
 
 echo ""
