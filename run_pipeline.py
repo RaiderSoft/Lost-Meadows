@@ -112,7 +112,7 @@ def get_repo_root():
     # run_pipeline.py is at the repo root
     return Path(__file__).resolve().parent
 
-def main(input_dem, ncores):
+def main(input_dem, ncores, features_only=False):
     """Run the complete pipeline"""
 
     # Check if input DEM exists
@@ -204,6 +204,13 @@ def main(input_dem, ncores):
             f.unlink()
             deleted += 1
     print(f"  ✓ Deleted {deleted} individual feature TIFs (~{deleted * 50}MB freed)")
+
+    if features_only:
+        print(f"\n{'='*70}")
+        print(f"FEATURES-ONLY MODE: stopping after stacking.")
+        print(f"features_stacked.tif is ready at: {output_dir}/features_stacked.tif")
+        print(f"{'='*70}\n")
+        return
 
     # Step 6: Prepare training data
     run_step(
@@ -324,6 +331,7 @@ if __name__ == "__main__":
     base_dir = Path(__file__).resolve().parent
     keep_going = "--keep-going" in args
     use_all = "--all" in args
+    features_only = "--features-only" in args
 
     # Parse --cores
     if "--cores" in args:
@@ -361,7 +369,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     if len(dems) == 1:
-        main(dems[0], ncores)
+        main(dems[0], ncores, features_only=features_only)
     else:
         results = []
         batch_start = time.time()
@@ -372,10 +380,10 @@ if __name__ == "__main__":
             print(f"{'#'*70}")
             start = time.time()
 
-            result = subprocess.run(
-                [sys.executable, __file__, str(dem), "--cores", str(ncores)],
-                cwd=base_dir
-            )
+            cmd = [sys.executable, __file__, str(dem), "--cores", str(ncores)]
+            if features_only:
+                cmd.append("--features-only")
+            result = subprocess.run(cmd, cwd=base_dir)
 
             elapsed = int(time.time() - start)
             success = result.returncode == 0

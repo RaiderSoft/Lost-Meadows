@@ -45,7 +45,15 @@ echo ""
 echo "===== Global Model Prediction ====="
 echo "Started: $(date)"
 
-# Step 2: Predict all watersheds with global model
+# Step 2: Regenerate feature stacks for all watersheds (no training)
+# Uses --features-only to stop after stacking, skipping model training
+for TIF in "${REPO_ROOT}/GEE/TIF_Input/"*.tif; do
+    python "${REPO_ROOT}/run_pipeline.py" "${TIF}" --cores 1 --features-only &
+done
+wait
+echo "Feature stacking complete"
+
+# Step 3: Predict all watersheds with global model
 python "${REPO_ROOT}/GlobalModel/predict_all_watersheds.py"
 
 echo ""
