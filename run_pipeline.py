@@ -112,7 +112,7 @@ def get_repo_root():
     # run_pipeline.py is at the repo root
     return Path(__file__).resolve().parent
 
-def main(input_dem, ncores):
+def main(input_dem, ncores, prepare_only=False):
     """Run the complete pipeline"""
 
     # Check if input DEM exists
@@ -206,11 +206,33 @@ def main(input_dem, ncores):
     print(f"  ✓ Deleted {deleted} individual feature TIFs (~{deleted * 50}MB freed)")
 
     # Step 6: Prepare training data
+
     run_step(
         "6. Prepare Training Data from Wetlands (OR/CA geodatabases)",
         f"python prepare_training_data.py {watershed_name}",
         cwd=base_dir / "Wetlands"
     )
+
+    if prepare_only:
+        # Copy CSV to TrainingData/ and leave features_stacked.tif in place,
+        # then clean up everything else so the watershed dir is lean.
+        training_data_dir = base_dir / "GEE" / "TIF_Output" / "TrainingData"
+        training_data_dir.mkdir(parents=True, exist_ok=True)
+        training_csv_src = output_dir / "training_data_real.csv"
+        training_csv_dst = training_data_dir / f"{watershed_name}_training_data.csv"
+        if training_csv_src.exists():
+            shutil.copy2(str(training_csv_src), str(training_csv_dst))
+        # Remove everything in the watershed dir except features_stacked.tif and CSV
+        keep = {"features_stacked.tif", "training_data_real.csv"}
+        for f in output_dir.iterdir():
+            if f.name not in keep:
+                f.unlink() if f.is_file() else shutil.rmtree(f)
+        print(f"\n{'='*70}")
+        print(f"PREPARE-ONLY MODE: stopping after CSV generation.")
+        print(f"  features_stacked.tif → {output_dir}/features_stacked.tif")
+        print(f"  training CSV         → {training_csv_dst}")
+        print(f"{'='*70}\n")
+        return
 
     # Step 7: Hyperparameter tuning
     run_step(
@@ -324,6 +346,7 @@ if __name__ == "__main__":
     base_dir = Path(__file__).resolve().parent
     keep_going = "--keep-going" in args
     use_all = "--all" in args
+    prepare_only = "--prepare-only" in args
 
     # Parse --cores
     if "--cores" in args:
@@ -361,7 +384,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     if len(dems) == 1:
-        main(dems[0], ncores)
+        main(dems[0], ncores, prepare_only=prepare_only)
     else:
         results = []
         batch_start = time.time()
@@ -372,10 +395,10 @@ if __name__ == "__main__":
             print(f"{'#'*70}")
             start = time.time()
 
-            result = subprocess.run(
-                [sys.executable, __file__, str(dem), "--cores", str(ncores)],
-                cwd=base_dir
-            )
+            cmd = [sys.executable, __file__, str(dem), "--cores", str(ncores)]
+            if prepare_only:
+                cmd.append("--prepare-only")
+            result = subprocess.run(cmd, cwd=base_dir)
 
             elapsed = int(time.time() - start)
             success = result.returncode == 0
