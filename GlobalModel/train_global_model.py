@@ -72,16 +72,27 @@ def load_all_watersheds():
     return combined
 
 
-def run_gridsearch(X, y, ncores=1):
-    """Run randomized hyperparameter search on a 50k subsample."""
+def run_gridsearch(X, y, watersheds, ncores=1):
+    """Run randomized hyperparameter search on a watershed-stratified 50k subsample.
+
+    Samples ~420 rows per watershed so every watershed is represented rather
+    than risking the subsample being dominated by large watersheds.
+    """
     print(f"\n{'='*60}")
-    print("Hyperparameter Search (50k subsample, 5-fold CV)")
+    print("Hyperparameter Search (watershed-stratified 50k subsample, 5-fold CV)")
     print(f"{'='*60}")
 
-    n_samples = min(50000, len(X))
-    idx = np.random.RandomState(42).choice(len(X), n_samples, replace=False)
+    rng = np.random.RandomState(42)
+    unique_ws = np.unique(watersheds)
+    rows_per_ws = max(1, 50000 // len(unique_ws))
+    idx_list = []
+    for ws in unique_ws:
+        ws_idx = np.where(watersheds == ws)[0]
+        chosen = rng.choice(ws_idx, min(rows_per_ws, len(ws_idx)), replace=False)
+        idx_list.append(chosen)
+    idx = np.concatenate(idx_list)
     X_sub, y_sub = X[idx], y[idx]
-    print(f"Subsampled to {n_samples:,} rows")
+    print(f"Subsampled to {len(idx):,} rows (~{rows_per_ws} per watershed, all {len(unique_ws)} watersheds represented)")
 
     param_dist = {
         'n_estimators':     [100, 200, 300],
@@ -264,7 +275,7 @@ def main(ncores=1):
     X = combined_df[FEATURE_NAMES].values
     y = combined_df["label"].values
 
-    params = run_gridsearch(X, y, ncores)
+    params = run_gridsearch(X, y, combined_df["watershed"].values, ncores)
 
     xgb, auc, cm, report, ws_results, xgb_params, best_cv_auc, split_sizes = \
         train_and_evaluate(combined_df, params, ncores)
