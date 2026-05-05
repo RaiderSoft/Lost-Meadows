@@ -12,7 +12,7 @@
 #SBATCH --job-name=global_model
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=32
+#SBATCH --cpus-per-task=64
 #SBATCH --mem=200G
 #SBATCH --time=03:00:00
 #SBATCH --partition=normal
@@ -21,7 +21,7 @@
 
 CONDA_ENV=meadow
 REPO_ROOT=$SLURM_SUBMIT_DIR
-NCORES=32
+NCORES=64
 
 source /home/lm1/miniconda3/etc/profile.d/conda.sh
 conda activate "${CONDA_ENV}"
