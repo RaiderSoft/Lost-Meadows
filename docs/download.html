@@ -6,6 +6,19 @@
     <title>Lost Meadows - Download</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="styles.css?v=5" />
+    <style>
+      .download-link {
+        color: var(--primary-green);
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .download-link:hover {
+        text-decoration: underline;
+      }
+      #download-table-body tr:hover {
+        background-color: #f5faf5;
+      }
+    </style>
   </head>
   <body>
     <header>
@@ -15,7 +28,11 @@
             <img src="favicon.svg" class="logo-icon" alt="Lost Meadows Icon" />
             <h1 class="logo">Lost Meadows</h1>
           </div>
-          <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+          <button
+            class="nav-toggle"
+            aria-label="Toggle navigation"
+            aria-expanded="false"
+          >
             <span></span>
             <span></span>
             <span></span>
@@ -87,18 +104,105 @@
           <div id="protected-content" style="display: none">
             <div class="content">
               <h2>Data Downloads</h2>
-              <p style="text-align: center;">You're signed in. Downloads will be added later.</p>
-              <div class="feature-grid">
-                <div class="feature-card">
-                  <h3>Data Downloads</h3>
-                  <p>Downloads for prediction and csv data.</p>
-                  <a
-                    href="#"
-                    class="launch-app-btn"
-                    style="display: inline-block; margin-top: 1rem"
-                    >&#x21E9; Download</a
-                  >
-                </div>
+              <div style="overflow-x: auto; margin-top: 1.5rem">
+                <table
+                  style="
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 0.95rem;
+                  "
+                >
+                  <thead>
+                    <tr style="border-bottom: 2px solid var(--primary-green)">
+                      <th
+                        style="
+                          text-align: left;
+                          padding: 0.75rem 1rem;
+                          color: var(--primary-green);
+                        "
+                      >
+                        Watershed
+                      </th>
+                      <th
+                        style="
+                          text-align: center;
+                          padding: 0.75rem 1rem;
+                          color: var(--primary-green);
+                        "
+                      >
+                        Watershed Prediction
+                      </th>
+                      <th
+                        style="
+                          text-align: center;
+                          padding: 0.75rem 1rem;
+                          color: var(--primary-green);
+                        "
+                      >
+                        Global Prediction
+                      </th>
+                      <th
+                        style="
+                          text-align: center;
+                          padding: 0.75rem 1rem;
+                          color: var(--primary-green);
+                        "
+                      >
+                        Watershed CSV
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="download-table-body">
+                    <tr style="border-bottom: 1px solid #e0e0e0">
+                      <td style="padding: 0.75rem 1rem">Applegate River</td>
+                      <td style="text-align: center; padding: 0.75rem 1rem">
+                        <a href="#" class="download-link"
+                          >Watershed Prediction Download</a
+                        >
+                      </td>
+                      <td style="text-align: center; padding: 0.75rem 1rem">
+                        <a href="#" class="download-link"
+                          >Global Prediction Download</a
+                        >
+                      </td>
+                      <td style="text-align: center; padding: 0.75rem 1rem">
+                        <a href="#" class="download-link">CSV Data Download</a>
+                      </td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e0e0e0">
+                      <td style="padding: 0.75rem 1rem">Bear Creek</td>
+                      <td style="text-align: center; padding: 0.75rem 1rem">
+                        <a href="#" class="download-link"
+                          >Watershed Prediction Download</a
+                        >
+                      </td>
+                      <td style="text-align: center; padding: 0.75rem 1rem">
+                        <a href="#" class="download-link"
+                          >Global Prediction Download</a
+                        >
+                      </td>
+                      <td style="text-align: center; padding: 0.75rem 1rem">
+                        <a href="#" class="download-link">CSV Data Download</a>
+                      </td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e0e0e0">
+                      <td style="padding: 0.75rem 1rem">Rogue River</td>
+                      <td style="text-align: center; padding: 0.75rem 1rem">
+                        <a href="#" class="download-link"
+                          >Watershed Prediction Download</a
+                        >
+                      </td>
+                      <td style="text-align: center; padding: 0.75rem 1rem">
+                        <a href="#" class="download-link"
+                          >Global Prediction Download</a
+                        >
+                      </td>
+                      <td style="text-align: center; padding: 0.75rem 1rem">
+                        <a href="#" class="download-link">CSV Data Download</a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
               <div style="margin-top: 2rem; text-align: center">
                 <button
