@@ -133,6 +133,17 @@
                         "
                       >
                         Watershed Prediction
+                        <div
+                          style="
+                            font-size: 0.78rem;
+                            font-weight: 400;
+                            color: #666;
+                            font-style: italic;
+                            margin-top: 0.25rem;
+                          "
+                        >
+                          Local model trained on this watershed's data
+                        </div>
                       </th>
                       <th
                         style="
@@ -142,6 +153,17 @@
                         "
                       >
                         Global Prediction
+                        <div
+                          style="
+                            font-size: 0.78rem;
+                            font-weight: 400;
+                            color: #666;
+                            font-style: italic;
+                            margin-top: 0.25rem;
+                          "
+                        >
+                          Global model trained across all watersheds
+                        </div>
                       </th>
                       <th
                         style="
@@ -151,56 +173,96 @@
                         "
                       >
                         Watershed CSV
+                        <div
+                          style="
+                            font-size: 0.78rem;
+                            font-weight: 400;
+                            color: #666;
+                            font-style: italic;
+                            margin-top: 0.25rem;
+                          "
+                        >
+                          Raw training data (feature values + labels) for this
+                          watershed
+                        </div>
                       </th>
                     </tr>
                   </thead>
                   <tbody id="download-table-body">
                     <tr style="border-bottom: 1px solid #e0e0e0">
-                      <td style="padding: 0.75rem 1rem">Applegate River</td>
-                      <td style="text-align: center; padding: 0.75rem 1rem">
-                        <a href="#" class="download-link"
-                          >Watershed Prediction Download</a
-                        >
-                      </td>
-                      <td style="text-align: center; padding: 0.75rem 1rem">
-                        <a href="#" class="download-link"
-                          >Global Prediction Download</a
-                        >
-                      </td>
-                      <td style="text-align: center; padding: 0.75rem 1rem">
-                        <a href="#" class="download-link">CSV Data Download</a>
-                      </td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #e0e0e0">
                       <td style="padding: 0.75rem 1rem">Bear Creek</td>
                       <td style="text-align: center; padding: 0.75rem 1rem">
-                        <a href="#" class="download-link"
+                        <a
+                          href="https://github.com/RaiderSoft/Lost-Meadows/releases/download/DataDownloads/Bear_Creek_Probability_local.tif"
+                          class="download-link"
                           >Watershed Prediction Download</a
                         >
                       </td>
                       <td style="text-align: center; padding: 0.75rem 1rem">
-                        <a href="#" class="download-link"
+                        <a
+                          href="https://github.com/RaiderSoft/Lost-Meadows/releases/download/DataDownloads/global_Bear_Creek_Probability.tif"
+                          class="download-link"
                           >Global Prediction Download</a
                         >
                       </td>
                       <td style="text-align: center; padding: 0.75rem 1rem">
-                        <a href="#" class="download-link">CSV Data Download</a>
+                        <a
+                          href="https://github.com/RaiderSoft/Lost-Meadows/releases/download/DataDownloads/Bear_Creek_training_data.csv"
+                          class="download-link"
+                          >CSV Data Download</a
+                        >
                       </td>
                     </tr>
                     <tr style="border-bottom: 1px solid #e0e0e0">
-                      <td style="padding: 0.75rem 1rem">Rogue River</td>
+                      <td style="padding: 0.75rem 1rem">
+                        Gold Hill-Rouge River
+                      </td>
                       <td style="text-align: center; padding: 0.75rem 1rem">
-                        <a href="#" class="download-link"
+                        <a
+                          href="https://github.com/RaiderSoft/Lost-Meadows/releases/download/DataDownloads/Gold_Hill_Rogue_River_Probability_local.tif"
+                          class="download-link"
                           >Watershed Prediction Download</a
                         >
                       </td>
                       <td style="text-align: center; padding: 0.75rem 1rem">
-                        <a href="#" class="download-link"
+                        <a
+                          href="https://github.com/RaiderSoft/Lost-Meadows/releases/download/DataDownloads/global_Gold_Hill_Rogue_River_Probability.tif"
+                          class="download-link"
                           >Global Prediction Download</a
                         >
                       </td>
                       <td style="text-align: center; padding: 0.75rem 1rem">
-                        <a href="#" class="download-link">CSV Data Download</a>
+                        <a
+                          href="https://github.com/RaiderSoft/Lost-Meadows/releases/download/DataDownloads/Gold_Hill_Rogue_River_training_data.csv"
+                          class="download-link"
+                          >CSV Data Download</a
+                        >
+                      </td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e0e0e0">
+                      <td style="padding: 0.75rem 1rem">
+                        Grants Pass-Rouge River
+                      </td>
+                      <td style="text-align: center; padding: 0.75rem 1rem">
+                        <a
+                          href="https://github.com/RaiderSoft/Lost-Meadows/releases/download/DataDownloads/Grants_Pass_Rogue_River_Probability_local.tif"
+                          class="download-link"
+                          >Watershed Prediction Download</a
+                        >
+                      </td>
+                      <td style="text-align: center; padding: 0.75rem 1rem">
+                        <a
+                          href="https://github.com/RaiderSoft/Lost-Meadows/releases/download/DataDownloads/global_Grants_Pass_Rogue_River_Probability.tif"
+                          class="download-link"
+                          >Global Prediction Download</a
+                        >
+                      </td>
+                      <td style="text-align: center; padding: 0.75rem 1rem">
+                        <a
+                          href="https://github.com/RaiderSoft/Lost-Meadows/releases/download/DataDownloads/Grants_Pass_Rogue_River_training_data.csv"
+                          class="download-link"
+                          >CSV Data Download</a
+                        >
                       </td>
                     </tr>
                   </tbody>
@@ -283,18 +345,18 @@
             var payload = parseJwtPayload(response.credential);
             if (payload.hd !== ALLOWED_DOMAIN) {
               showError(
-                "Access is restricted to @" + ALLOWED_DOMAIN + " accounts.",
+                "Access is restricted to @" + ALLOWED_DOMAIN + " accounts."
               );
               return;
             }
             sessionStorage.setItem(SESSION_KEY, "1");
             showProtected();
           },
-          auto_select: true,
+          auto_select: true
         });
         google.accounts.id.renderButton(
           document.getElementById("google-sign-in-btn"),
-          { theme: "outline", size: "large", text: "signin_with" },
+          { theme: "outline", size: "large", text: "signin_with" }
         );
         google.accounts.id.prompt();
       }
