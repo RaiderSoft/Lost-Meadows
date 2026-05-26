@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lost Meadows - Pipeline Dashboard</title>
+    <title>Lost Meadows - Watershed Dashboard</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="styles.css?v=5" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -105,6 +105,51 @@
       .conf-note { font-size:12px; color:#888; margin-top:8px; }
       .fade-in { animation:fadeIn 0.3s ease; }
       @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+      /* View toggle tabs */
+      #view-toggle-bar { margin-bottom: 2rem; }
+      .view-toggle-tabs { display:inline-flex; background:#f0f0f0; border-radius:10px; padding:4px; gap:4px; }
+      .view-tab {
+        padding: 10px 22px;
+        border: none;
+        border-radius: 7px;
+        font-size: 14px;
+        font-family: inherit;
+        font-weight: 500;
+        cursor: pointer;
+        background: transparent;
+        color: #777;
+        transition: all 0.2s;
+      }
+      .view-tab.active { background:#fff; color:#1b4332; box-shadow:0 1px 4px rgba(0,0,0,0.10); }
+      .view-tab:hover:not(.active) { color:#2d6a4f; }
+
+      /* Global model header */
+      .global-header { margin-bottom: 1.75rem; }
+      .global-title { font-size: 24px; font-weight: 700; color: #1b4332; margin-bottom: 4px; }
+      .global-meta { font-size: 13px; color: #888; display:flex; gap:18px; flex-wrap:wrap; }
+
+      /* Per-watershed breakdown table */
+      .ws-breakdown-table { width:100%; border-collapse:collapse; font-size:13px; }
+      .ws-breakdown-table thead th { text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.07em; color:#888; padding:8px 10px; border-bottom:2px solid #e0e0e0; font-weight:600; }
+      .ws-breakdown-table thead th.num { text-align:right; }
+      .ws-breakdown-table tbody tr { border-bottom:1px solid #f2f2f2; }
+      .ws-breakdown-table tbody tr:hover { background:#f9fdf9; }
+      .ws-breakdown-table tbody td { padding:7px 10px; color:#444; vertical-align:middle; }
+      .ws-breakdown-table tbody td.num { text-align:right; font-family:monospace; color:#555; }
+      .ws-breakdown-table tbody td.ws-link-cell { font-weight:500; }
+      .ws-link { background:none; border:none; cursor:pointer; color:#2d6a4f; font-size:12px; padding:3px 7px; border-radius:5px; border:1px solid #c8e6d4; font-family:inherit; white-space:nowrap; }
+      .ws-link:hover { background:#e8f5ee; }
+      .auc-pill { display:inline-block; padding:2px 8px; border-radius:99px; font-family:monospace; font-size:12px; font-weight:600; }
+      .auc-hi  { background:#e8f5ee; color:#2d6a4f; }
+      .auc-mid { background:#fef3e2; color:#c8842a; }
+      .auc-lo  { background:#fdeaea; color:#b85c5c; }
+      .ws-breakdown-wrap { max-height:420px; overflow-y:auto; border:1px solid #e0e0e0; border-radius:10px; margin-top:4px; }
+
+      /* ws-header used in per-watershed view */
+      .ws-header { margin-bottom:1.5rem; }
+      .ws-name { font-size:22px; font-weight:700; color:#1b4332; }
+      .ws-meta { font-size:13px; color:#888; display:flex; gap:16px; flex-wrap:wrap; margin-top:4px; }
     </style>
   </head>
   <body>
@@ -145,29 +190,37 @@
     <main>
       <section class="hero">
         <div class="container">
-          <h1>Pipeline Dashboard</h1>
-          <p class="hero-subtitle">Watershed Run Results &amp; Model Performance</p>
+          <h1>Watershed Dashboard</h1>
+          <p class="hero-subtitle">Model Performance &amp; Watershed Results</p>
         </div>
       </section>
 
       <section class="section">
         <div class="container">
 
-          <div class="dashboard-controls">
-            <select id="ws-select" class="ws-select" disabled>
-              <option value="">Loading watersheds…</option>
-            </select>
-            <span id="ws-count" style="font-size:12px;color:#aaa;"></span>
+          <!-- View toggle -->
+          <div id="view-toggle-bar">
+            <div class="view-toggle-tabs">
+              <button id="tab-global" class="view-tab active" onclick="showView('global')">🌍 Global Model</button>
+              <button id="tab-watershed" class="view-tab" onclick="showView('watershed')">📍 Individual Watersheds</button>
+            </div>
           </div>
 
-          <div id="status-area"></div>
+          <!-- Global model panel -->
+          <div id="global-panel">
+            <div id="global-dashboard-area"></div>
+          </div>
 
-          <div id="dashboard-area">
-            <div class="placeholder-dash">
-              <div style="font-size:40px;opacity:0.3;">🌿</div>
-              <h2 style="color:#888;font-size:20px;margin-top:12px;">Upload watershed logs to get started</h2>
-              <p>Click <strong>Upload logs</strong> and select your <code>.txt</code> or <code>.zip</code> pipeline log files.</p>
+          <!-- Watershed panel -->
+          <div id="watershed-panel" style="display:none;">
+            <div class="dashboard-controls" style="margin-top:1.5rem;">
+              <select id="ws-select" class="ws-select" disabled>
+                <option value="">Loading watersheds…</option>
+              </select>
+              <span id="ws-count" style="font-size:12px;color:#aaa;"></span>
             </div>
+            <div id="status-area"></div>
+            <div id="dashboard-area"></div>
           </div>
 
         </div>
@@ -188,9 +241,185 @@
 <script>
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 const RAW_BASE = 'https://raw.githubusercontent.com/RaiderSoft/Lost-Meadows/main/GEE/TIF_Output/Logs';
+const GLOBAL_LOG_URL = `${RAW_BASE}/global_model_log.txt`;
 // ─────────────────────────────────────────────────────────────────────────────
 
 const store = {};
+
+// ── VIEW TOGGLE ───────────────────────────────────────────────────────────────
+function showView(view) {
+  const isGlobal = view === 'global';
+  document.getElementById('global-panel').style.display   = isGlobal ? '' : 'none';
+  document.getElementById('watershed-panel').style.display = isGlobal ? 'none' : '';
+  document.getElementById('tab-global').classList.toggle('active', isGlobal);
+  document.getElementById('tab-watershed').classList.toggle('active', !isGlobal);
+}
+
+// Jump from per-watershed breakdown table to individual watershed view
+function goToWatershed(key) {
+  showView('watershed');
+  const sel = document.getElementById('ws-select');
+  if (store[key]) {
+    sel.value = key;
+    renderDashboard(store[key]);
+  }
+}
+
+// ── GLOBAL MODEL PARSER ───────────────────────────────────────────────────────
+function parseGlobalLog(text) {
+  text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const get = (re, g=1) => { const m = text.match(re); return m ? m[g].trim() : null; };
+  const num = (re, g=1) => { const v = get(re, g); return v ? parseFloat(v.replace(/,/g,'')) : null; };
+
+  // Per-watershed breakdown rows
+  const watersheds = [];
+  const bSection = text.match(/PER-WATERSHED BREAKDOWN[\s\S]+?-{10,}\n([\s\S]+)/);
+  if (bSection) {
+    for (const line of bSection[1].trim().split('\n')) {
+      // Format: "  Watershed_Name    0.9262  0.9001  0.5272  0.6649  22,135"
+      const m = line.match(/^\s{2}(\S+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d,]+)/);
+      if (m) watersheds.push({
+        name: m[1], auc: parseFloat(m[2]), recall: parseFloat(m[3]),
+        prec: parseFloat(m[4]), f1: parseFloat(m[5]), n: parseInt(m[6].replace(/,/g,''))
+      });
+    }
+  }
+
+  return {
+    datetime:     get(/Date\/Time:\s*(.+)/),
+    numWatersheds:num(/Watersheds:\s*([\d,]+)/),
+    totalSamples: num(/Total samples:\s*([\d,]+)/),
+    wetlandPct:   num(/Wetland \(1\):\s*[\d,]+\s*\(([\d.]+)%\)/),
+    trainN:       num(/Training set:\s*([\d,]+)/),
+    testN:        num(/Test set:\s*([\d,]+)/),
+    bestCvAuc:    num(/best_cv_auc\s+([\d.]+)/),
+    auc:          num(/AUC:\s*([\d.]+)/),
+    accuracy:     num(/Accuracy:\s*([\d.]+)/),
+    wPrec:        num(/Wetland:\s*\n\s*Precision:\s*([\d.]+)/),
+    wRec:         num(/Wetland:\s*\n\s*Precision:.*\n\s*Recall:\s*([\d.]+)/),
+    wF1:          num(/Wetland:\s*\n\s*Precision:.*\n\s*Recall:.*\n\s*F1-score:\s*([\d.]+)/),
+    nwPrec:       num(/Non-Wetland:\s*\n\s*Precision:\s*([\d.]+)/),
+    nwRec:        num(/Non-Wetland:\s*\n\s*Precision:.*\n\s*Recall:\s*([\d.]+)/),
+    nwF1:         num(/Non-Wetland:\s*\n\s*Precision:.*\n\s*Recall:.*\n\s*F1-score:\s*([\d.]+)/),
+    tn:           num(/Actual Non-W\s+([\d,]+)\s+([\d,]+)/, 1),
+    fp:           num(/Actual Non-W\s+([\d,]+)\s+([\d,]+)/, 2),
+    fn:           num(/Actual Wetland\s+([\d,]+)\s+([\d,]+)/, 1),
+    tp:           num(/Actual Wetland\s+([\d,]+)\s+([\d,]+)/, 2),
+    watersheds,
+  };
+}
+
+// ── GLOBAL MODEL RENDERER ─────────────────────────────────────────────────────
+function renderGlobalDashboard(g) {
+  function f4(n)   { return n != null ? n.toFixed(4) : '—'; }
+  function fpct(n) { return n != null ? (n*100).toFixed(1) + '%' : '—'; }
+  function fnum(n) { return n != null ? n.toLocaleString() : '—'; }
+  function aucClass(v) { return v >= 0.95 ? 'auc-hi' : v >= 0.90 ? 'auc-mid' : 'auc-lo'; }
+
+  const wsRows = g.watersheds.map(w => `
+    <tr>
+      <td class="ws-link-cell">${w.name.replace(/_/g,' ')}</td>
+      <td class="num"><span class="auc-pill ${aucClass(w.auc)}">${w.auc.toFixed(4)}</span></td>
+      <td class="num">${(w.recall*100).toFixed(1)}%</td>
+      <td class="num">${(w.prec*100).toFixed(1)}%</td>
+      <td class="num">${(w.f1*100).toFixed(1)}%</td>
+      <td class="num">${w.n.toLocaleString()}</td>
+      <td class="num"><button class="ws-link" onclick="goToWatershed('${w.name}')">View ↗</button></td>
+    </tr>`).join('');
+
+  document.getElementById('global-dashboard-area').innerHTML = `
+  <div class="fade-in">
+    <div class="global-header">
+      <div class="global-title">🌍 Global Model — All 119 Watersheds</div>
+      <div class="global-meta">
+        <span>📅 ${g.datetime || '—'}</span>
+        <span>📊 ${fnum(g.totalSamples)} total samples</span>
+        <span>🏔 ${g.numWatersheds || 119} watersheds</span>
+      </div>
+    </div>
+
+    <p class="dash-section-label">Prediction summary</p>
+    <div class="metric-grid">
+      <div class="metric-card accent">
+        <div class="m-label">Test AUC</div>
+        <div class="m-value">${f4(g.auc)}</div>
+        <div class="m-sub">CV AUC: ${f4(g.bestCvAuc)}</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-label">Accuracy</div>
+        <div class="m-value">${g.accuracy != null ? (g.accuracy*100).toFixed(1) : '—'}%</div>
+        <div class="m-sub">${g.wetlandPct != null ? g.wetlandPct.toFixed(1) : '—'}% wetland samples</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-label">Training samples</div>
+        <div class="m-value">${fnum(g.trainN)}</div>
+        <div class="m-sub">of ${fnum(g.totalSamples)} total</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-label">Test samples</div>
+        <div class="m-value">${fnum(g.testN)}</div>
+        <div class="m-sub">held-out evaluation set</div>
+      </div>
+    </div>
+
+    <p class="dash-section-label">Model performance</p>
+    <div class="perf-grid">
+      <div class="perf-card">
+        <div class="perf-title">Wetland class</div>
+        <div class="perf-row"><span class="perf-key">Precision</span><span class="perf-val">${f4(g.wPrec)}</span></div>
+        <div class="perf-row"><span class="perf-key">Recall</span><span class="perf-val">${f4(g.wRec)}</span></div>
+        <div class="perf-row"><span class="perf-key">F1-score</span><span class="perf-val">${f4(g.wF1)}</span></div>
+      </div>
+      <div class="perf-card">
+        <div class="perf-title">Non-wetland class</div>
+        <div class="perf-row"><span class="perf-key">Precision</span><span class="perf-val">${f4(g.nwPrec)}</span></div>
+        <div class="perf-row"><span class="perf-key">Recall</span><span class="perf-val">${f4(g.nwRec)}</span></div>
+        <div class="perf-row"><span class="perf-key">F1-score</span><span class="perf-val">${f4(g.nwF1)}</span></div>
+      </div>
+    </div>
+
+    <p class="dash-section-label">Confusion matrix</p>
+    <div class="conf-grid">
+      <div class="conf-cell conf-tp"><div class="conf-val">${fnum(g.tp)}</div><div class="conf-lbl">True positives</div></div>
+      <div class="conf-cell conf-fp"><div class="conf-val">${fnum(g.fp)}</div><div class="conf-lbl">False positives</div></div>
+      <div class="conf-cell conf-fn"><div class="conf-val">${fnum(g.fn)}</div><div class="conf-lbl">False negatives</div></div>
+      <div class="conf-cell conf-tn"><div class="conf-val">${fnum(g.tn)}</div><div class="conf-lbl">True negatives</div></div>
+    </div>
+    <p class="conf-note">High recall (${g.wRec != null ? (g.wRec*100).toFixed(1) : '—'}%) prioritized over precision — missing a real meadow costs more than investigating a false alarm.</p>
+
+    <p class="dash-section-label">Per-watershed breakdown</p>
+    <div class="ws-breakdown-wrap">
+      <table class="ws-breakdown-table">
+        <thead>
+          <tr>
+            <th>Watershed</th>
+            <th class="num">AUC</th>
+            <th class="num">Recall</th>
+            <th class="num">Precision</th>
+            <th class="num">F1</th>
+            <th class="num">N</th>
+            <th class="num"></th>
+          </tr>
+        </thead>
+        <tbody>${wsRows}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ── LOAD GLOBAL MODEL ─────────────────────────────────────────────────────────
+async function loadGlobalModel() {
+  try {
+    const res = await fetch(GLOBAL_LOG_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    const g = parseGlobalLog(text);
+    renderGlobalDashboard(g);
+  } catch(err) {
+    document.getElementById('global-dashboard-area').innerHTML =
+      `<div class="status-bar error">⚠ Could not load global model log: ${err.message}</div>`;
+  }
+}
 
 // Normalise line endings — handles \r\n (Windows) and \r (old Mac)
 function normalise(text) { return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n'); }
@@ -259,7 +488,7 @@ function renderDashboard(d) {
   const maxFeat = top10.length ? top10[0].score : 1;
 
   const confNote = `<p style="font-size:12px;color:var(--ink-muted);margin-top:10px;">
-    High recall (${d.wRec != null ? (d.wRec*100).toFixed(1) : '—'}%) prioritised over precision —
+    High recall (${d.wRec != null ? (d.wRec*100).toFixed(1) : '—'}%) prioritized over precision —
     missing a real meadow costs more than investigating a false alarm.
   </p>`;
 
@@ -376,6 +605,10 @@ function populateSelector() {
 }
 
 async function init() {
+  // Load global model immediately (lands here by default)
+  loadGlobalModel();
+
+  // Load individual watersheds in the background
   setStatus('loading', 'Loading watershed index…');
 
   let filenames;
@@ -383,7 +616,8 @@ async function init() {
     filenames = await fetchIndex();
   } catch(err) {
     setStatus('error', err.message);
-    document.getElementById('dashboard-area').innerHTML = '';
+    document.getElementById('dashboard-area').innerHTML =
+      `<div class="placeholder-dash"><div style="font-size:32px;opacity:0.3;">🏔</div><p style="margin-top:8px;">Could not load individual watershed logs.</p></div>`;
     return;
   }
 
