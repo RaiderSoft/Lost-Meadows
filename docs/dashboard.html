@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lost Meadows - Watershed Dashboard</title>
+    <title>Lost Meadows - Pipeline Dashboard</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="styles.css?v=5" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -91,13 +91,43 @@
       .conf-tn { background:#e8f0f7; } .conf-tn .conf-val,.conf-tn .conf-lbl { color:#4a7c99; }
 
       /* Feature bars */
-      .feat-list { display:flex; flex-direction:column; gap:8px; }
-      .feat-row { display:grid; grid-template-columns:200px 1fr 48px; align-items:center; gap:12px; }
+      .feat-list { display:flex; flex-direction:column; gap:8px; overflow:visible; }
+      .feat-row { display:grid; grid-template-columns:280px 1fr 48px; align-items:center; gap:12px; overflow:visible; }
       @media(max-width:600px){ .feat-row{ grid-template-columns:120px 1fr 40px; } }
-      .feat-name { font-size:12px; color:#555; font-family:monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .feat-name { font-size:12px; color:#555; font-family:monospace; white-space:nowrap; cursor:default; overflow:visible; }
       .feat-track { height:8px; background:#f0f0f0; border-radius:99px; overflow:hidden; }
       .feat-fill  { height:100%; border-radius:99px; background:linear-gradient(90deg,#2d6a4f,#74c69d); }
       .feat-pct   { font-size:12px; color:#888; text-align:right; font-family:monospace; }
+
+      /* Feature tooltips */
+      .feat-tip-wrap { position:relative; display:inline-block; max-width:100%; }
+      .feat-tip-wrap .feat-tip {
+        display: none;
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 0;
+        background: #1b4332;
+        color: #d8f3e3;
+        font-size: 11px;
+        font-family: inherit;
+        line-height: 1.5;
+        padding: 7px 10px;
+        border-radius: 7px;
+        white-space: normal;
+        width: 240px;
+        z-index: 100;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+        pointer-events: none;
+      }
+      .feat-tip-wrap .feat-tip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 14px;
+        border: 5px solid transparent;
+        border-top-color: #1b4332;
+      }
+      .feat-tip-wrap:hover .feat-tip { display: block; }
 
       .ws-run-meta { font-size:13px; color:#888; margin-top:4px; display:flex; gap:16px; flex-wrap:wrap; }
       .placeholder-dash { text-align:center; padding:60px 24px; color:#aaa; }
@@ -140,10 +170,6 @@
       .ws-breakdown-table tbody td.ws-link-cell { font-weight:500; }
       .ws-link { background:none; border:none; cursor:pointer; color:#2d6a4f; font-size:12px; padding:3px 7px; border-radius:5px; border:1px solid #c8e6d4; font-family:inherit; white-space:nowrap; }
       .ws-link:hover { background:#e8f5ee; }
-      .auc-pill { display:inline-block; padding:2px 8px; border-radius:99px; font-family:monospace; font-size:12px; font-weight:600; }
-      .auc-hi  { background:#e8f5ee; color:#2d6a4f; }
-      .auc-mid { background:#fef3e2; color:#c8842a; }
-      .auc-lo  { background:#fdeaea; color:#b85c5c; }
       .ws-breakdown-wrap { max-height:420px; overflow-y:auto; border:1px solid #e0e0e0; border-radius:10px; margin-top:4px; }
 
       /* ws-header used in per-watershed view */
@@ -190,7 +216,7 @@
     <main>
       <section class="hero">
         <div class="container">
-          <h1>Watershed Dashboard</h1>
+          <h1>Pipeline Dashboard</h1>
           <p class="hero-subtitle">Model Performance &amp; Watershed Results</p>
         </div>
       </section>
@@ -309,17 +335,134 @@ function parseGlobalLog(text) {
   };
 }
 
+// ── FEATURE METADATA (module scope — used by renderDashboard) ────────────────
+// label: pretty name shown in the UI
+// tip:   self-contained plain-language explanation shown on hover
+const FEAT_META = {
+  'dd_v': {
+    label: 'Drainage Distance: Vertical',
+    tip:   'The vertical drop (in meters) along the D-infinity flow path from a pixel to the nearest stream channel. Low values indicate the pixel sits close to stream grade — a strong indicator of riparian meadow position.'
+  },
+  'dd_h': {
+    label: 'Drainage Distance: Horizontal',
+    tip:   'The horizontal distance (in meters) traveled along the D-infinity flow path from a pixel to the nearest stream channel. Pixels close to a channel horizontally are more likely to be within a meadow corridor.'
+  },
+  'dd_s': {
+    label: 'Drainage Distance: Surface',
+    tip:   'The distance (in meters) along the ground surface following the D-infinity flow path to the nearest stream channel. Unlike horizontal distance, this accounts for terrain shape along the flow route.'
+  },
+  'twi_10m': {
+    label: 'Topographic Wetness Index (10m)',
+    tip:   'Ratio of the natural log of upslope catchment area to local slope, calculated from the 10m DEM. Higher values indicate flat, low-lying terrain that accumulates water — characteristic of wet meadow conditions. Calculated using TauDEM.'
+  },
+  'twi_100m': {
+    label: 'Topographic Wetness Index (100m)',
+    tip:   'Same wetness index calculation as TWI 10m, but derived from the DEM resampled to 100m resolution. Captures broader landscape-scale moisture patterns such as wide valley bottoms that may not be visible at the finer scale.'
+  },
+  'slope': {
+    label: 'Slope',
+    tip:   'Topographic slope at the focal pixel in degrees. Meadows tend to occupy flat or gently sloping terrain; steep slopes are unlikely to support the shallow water tables meadows require.'
+  },
+  'aspect': {
+    label: 'Aspect',
+    tip:   'The compass direction a slope faces, from 0° to 360°. Aspect controls how much solar radiation a site receives, which affects evapotranspiration, snow persistence, and soil moisture.'
+  },
+  'curvature_plan': {
+    label: 'Plan Curvature',
+    tip:   'Curvature of the surface measured perpendicular to the slope direction. Positive (concave) values indicate terrain that concentrates water flow toward a point, such as a hollow or valley head.'
+  },
+  'curvature_profile': {
+    label: 'Profile Curvature',
+    tip:   'Curvature of the surface measured parallel to the slope direction. Negative values indicate a concave profile where water decelerates and accumulates; positive values indicate convex terrain where water speeds up.'
+  },
+  'tri': {
+    label: 'Terrain Ruggedness Index',
+    tip:   'Mean of the absolute elevation differences between a focal pixel and its 8 immediate neighbors. Low values indicate flat, smooth terrain.'
+  },
+  'tpi_3x3': {
+    label: 'Topographic Position Index (3x3)',
+    tip:   'Focal pixel elevation minus the mean elevation of the surrounding 3×3 pixel (30m) neighborhood. Negative values indicate the pixel sits lower than its immediate surroundings.'
+  },
+  'tpi_11x11': {
+    label: 'Topographic Position Index (11x11)',
+    tip:   'Focal pixel elevation minus the mean elevation of the surrounding 11×11 pixel (110m) neighborhood. Captures valley-bottom position at a broader scale than the 3x3 version.'
+  },
+  'tpi_21x21': {
+    label: 'Topographic Position Index (21x21)',
+    tip:   'Focal pixel elevation minus the mean elevation of the surrounding 21×21 pixel (210m) neighborhood. At this landscape scale, strongly negative values identify broad basin floors and large valley meadows that finer-scale indices may miss.'
+  },
+  'elev_5x5_rel': {
+    label: 'Relative Elevation (5x5 window)',
+    tip:   'Focal pixel elevation minus the mean elevation of the surrounding 5×5 pixel (50m) window. Negative values indicate the pixel is lower than its local neighborhood.'
+  },
+  'elev_5x5_std_dev': {
+    label: 'Elevation Std Dev (5x5 window)',
+    tip:   'Standard deviation of elevation within the surrounding 5×5 pixel (50m) window. Low values indicate a flat, homogeneous surface; high values indicate rugged terrain.'
+  },
+  'elev_std_3x3': {
+    label: 'Elevation Std Dev (3x3 window)',
+    tip:   'Standard deviation of elevation within the surrounding 3×3 pixel (30m) window. Captures fine-scale surface roughness. Very low values suggest flat terrain.'
+  },
+  'elev_std_9x9': {
+    label: 'Elevation Std Dev (9x9 window)',
+    tip:   'Standard deviation of elevation within the surrounding 9×9 pixel (90m) window. A mid-scale measure of topographic variability.'
+  },
+  'slope_5x5_std_dev': {
+    label: 'Slope Std Dev (5x5 window)',
+    tip:   'Standard deviation of slope angles within the surrounding 5×5 pixel (50m) window. Low values indicate a uniformly gentle surface.'
+  },
+  'slope_std_9x9': {
+    label: 'Slope Std Dev (9x9 window)',
+    tip:   'Standard deviation of slope angles within the surrounding 9×9 pixel (90m) window. At this broader scale, low variability confirms a pixel is embedded within a wide, gently sloping area rather than a narrow ledge or terrace.'
+  },
+  'soil_organic_matter_0_5cm': {
+    label: 'Soil Organic Matter 0–5cm',
+    tip:   'Soil organic matter content (%) at 0–5cm depth from the POLARIS dataset. Wet meadow soils accumulate organic matter due to slow decomposition under saturated conditions. High values near the surface are a strong indicator of historically wet meadow soils.'
+  },
+  'soil_organic_matter_5_15cm': {
+    label: 'Soil Organic Matter 5–15cm',
+    tip:   'Soil organic matter content (%) at 5–15cm depth from POLARIS. Organic matter at this depth reflects longer-term waterlogging history. Elevated values suggest soils that have been intermittently to persistently saturated over time.'
+  },
+  'soil_organic_matter_15_30cm': {
+    label: 'Soil Organic Matter 15–30cm',
+    tip:   'Soil organic matter content (%) at 15–30cm depth from POLARIS. Deep organic matter accumulation is characteristic of well-developed meadow soils with sustained saturation. High values may indicate historical or degraded meadow conditions even where surface indicators are absent.'
+  },
+  'soil_ksat_0_5cm': {
+    label: 'Soil Hydraulic Conductivity 0–5cm',
+    tip:   'Saturated hydraulic conductivity (log cm/hr) at 0–5cm depth from POLARIS. Measures how quickly water moves through the soil surface layer. Lower values indicate fine-textured soils (silts, clays) that drain slowly and retain moisture — typical of wet meadow soils.'
+  },
+  'soil_ksat_5_15cm': {
+    label: 'Soil Hydraulic Conductivity 5–15cm',
+    tip:   'Saturated hydraulic conductivity (log cm/hr) at 5–15cm depth from POLARIS. Conductivity in this layer influences how quickly water drains below the root zone. Low values at this depth help maintain the shallow water tables that meadow vegetation depends on.'
+  },
+  'soil_ksat_15_30cm': {
+    label: 'Soil Hydraulic Conductivity 15–30cm',
+    tip:   'Saturated hydraulic conductivity (log cm/hr) at 15–30cm depth from POLARIS. A restrictive layer at this depth can create a perched water table that supports meadow hydrology even in drier upland settings.'
+  },
+  'soil_clay_pct_0_5cm': {
+    label: 'Soil Clay Content 0–5cm',
+    tip:   'Clay content (%) at 0–5cm depth from POLARIS. Clay particles have a small pore size that slows drainage and increases water retention. Higher clay content near the surface supports prolonged soil saturation characteristic of wet meadow conditions.'
+  },
+  'soil_clay_pct_5_15cm': {
+    label: 'Soil Clay Content 5–15cm',
+    tip:   'Clay content (%) at 5–15cm depth from POLARIS. Elevated clay at this depth slows vertical drainage and contributes to near-surface saturation. Combined with surface clay content, it provides a profile-level picture of soil drainage capacity.'
+  },
+  'soil_clay_pct_15_30cm': {
+    label: 'Soil Clay Content 15–30cm',
+    tip:   'Clay content (%) at 15–30cm depth from POLARIS. A clay-rich subsurface horizon can act as an aquitard, causing water to pond above it and sustaining the wet conditions meadow plant communities require.'
+  },
+};
+
 // ── GLOBAL MODEL RENDERER ─────────────────────────────────────────────────────
 function renderGlobalDashboard(g) {
-  function f4(n)   { return n != null ? n.toFixed(4) : '—'; }
+function f4(n)   { return n != null ? n.toFixed(4) : '—'; }
   function fpct(n) { return n != null ? (n*100).toFixed(1) + '%' : '—'; }
   function fnum(n) { return n != null ? n.toLocaleString() : '—'; }
-  function aucClass(v) { return v >= 0.95 ? 'auc-hi' : v >= 0.90 ? 'auc-mid' : 'auc-lo'; }
 
   const wsRows = g.watersheds.map(w => `
     <tr>
       <td class="ws-link-cell">${w.name.replace(/_/g,' ')}</td>
-      <td class="num"><span class="auc-pill ${aucClass(w.auc)}">${w.auc.toFixed(4)}</span></td>
+      <td class="num" style="font-family:monospace;">${w.auc.toFixed(4)}</td>
       <td class="num">${(w.recall*100).toFixed(1)}%</td>
       <td class="num">${(w.prec*100).toFixed(1)}%</td>
       <td class="num">${(w.f1*100).toFixed(1)}%</td>
@@ -565,18 +708,30 @@ function renderDashboard(d) {
     ${confNote}
 
     <p class="dash-section-label">Top 10 feature importances</p>
-    <div class="feat-list">
-      ${top10.map(f => `
-        <div class="feat-row">
-          <span class="feat-name" title="${f.name}">${f.name.replace(/_/g,' ')}</span>
-          <div class="feat-track">
-            <div class="feat-fill" style="width:${(f.score/maxFeat*100).toFixed(1)}%"></div>
-          </div>
-          <span class="feat-pct">${(f.score*100).toFixed(1)}%</span>
-        </div>
-      `).join('')}
-    </div>
+    <div class="feat-list" id="feat-list-container"></div>
   </div>`;
+
+  // Build feature rows separately to avoid nested backtick conflicts
+  const container = document.getElementById('feat-list-container');
+  if (!container) {
+    console.warn('feat-list-container not found in DOM');
+  } else if (!top10.length) {
+    console.warn('No features parsed for watershed:', d.watershed, '| d.features:', d.features);
+    container.innerHTML = '<p style="font-size:13px;color:#aaa;padding:8px 0;">No feature importance data found in log.</p>';
+  } else {
+    const featRows = top10.map(f => {
+      const meta  = FEAT_META[f.name] || {};
+      const label = meta.label || f.name.replace(/_/g,' ');
+      const tip   = meta.tip   || '';
+      const tipHtml = tip ? '<span class="feat-tip">' + tip + '</span>' : '';
+      return '<div class="feat-row">'
+        + '<span class="feat-name"><span class="feat-tip-wrap">' + label + tipHtml + '</span></span>'
+        + '<div class="feat-track"><div class="feat-fill" style="width:' + (f.score/maxFeat*100).toFixed(1) + '%"></div></div>'
+        + '<span class="feat-pct">' + (f.score*100).toFixed(1) + '%</span>'
+        + '</div>';
+    }).join('');
+    container.innerHTML = featRows;
+  }
 }
 
 function setStatus(type, msg) {
