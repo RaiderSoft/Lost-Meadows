@@ -324,7 +324,7 @@ def main(watershed_name):
         # Original 9 features
         'slope', 'elev_5x5_rel', 'elev_5x5_std_dev', 'slope_5x5_std_dev',
         'twi_10m', 'twi_100m', 'dd_s', 'dd_h', 'dd_v',
-        # Advanced features (11)
+        # Advanced features (10)
         'aspect', 'curvature_profile', 'curvature_plan',
         'tpi_3x3', 'tpi_11x11', 'tpi_21x21', 'tri',
         'elev_std_3x3', 'elev_std_9x9', 'slope_std_9x9',
