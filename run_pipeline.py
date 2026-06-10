@@ -16,7 +16,7 @@ Steps executed:
   3. Terrain features calculation
   4. Advanced features calculation (aspect, curvature, TPI, etc.)
   4b. Soil features processing
-  5. Feature stacking (23 features)
+  5. Feature stacking (28 features)
   6. Training data preparation
   7. Per-watershed hyperparameter tuning (100 combinations, 5-fold CV)
   8. Model training (uses tuned hyperparameters)
@@ -128,7 +128,7 @@ def main(input_dem, ncores, prepare_only=False):
     print(f"LOST MEADOWS DETECTION PIPELINE")
     print(f"{'='*70}")
     print(f"Input DEM: {input_dem}")
-    print(f"\nThis will execute 10 major steps and may take 2-4 hours.")
+    print(f"\nThis will execute 10 major steps and typically takes ~15 minutes (range ~10-30 min by watershed size).")
     print(f"  (Includes NoData fix, per-watershed hyperparameter tuning — adds ~1 minute)")
     print(f"{'='*70}")
 
@@ -190,7 +190,7 @@ def main(input_dem, ncores, prepare_only=False):
 
     # Step 5: Stack features
     run_step(
-        "5. Stack all 23 features into multi-band raster",
+        "5. Stack all 28 features into multi-band raster",
         f"python stack_features.py {watershed_name}",
         cwd=base_dir / "FeatureStacking"
     )

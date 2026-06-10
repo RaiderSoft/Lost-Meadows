@@ -10,11 +10,11 @@ import sys
 from pathlib import Path
 
 def get_repo_root():
-    # ModelTraining/train_random_forest.py
+    # FeatureStacking/stack_features.py
     return Path(__file__).resolve().parents[1]
 
 def stack_features(watershed_name):
-    """Stack all 29 features into one multi-band raster"""
+    """Stack all 28 features into one multi-band raster"""
 
     # Use absolute path from home directory
     repo_root = get_repo_root()
@@ -39,7 +39,7 @@ def stack_features(watershed_name):
         f"{output_dir}/dd_h.tif",                           # 8. Horizontal distance to stream
         f"{output_dir}/dd_v.tif",                           # 9. Vertical distance to stream
 
-        # New 11 advanced features
+        # New 10 advanced features
         f"{output_dir}/aspect.tif",                         # 10. Aspect (slope direction)
         f"{output_dir}/curvature_profile.tif",              # 11. Profile curvature
         f"{output_dir}/curvature_plan.tif",                 # 12. Plan curvature
@@ -76,7 +76,7 @@ def stack_features(watershed_name):
         "dd_h",
         "dd_v",
 
-        # New 11
+        # New 10
         "aspect",
         "curvature_profile",
         "curvature_plan",

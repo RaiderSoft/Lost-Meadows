@@ -125,7 +125,7 @@ These folders are already in `.gitignore` (~2.4 GB total) — they will not be c
 
 ### Release 3: GEEInputFiles (Watershed DEMs)
 
-This release contains all 122 watershed DEM rasters exported from Google Earth Engine, split across two zip files due to file size.
+This release contains all 119 watershed DEM rasters exported from Google Earth Engine, split across two zip files due to file size.
 
 1. Download both zip files from the **GEEInputFiles** release.
 2. Unzip both archives.
@@ -235,7 +235,7 @@ conda activate meadow
 # Load DagsHub token
 set -a && source .env && set +a
 
-# Run the full pipeline on a single watershed (~1-2 hours)
+# Run the full pipeline on a single watershed (typically ~15 minutes)
 python run_pipeline.py GEE/TIF_Input/Hunter_Creek.tif
 
 # Run on multiple specific watersheds sequentially
@@ -258,12 +258,14 @@ python run_pipeline.py --all --keep-going
 
 You can watch each step's progress in real time. When running multiple watersheds, a summary showing each watershed's status and runtime is printed at the end.
 
-**Outputs** are written to `GEE/TIF_Output/<watershed_name>/`, including:
-- All 29 individual feature rasters
-- `features_stacked.tif` (23-band multi-band raster)
-- `training_data_real.csv`
-- `xgboost_model.pkl`
-- `<watershed>_meadow_probability.tif` — the final output
+During a run, intermediate files (the 28 individual feature rasters, `features_stacked.tif`,
+`training_data_real.csv`, and `xgboost_model.pkl`) are written to a temporary working folder
+at `GEE/TIF_Output/<watershed_name>/`. When the pipeline finishes it moves the results into
+shared output folders and deletes that working folder. **Final outputs:**
+
+- `GEE/TIF_Output/FinalOutput/<watershed>_Probability.tif` — the meadow probability map (the final output)
+- `GEE/TIF_Output/Logs/<watershed>_log.txt` — metrics and runtime log
+- `GEE/TIF_Output/TrainingData/<watershed>_training_data.csv` — the training samples used
 
 ---
 
@@ -288,7 +290,9 @@ Lost-Meadows/
 │   │       ├── polaris_ksat_0_30cm.tif
 │   │       └── polaris_organic_matter_0_30cm.tif
 │   └── TIF_Output/              # Created automatically during pipeline run
-│       └── Hunter_Creek/
+│       ├── FinalOutput/         # <watershed>_Probability.tif — final maps
+│       ├── Logs/                # <watershed>_log.txt — metrics + runtime
+│       └── TrainingData/        # <watershed>_training_data.csv
 │
 ├── TauDEM/
 │   └── run_taudem_workflow.py

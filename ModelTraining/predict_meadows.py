@@ -12,7 +12,7 @@ from pathlib import Path
 from scipy.ndimage import label, distance_transform_edt
 
 def get_repo_root():
-    # ModelTraining/train_random_forest.py
+    # ModelTraining/predict_meadows.py
     return Path(__file__).resolve().parents[1]
 
 def predict_probabilities(features_path, model_path, output_path, chunk_size=1000):
@@ -155,7 +155,7 @@ def main(watershed_name, model_file="xgboost_model.pkl"):
 
     if not model_path.exists():
         print(f"ERROR: {model_path} not found!")
-        print("Run train_random_forest.py first!")
+        print("Run train_xgboost.py first!")
         sys.exit(1)
 
     # Run prediction

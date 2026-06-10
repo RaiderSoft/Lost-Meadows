@@ -12,7 +12,7 @@ Automated pipeline for detecting historical and unmapped meadow locations using 
 
 ## What It Does
 
-Takes a **10m elevation raster** → Generates **23 terrain and soil features** → Trains an **XGBoost model** → Outputs a **meadow probability map**
+Takes a **10m elevation raster** → Generates **28 terrain and soil features** → Trains an **XGBoost model** → Outputs a **meadow probability map**
 
 **Input**: Digital Elevation Model (DEM) for a specific watershed (from Google Earth Engine)
 **Output**: Probability raster showing where meadows likely exist or have been lost (0.0 – 1.0)
@@ -47,7 +47,7 @@ All required data files are provided as GitHub Releases. Go to the [Releases pag
 |---------|----------|-------------|
 | **TIFInputFiles** | 3 POLARIS 30m soil TIF files | Extract into `GEE/TIF_Input/Soil/` |
 | **WetlandGeodatabases** | OR + CA wetland geodatabases (zipped) | Unzip each `.gdb` folder into `Wetlands/` |
-| **GEEInputFiles** | 122 watershed rasters split across two zip files | Unzip both archives, find the desired watershed `.tif`, and place it into `GEE/TIF_Input/` |
+| **GEEInputFiles** | 119 watershed rasters split across two zip files | Unzip both archives, find the desired watershed `.tif`, and place it into `GEE/TIF_Input/` |
 
 See [SETUP.md](SETUP.md) for step-by-step instructions.
 
@@ -55,11 +55,13 @@ See [SETUP.md](SETUP.md) for step-by-step instructions.
 ```bash
 conda activate meadow
 
-# Process a watershed (takes 2-4 hours)
-python run_pipeline.py GEE/TIF_Input/Hunter_Creek_1710031205.tif
+# Process a watershed (typically ~15 minutes)
+python run_pipeline.py GEE/TIF_Input/Hunter_Creek.tif
 ```
 
-**Output**: `GEE/TIF_Output/Hunter_Creek_1710031205/Hunter_Creek_1710031205_meadow_probability.tif`
+**Output**: `GEE/TIF_Output/FinalOutput/Hunter_Creek_Probability.tif`
+
+(The pipeline also writes a per-watershed metrics file to `GEE/TIF_Output/Logs/` and the training sample CSV to `GEE/TIF_Output/TrainingData/`. The temporary per-watershed working folder is deleted automatically once the final outputs are moved into place.)
 
 ---
 
@@ -68,7 +70,7 @@ python run_pipeline.py GEE/TIF_Input/Hunter_Creek_1710031205.tif
 ```mermaid
 graph LR
     A[DEM<br/>Elevation] --> B[TauDEM<br/>Hydro Features]
-    B --> C[Feature Eng<br/>23 Features]
+    B --> C[Feature Eng<br/>28 Features]
     C --> D[Training Data<br/>OR/CA Wetlands]
     D --> E[Hyperparameter<br/>Tuning]
     E --> F[XGBoost<br/>Tuned Model]
@@ -83,22 +85,22 @@ graph LR
 | **2a. TWI 10m** | Topographic Wetness Index at native resolution | `twi_10m.tif` |
 | **2b. TWI 100m** | TWI at landscape scale, resampled to 10m | `twi_100m.tif` |
 | **3. Terrain** | Slope and elevation variability | Slope, relative elevation, std deviations |
-| **4. Advanced** | Aspect, curvature, TPI, TRI | 11 additional terrain features |
+| **4. Advanced** | Aspect, curvature, TPI, TRI | 10 additional terrain features |
 | **4b. Soil** | POLARIS 30m soil property rasters cropped to watershed | Clay %, Ksat, organic matter — each at 3 depths (0-5cm, 5-15cm, 15-30cm) |
-| **5. Stacking** | Combine all features | 23-band multi-layer raster |
+| **5. Stacking** | Combine all features | 28-band multi-layer raster |
 | **6. Training Data** | Sample wetland labels from OR/CA geodatabases | 100,000 labeled pixels (1:4 meadow:non-meadow ratio) |
 | **7. Hyperparameter Tuning** | Per-watershed randomized search (100 combinations, 5-fold CV) | `best_params.json` |
 | **8. Model** | XGBoost classifier with tuned hyperparameters | Trained model `.pkl` |
 | **9. Prediction** | Apply model to watershed | Meadow probability map (0–1) |
 
-### Features Generated (23 Total)
+### Features Generated (28 Total)
 
 | Group | Features | Count |
 |-------|----------|-------|
 | **TWI** | TWI 10m, TWI 100m | 2 |
 | **Terrain** | Slope, relative elevation, elevation std dev, slope std dev | 4 |
 | **Stream Distance** | Surface distance (dd_s), horizontal distance (dd_h), vertical distance (dd_v) | 3 |
-| **Advanced Terrain** | Aspect, profile curvature, plan curvature, absolute elevation, TPI 3×3, TPI 11×11, TPI 21×21, TRI, elevation std 3×3, elevation std 9×9, slope std 9×9 | 11 |
+| **Advanced Terrain** | Aspect, profile curvature, plan curvature, TPI 3×3, TPI 11×11, TPI 21×21, TRI, elevation std 3×3, elevation std 9×9, slope std 9×9 | 10 |
 | **Soil** | Clay %, Ksat, organic matter — each at 0-5cm, 5-15cm, 15-30cm depth (POLARIS 30m) | 9 |
 
 > Precipitation features were evaluated and excluded — they did not improve model performance on this dataset.
@@ -121,9 +123,9 @@ Lost-Meadows/
 │   ├── TIF_Input/                  # Place watershed DEM files here
 │   │   └── Soil/                   # POLARIS 30m soil TIF files (from TIFInputFiles release)
 │   └── TIF_Output/                 # Pipeline outputs organized by watershed
-│       ├── Hunter_Creek_1710031205/
-│       ├── Bear_Creek_1710030801/
-│       └── East_Fork_Illinois_River_1710031103/
+│       ├── Hunter_Creek/
+│       ├── Bear_Creek/
+│       └── East_Fork_Illinois_River/
 │
 ├── TauDEM/                      # Hydrological processing
 │   └── run_taudem_workflow.py
@@ -160,13 +162,13 @@ Lost-Meadows/
 conda activate meadow
 
 # Watershed 1
-python run_pipeline.py GEE/TIF_Input/Hunter_Creek_1710031205.tif
+python run_pipeline.py GEE/TIF_Input/Hunter_Creek.tif
 
 # Watershed 2
-python run_pipeline.py GEE/TIF_Input/Bear_Creek_1710030801.tif
+python run_pipeline.py GEE/TIF_Input/Bear_Creek.tif
 ```
 
-Each watershed gets its own output folder under `GEE/TIF_Output/`.
+The final probability raster for each watershed is collected in `GEE/TIF_Output/FinalOutput/`, with its metrics log in `GEE/TIF_Output/Logs/` and training CSV in `GEE/TIF_Output/TrainingData/`.
 
 ### Run Individual Steps
 
@@ -175,43 +177,43 @@ conda activate meadow
 
 # Step 1: TauDEM
 cd TauDEM
-python run_taudem_workflow.py ../GEE/TIF_Input/Hunter_Creek_1710031205.tif
+python run_taudem_workflow.py ../GEE/TIF_Input/Hunter_Creek.tif
 
 # Step 2: TWI
 cd ../FeatureEngineering/TWI
-python calculate_twi_10m.py Hunter_Creek_1710031205
-python calculate_twi_100m.py Hunter_Creek_1710031205
+python calculate_twi_10m.py Hunter_Creek
+python calculate_twi_100m.py Hunter_Creek
 
 # Step 3: Terrain features
 cd ../Terrain
-python calculate_terrain_features.py Hunter_Creek_1710031205
+python calculate_terrain_features.py Hunter_Creek
 
 # Step 4: Advanced + Soil
 cd ../Advanced
-python calculate_advanced_features.py Hunter_Creek_1710031205
+python calculate_advanced_features.py Hunter_Creek
 cd ../Soil
-python calculate_soil_features.py Hunter_Creek_1710031205
+python calculate_soil_features.py Hunter_Creek
 
 # Step 5: Stack
 cd ../../FeatureStacking
-python stack_features.py Hunter_Creek_1710031205
+python stack_features.py Hunter_Creek
 
 # Step 6: Training data
 cd ../Wetlands
-python prepare_training_data.py Hunter_Creek_1710031205
+python prepare_training_data.py Hunter_Creek
 
 # Step 7: Hyperparameter tuning (saves best_params.json)
 cd ../ModelTraining
-python xgboost_gridsearch.py Hunter_Creek_1710031205
+python xgboost_gridsearch.py Hunter_Creek
 
 # Step 8-9: Train and predict (train_xgboost.py loads best_params.json automatically)
-python train_xgboost.py Hunter_Creek_1710031205
-python predict_meadows.py Hunter_Creek_1710031205
+python train_xgboost.py Hunter_Creek
+python predict_meadows.py Hunter_Creek
 ```
 
 ### Visualize in Google Earth Engine
 
-1. Upload `{watershed}_meadow_probability.tif` to GEE Assets
+1. Upload `{watershed}_Probability.tif` (from `GEE/TIF_Output/FinalOutput/`) to GEE Assets
 2. Update the asset ID in `GEE/LostMeadowsApplication.js`
 3. Run the script in the [GEE Code Editor](https://code.earthengine.google.com)
 
@@ -219,10 +221,10 @@ python predict_meadows.py Hunter_Creek_1710031205
 
 ## Model Performance
 
-Based on Cummings et al. (2023) with an expanded 23-feature set:
+Based on Cummings et al. (2023) with an expanded 28-feature set:
 
 - **Algorithm**: XGBoost with per-watershed hyperparameter tuning
-- **Features**: 23 hydrogeomorphic and soil variables (expanded from original 9)
+- **Features**: 28 hydrogeomorphic and soil variables (expanded from original 9)
 - **Training ratio**: 1:4 (meadow : non-meadow pixels)
 - **Validation**: 75/25 train/test split
 - **Expected AUC**: >0.89 for local watershed models
